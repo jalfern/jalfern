@@ -19,7 +19,9 @@ const PitfallGame = () => {
         const GRAVITY = 0.6
 
         // GAME STATE
+        // GAME STATE
         let currentScreen = 0
+        let gameTime = 0
         let score = 2000
         let timeLeft = 20 * 60 // 20 minutes
         let gameOver = false
@@ -85,6 +87,10 @@ const PitfallGame = () => {
             currentScreen = index
             // Reset objects for this screen
             const screenData = screens[index]
+            if (!screenData) {
+                console.error("Missing Screen Data:", index)
+                return
+            }
             // Deep copy to allow state changes (like log position)
             activeObjects = JSON.parse(JSON.stringify(screenData.objects))
 
@@ -104,16 +110,23 @@ const PitfallGame = () => {
 
         // INIT
         const init = () => {
-            loadScreen(0)
-            window.addEventListener('keydown', handleKeyDown)
-            window.addEventListener('keyup', handleKeyUp)
-            window.addEventListener('resize', resize)
-            resize()
-            canvas.focus()
-            loop()
+            console.log("Pitfall Init Start")
+            try {
+                loadScreen(0)
+                window.addEventListener('keydown', handleKeyDown)
+                window.addEventListener('keyup', handleKeyUp)
+                window.addEventListener('resize', resize)
+                resize()
+                canvas.focus()
+                console.log("Pitfall Init Complete, Starting Loop")
+                loop()
+            } catch (e) {
+                console.error("Pitfall Init Failed:", e)
+            }
         }
 
         const resize = () => {
+            if (!canvas || !ctx) return
             // Keep aspect ratio 4:3 or similar
             const dpr = window.devicePixelRatio || 1
             canvas.width = window.innerWidth * dpr
