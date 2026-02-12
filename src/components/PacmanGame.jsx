@@ -9,7 +9,12 @@ const PacmanGame = () => {
         const ctx = canvas.getContext('2d')
         let animationFrameId
 
-        // Authentic Level 1 Map (28x31)
+        // MAP DATA (V3 - Block Based)
+        // 0: Path, 1: Wall Block, 2: Dot, 3: Power, 4: Door
+        // To get "Thick" walls, we use 2x2 blocks of 1s.
+        // To get "Thin" walls, we use 1xN lines of 1s.
+        // This is a 28x31 grid.
+
         const map = [
             [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
             [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
@@ -21,11 +26,11 @@ const PacmanGame = () => {
             [1, 2, 1, 1, 1, 1, 2, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 2, 1, 1, 1, 1, 2, 1],
             [1, 2, 2, 2, 2, 2, 2, 1, 1, 2, 2, 2, 2, 1, 1, 2, 2, 2, 2, 1, 1, 2, 2, 2, 2, 2, 2, 1],
             [1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1],
-            [0, 0, 0, 0, 0, 1, 2, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 2, 1, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 1, 2, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 2, 1, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 1, 2, 1, 1, 0, 1, 1, 1, 4, 4, 1, 1, 1, 0, 1, 1, 2, 1, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 1, 2, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 2, 1, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 1, 2, 1, 1, 0, 1, 0, 0, 4, 4, 0, 0, 1, 0, 1, 1, 2, 1, 0, 0, 0, 0, 0], // Ghost House
             [1, 1, 1, 1, 1, 1, 2, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 2, 1, 1, 1, 1, 1, 1],
-            [0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0], // Tunnel
             [1, 1, 1, 1, 1, 1, 2, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 2, 1, 1, 1, 1, 1, 1],
             [0, 0, 0, 0, 0, 1, 2, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 2, 1, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 1, 2, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 2, 1, 0, 0, 0, 0, 0],
@@ -34,7 +39,7 @@ const PacmanGame = () => {
             [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
             [1, 2, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 2, 1, 1, 2, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 2, 1],
             [1, 2, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 2, 1, 1, 2, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 2, 1],
-            [1, 3, 2, 2, 1, 1, 2, 2, 2, 2, 2, 2, 2, 0, 0, 2, 2, 2, 2, 2, 2, 2, 1, 1, 2, 2, 3, 1],
+            [1, 3, 2, 2, 1, 1, 2, 2, 2, 2, 2, 2, 2, 0, 0, 2, 2, 2, 2, 2, 2, 2, 1, 1, 2, 2, 3, 1], // Pacman Start
             [1, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 1],
             [1, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 1],
             [1, 2, 2, 2, 2, 2, 2, 1, 1, 2, 2, 2, 2, 1, 1, 2, 2, 2, 2, 1, 1, 2, 2, 2, 2, 2, 2, 1],
@@ -69,14 +74,12 @@ const PacmanGame = () => {
         let gameOver = false
 
         // --- AI UTILS ---
-
         const getValidMoves = (x, y) => {
             const moves = []
             if (y === 14) {
                 if (x <= 1) { moves.push({ x: -1, y: 0 }); moves.push({ x: 1, y: 0 }); }
                 else if (x >= COLS - 2) { moves.push({ x: 1, y: 0 }); moves.push({ x: -1, y: 0 }); }
             }
-
             if (x < COLS - 1 && map[y][x + 1] !== 1) moves.push({ x: 1, y: 0 })
             if (x > 0 && map[y][x - 1] !== 1) moves.push({ x: -1, y: 0 })
             if (y < ROWS - 1 && map[y + 1][x] !== 1 && map[y + 1][x] !== 4) moves.push({ x: 0, y: 1 })
@@ -180,12 +183,7 @@ const PacmanGame = () => {
             if (pacman.progress === 0) {
                 const mapX = Math.round(pacman.x)
                 const mapY = Math.round(pacman.y)
-
-                let dangerGhost = ghosts.find(g =>
-                    g.state === 'chase' &&
-                    Math.sqrt(Math.pow(g.x - mapX, 2) + Math.pow(g.y - mapY, 2)) < 8
-                )
-
+                let dangerGhost = ghosts.find(g => g.state === 'chase' && Math.sqrt(Math.pow(g.x - mapX, 2) + Math.pow(g.y - mapY, 2)) < 8)
                 if (dangerGhost) {
                     pacman.nextDir = getSafeMove(mapX, mapY)
                 } else {
@@ -211,17 +209,12 @@ const PacmanGame = () => {
                     pacman.x += pacman.dir.x
                     pacman.y += pacman.dir.y
                     pacman.progress = 0
-
-                    // *** CENTERING FIX: Snap to grid ***
                     pacman.x = Math.round(pacman.x)
                     pacman.y = Math.round(pacman.y)
-
                     if (pacman.x <= -1) pacman.x = COLS - 1
                     else if (pacman.x >= COLS) pacman.x = 0
-
                     const mapX = Math.round(pacman.x)
                     const mapY = Math.round(pacman.y)
-
                     if (mapX >= 0 && mapX < COLS && mapY >= 0 && mapY < ROWS) {
                         const tile = map[mapY][mapX]
                         if (tile === 2) {
@@ -242,7 +235,6 @@ const PacmanGame = () => {
             ghosts.forEach(g => {
                 if (g.progress === 0) {
                     let move = null
-
                     if (g.state === 'dead') {
                         move = bfs(Math.round(g.x), Math.round(g.y), 'home')
                         if (!move) g.state = 'chase'
@@ -274,27 +266,21 @@ const PacmanGame = () => {
                         if (moves.length > 0) g.nextDir = moves[Math.floor(Math.random() * moves.length)]
                     }
                 }
-
                 if (g.nextDir) {
                     let currentSpeed = g.speed
                     if (g.state === 'scared') currentSpeed *= 0.6
                     if (g.state === 'dead') currentSpeed *= 3.0
-
                     g.progress += currentSpeed
                     if (g.progress >= 1) {
                         g.x += g.nextDir.x
                         g.y += g.nextDir.y
                         g.progress = 0
-
-                        // *** CENTERING FIX ***
                         g.x = Math.round(g.x)
                         g.y = Math.round(g.y)
-
                         if (g.x <= -1) g.x = COLS - 1
                         if (g.x >= COLS) g.x = 0
                     }
                 }
-
                 const dx = (g.x + (g.nextDir?.x || 0) * g.progress) - (pacman.x + pacman.dir.x * pacman.progress)
                 const dy = (g.y + (g.nextDir?.y || 0) * g.progress) - (pacman.y + pacman.dir.y * pacman.progress)
                 if (Math.sqrt(dx * dx + dy * dy) < 0.8) {
@@ -309,76 +295,67 @@ const PacmanGame = () => {
             })
         }
 
-        const drawWalls = (ctx, scale) => {
-            // EDGE DETECTION RENDERING
-            // We only draw a line if there is a boundary between Wall (1) and Path (not 1)
-            // Inner squares are skipped.
+        const drawWalls = (ctx) => {
+            // STROKE & HOLLOW TECHNIQUE (V3)
+            // 1. Draw Paths thick (Body)
+            // 2. Clear center (Hollow)
+
+            // Define connected paths for all '1's
             ctx.lineCap = 'round'
             ctx.lineJoin = 'round'
-            ctx.strokeStyle = '#0000FF' // Classic Blue (but B&W -> White?)
-            // User wants B&W, but "Arcade" style. Arcade is Blue lines, black fill.
-            // We will use White lines, black fill.
-            ctx.strokeStyle = 'white'
-            ctx.lineWidth = 1.5 // Thin, precise lines
 
-            ctx.beginPath()
+            const drawPath = () => {
+                ctx.beginPath()
+                // We need to trace every connector
+                for (let r = 0; r < ROWS; r++) {
+                    for (let c = 0; c < COLS; c++) {
+                        if (map[r][c] === 1) {
+                            const x = c * CELL_SIZE + CELL_SIZE / 2
+                            const y = r * CELL_SIZE + CELL_SIZE / 2
+                            // Paint centers
+                            ctx.moveTo(x, y); ctx.lineTo(x, y)
 
-            for (let r = 0; r < ROWS; r++) {
-                for (let c = 0; c < COLS; c++) {
-                    if (map[r][c] === 1) {
-                        const x = c * CELL_SIZE
-                        const y = r * CELL_SIZE
-
-                        // Check neighbors (0 = Path/Empty)
-                        const top = (r > 0) ? map[r - 1][c] : 1
-                        const bottom = (r < ROWS - 1) ? map[r + 1][c] : 1
-                        const left = (c > 0) ? map[r][c - 1] : 1
-                        const right = (c < COLS - 1) ? map[r][c + 1] : 1
-
-                        // DRAW BOUNDARIES
-                        // If Top is NOT wall, draw Top Edge
-                        if (top !== 1) {
-                            ctx.moveTo(x, y); ctx.lineTo(x + CELL_SIZE, y)
+                            // Connectors
+                            if (r < ROWS - 1 && map[r + 1][c] === 1) { ctx.moveTo(x, y); ctx.lineTo(x, y + CELL_SIZE) }
+                            if (c < COLS - 1 && map[r][c + 1] === 1) { ctx.moveTo(x, y); ctx.lineTo(x + CELL_SIZE, y) }
                         }
-                        // If Bottom is NOT wall, draw Bottom Edge
-                        if (bottom !== 1) {
-                            ctx.moveTo(x, y + CELL_SIZE); ctx.lineTo(x + CELL_SIZE, y + CELL_SIZE)
-                        }
-                        // If Left is NOT wall
-                        if (left !== 1) {
-                            ctx.moveTo(x, y); ctx.lineTo(x, y + CELL_SIZE)
-                        }
-                        // If Right is NOT wall
-                        if (right !== 1) {
-                            ctx.moveTo(x + CELL_SIZE, y); ctx.lineTo(x + CELL_SIZE, y + CELL_SIZE)
-                        }
-
-                        // CURVES:
-                        // This logic produces straight lines. To get curves, we'd need to detect corners of blocks.
-                        // Simple hack: lineJoin = 'round' handles small intersections, 
-                        // but for true Arcade smoothed corners we need to detect convex/concave corners.
-                        // Given constraints, thin crisp lines (like drawn above) with rounded lineCaps 
-                        // is 90% there and cleaner than the previous "Block" method.
                     }
                 }
             }
 
-            // Double Stroke Effect (Hollow lines)? 
-            // User said "connected paths, no inner lines".
-            // The above code draws ONLY the outline of the wall clusters.
-            // The inside of a 2x2 wall block will be empty.
-            // This matches the request perfectly.
-
+            // PASS 1: The "Body" (White)
+            // Width approx 80% of cell
+            ctx.strokeStyle = '#2121ff' // Use "Authentic Blue" or White?? User asked for B&W.
+            // But "Reference" has blue lines. 
+            // "Strict B&W" task was completed. But User showed reference. 
+            // Let's stick to White for now to match B&W request, but maybe use gray?
+            // Actually, user said "looks right" to previous B&W, just wanted shapes.
+            ctx.strokeStyle = 'white'
+            ctx.lineWidth = CELL_SIZE * 0.8
+            drawPath()
             ctx.stroke()
+
+            // PASS 2: The "Hollow" (Black)
+            // Width approx 40% of cell
+            ctx.strokeStyle = 'black'
+            ctx.lineWidth = CELL_SIZE * 0.4
+            // Composite operation destination-out acts as eraser
+            ctx.globalCompositeOperation = 'destination-out'
+            drawPath()
+            ctx.stroke()
+
+            // Reset
+            ctx.globalCompositeOperation = 'source-over'
+
+            // Re-draw thin outline? No, the Eraser leaves the outline. 
+            // White Body minus Black Inner = White Outline. Correct.
         }
 
         const drawGhost = (ctx, x, y, color, state, dir) => {
-            const size = CELL_SIZE * 1.6 // Bigger than cell slightly
+            const size = CELL_SIZE * 1.6
             ctx.save()
             ctx.translate(x + CELL_SIZE / 2, y + CELL_SIZE / 2)
-
             if (state === 'dead') {
-                // Eyes only
                 ctx.fillStyle = 'white'
                 ctx.beginPath()
                 ctx.arc(-4, -2, 3, 0, Math.PI * 2); ctx.fill()
@@ -390,29 +367,20 @@ const PacmanGame = () => {
                 ctx.restore()
                 return
             }
-
-            // Body Color
             if (state === 'scared') {
                 ctx.fillStyle = (Date.now() % 400 < 200) ? 'white' : 'black'
                 ctx.strokeStyle = (ctx.fillStyle === 'white') ? 'black' : 'white'
             } else {
-                // Normal: White outline, Black fill (or gray fill?)
-                // User said "B&W", usually means White Sprite on Black BG.
-                // Or "Gray" ghosts.
-                ctx.fillStyle = color // Gray scale
-                ctx.strokeStyle = 'white' // Pop
+                ctx.fillStyle = color
+                ctx.strokeStyle = 'white'
             }
-
-            // Draw Bell Shape
             ctx.beginPath()
-            ctx.arc(0, -2, 6, Math.PI, 0) // Head
+            ctx.arc(0, -2, 6, Math.PI, 0)
             ctx.lineTo(6, 6)
-            // Feet (3 bumps)
             ctx.lineTo(4, 5); ctx.lineTo(2, 6); ctx.lineTo(0, 5); ctx.lineTo(-2, 6); ctx.lineTo(-4, 5); ctx.lineTo(-6, 6)
             ctx.lineTo(-6, -2)
             ctx.fill()
 
-            // Scared Face
             if (state === 'scared') {
                 ctx.fillStyle = (ctx.fillStyle === 'white') ? 'black' : 'white'
                 ctx.fillRect(-3, -2, 2, 2); ctx.fillRect(1, -2, 2, 2)
@@ -420,12 +388,10 @@ const PacmanGame = () => {
                 ctx.moveTo(-3, 2); ctx.lineTo(-1, 0); ctx.lineTo(1, 2); ctx.lineTo(3, 0);
                 ctx.stroke()
             } else {
-                // Normal Eyes
                 ctx.fillStyle = 'white'
                 ctx.beginPath()
                 ctx.arc(-2.5, -3, 2.5, 0, Math.PI * 2); ctx.fill()
                 ctx.arc(2.5, -3, 2.5, 0, Math.PI * 2); ctx.fill()
-                // Pupils
                 ctx.fillStyle = 'black'
                 let lx = dir?.x * 1.5 || 0
                 let ly = dir?.y * 1.5 || 0
@@ -437,7 +403,6 @@ const PacmanGame = () => {
         }
 
         const draw = () => {
-            // Clear
             ctx.fillStyle = '#000000'
             ctx.fillRect(0, 0, canvas.width, canvas.height)
 
@@ -449,10 +414,9 @@ const PacmanGame = () => {
             ctx.translate((canvas.width - mapWidth * scale) / 2, (canvas.height - mapHeight * scale) / 2)
             ctx.scale(scale, scale)
 
-            drawWalls(ctx, scale)
+            drawWalls(ctx)
 
-            // Draw Dots (White)
-            ctx.fillStyle = '#ffb8ae' // Peach? No B&W.
+            // Dots
             ctx.fillStyle = '#ffffff'
             for (let r = 0; r < ROWS; r++) {
                 for (let c = 0; c < COLS; c++) {
@@ -470,11 +434,9 @@ const PacmanGame = () => {
                 }
             }
 
-            // Entities
+            // Draw Entities
             const px = (pacman.x + pacman.dir.x * pacman.progress) * CELL_SIZE + CELL_SIZE / 2
             const py = (pacman.y + pacman.dir.y * pacman.progress) * CELL_SIZE + CELL_SIZE / 2
-
-            // PACMAN: Yellow? No B&W -> White
             ctx.fillStyle = '#ffffff'
             ctx.beginPath()
             const mouthOpen = 0.2 * Math.sin(Date.now() / 50) + 0.2
@@ -483,8 +445,7 @@ const PacmanGame = () => {
             if (pacman.dir.x === -1) angle = Math.PI
             if (pacman.dir.y === 1) angle = Math.PI / 2
             if (pacman.dir.y === -1) angle = -Math.PI / 2
-
-            const pacRadius = CELL_SIZE / 2 + 1 // Slightly larger than cell
+            const pacRadius = CELL_SIZE / 2 + 1
             ctx.arc(px, py, pacRadius, angle + mouthOpen, angle + 2 * Math.PI - mouthOpen)
             ctx.lineTo(px, py)
             ctx.fill()
