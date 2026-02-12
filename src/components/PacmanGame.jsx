@@ -331,13 +331,13 @@ const PacmanGame = () => {
 
             // PASS 1: The "Tube" (Blue)
             ctx.strokeStyle = '#2121ff'
-            ctx.lineWidth = 6
+            ctx.lineWidth = 3.5 // Thinner body (was 6)
             drawEdges()
             ctx.stroke()
 
             // PASS 2: Hollow
             ctx.strokeStyle = 'black'
-            ctx.lineWidth = 2
+            ctx.lineWidth = 1.5 // Thinner hollow (was 2) -> (3.5-1.5)/2 = 1.0px double lines
             ctx.globalCompositeOperation = 'destination-out'
             drawEdges()
             ctx.stroke()
