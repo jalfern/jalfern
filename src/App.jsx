@@ -1,31 +1,13 @@
 import { useState, useEffect, createContext, useContext, useCallback, useMemo } from 'react'
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
-import PongGame from './components/PongGame'
-import SpaceInvadersGame from './components/SpaceInvadersGame'
-import PacmanGame from './components/PacmanGame'
-import AsteroidsGame from './components/AsteroidsGame'
-import DonkeyKongGame from './components/DonkeyKongGame'
-import CentipedeGame from './components/CentipedeGame'
-import DefenderGame from './components/DefenderGame'
+import { GAMES } from './config/games'
+import GamesList from './components/GamesList'
 import { audioController } from './utils/AudioController'
 
 const GameLabelContext = createContext({
   label: '',
   setGameInfo: () => { }
 })
-
-// Game Registry
-// Theme 'dark' = white text (background is black)
-// Theme 'light' = black text (background is white)
-const GAMES = [
-  { path: '/pong', component: PongGame, label: 'PONG', theme: 'light' },
-  { path: '/invaders', component: SpaceInvadersGame, label: 'SPACE INVADERS', theme: 'light' },
-  { path: '/pacman', component: PacmanGame, label: 'PAC-MAN', theme: 'light' },
-  { path: '/asteroids', component: AsteroidsGame, label: 'ASTEROIDS', theme: 'dark' },
-  { path: '/donkeykong', component: DonkeyKongGame, label: 'DONKEY KONG', theme: 'dark' },
-  { path: '/centipede', component: CentipedeGame, label: 'CENTIPEDE', theme: 'dark' },
-  { path: '/defender', component: DefenderGame, label: 'DEFENDER', theme: 'dark' }
-]
 
 function RandomHome() {
   const { setGameInfo } = useContext(GameLabelContext)
@@ -70,10 +52,6 @@ function Layout({ children }) {
   // Dynamic text color
   const textColor = info.theme === 'dark' ? 'text-white' : 'text-black'
   const borderColor = info.theme === 'dark' ? 'hover:border-white' : 'hover:border-black'
-
-  // Also pass this to Mute Toggle via simple prop or global css var? 
-  // We can just use the context or props if Mute Toggle was a child component. 
-  // For now, let's keep Mute Toggle inside Layout logic or App logic and pass classes.
 
   return (
     <GameLabelContext.Provider value={contextValue}>
@@ -150,20 +128,21 @@ function App() {
   }, [])
 
   // Version 1.1 - Force Refresh
-  useEffect(() => { console.log("Jalfern Arcade v1.1 - Refined") }, [])
+  useEffect(() => { console.log("Jalfern Arcade v1.2 - Games List") }, [])
 
   return (
     <BrowserRouter>
       <Layout>
         <Routes>
           <Route path="/" element={<RandomHome />} />
-          <Route path="/pong" element={<GameRoute component={PongGame} label="PONG" theme="light" />} />
-          <Route path="/invaders" element={<GameRoute component={SpaceInvadersGame} label="SPACE INVADERS" theme="light" />} />
-          <Route path="/pacman" element={<GameRoute component={PacmanGame} label="PAC-MAN" theme="light" />} />
-          <Route path="/asteroids" element={<GameRoute component={AsteroidsGame} label="ASTEROIDS" theme="dark" />} />
-          <Route path="/donkeykong" element={<GameRoute component={DonkeyKongGame} label="DONKEY KONG" theme="dark" />} />
-          <Route path="/centipede" element={<GameRoute component={CentipedeGame} label="CENTIPEDE" theme="dark" />} />
-          <Route path="/defender" element={<GameRoute component={DefenderGame} label="DEFENDER" theme="dark" />} />
+          <Route path="/games" element={<GamesList />} />
+          {GAMES.map(game => (
+            <Route
+              key={game.path}
+              path={game.path}
+              element={<GameRoute component={game.component} label={game.label} theme={game.theme} />}
+            />
+          ))}
         </Routes>
       </Layout>
     </BrowserRouter>
