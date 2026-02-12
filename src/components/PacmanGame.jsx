@@ -11,6 +11,8 @@ const PacmanGame = () => {
 
         // Grid Constants
         // 0: Empty, 1: Wall, 2: Dot, 3: Power Pellet
+        // Corners: (1,1), (1,19), (18,1), (18,19) -> mapped to index
+        // Tunnel: Row 9, Col 0 and Col 20
         const map = [
             [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
             [1, 3, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 3, 1],
@@ -20,7 +22,7 @@ const PacmanGame = () => {
             [1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1],
             [1, 2, 2, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 2, 2, 1],
             [1, 1, 1, 1, 1, 2, 1, 1, 1, 0, 1, 0, 1, 1, 1, 2, 1, 1, 1, 1, 1],
-            [0, 0, 0, 0, 1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 1, 2, 1, 0, 0, 0, 0],
+            [0, 0, 0, 0, 1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 1, 2, 1, 0, 0, 0, 0], // Tunnel Row
             [1, 1, 1, 1, 1, 2, 1, 0, 1, 1, 0, 1, 1, 0, 1, 2, 1, 1, 1, 1, 1],
             [0, 2, 2, 2, 2, 2, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2, 2, 2, 2, 2, 0],
             [1, 1, 1, 1, 1, 2, 1, 0, 1, 1, 1, 1, 1, 0, 1, 2, 1, 1, 1, 1, 1],
@@ -49,10 +51,16 @@ const PacmanGame = () => {
             powerTimer: 0
         }
 
+        // B&W Ghosts: Differentiate by 'shade' (simulated by filling logic)
+        // 1: Fill, 2: Outline, 3: Fill + Dot, 4: Crosshatch? 
+        // Let's use simple shades of gray: 
+        // Red -> Dark Gray (#666)
+        // Pink -> Gray (#999)
+        // Cyan -> Light Gray (#ccc)
         let ghosts = [
-            { id: 1, x: 10, y: 8, color: 'red', path: [], progress: 0, speed: 0.1, state: 'chase' },
-            { id: 2, x: 9, y: 10, color: 'pink', path: [], progress: 0, speed: 0.08, state: 'chase' },
-            { id: 3, x: 11, y: 10, color: 'cyan', path: [], progress: 0, speed: 0.09, state: 'chase' }
+            { id: 1, x: 10, y: 8, color: '#666666', path: [], progress: 0, speed: 0.1, state: 'chase' },
+            { id: 2, x: 9, y: 10, color: '#999999', path: [], progress: 0, speed: 0.08, state: 'chase' },
+            { id: 3, x: 11, y: 10, color: '#cccccc', path: [], progress: 0, speed: 0.09, state: 'chase' }
         ]
 
         let gameOver = false
@@ -61,14 +69,27 @@ const PacmanGame = () => {
 
         const getValidMoves = (x, y) => {
             const moves = []
-            if (map[y][x + 1] !== 1) moves.push({ x: 1, y: 0 })
-            if (map[y][x - 1] !== 1) moves.push({ x: -1, y: 0 })
-            if (map[y + 1] && map[y + 1][x] !== 1) moves.push({ x: 0, y: 1 })
-            if (map[y - 1] && map[y - 1][x] !== 1) moves.push({ x: 0, y: -1 })
+
+            // Tunnel Check
+            if (y === 8) {
+                if (x === 0) { moves.push({ x: -1, y: 0 }); moves.push({ x: 1, y: 0 }); } // Can go left (wrap) or right
+                if (x === COLS - 1) { moves.push({ x: 1, y: 0 }); moves.push({ x: -1, y: 0 }); } // Can go right (wrap) or left
+            }
+
+            // Normal moves
+            if (x < COLS - 1 && map[y][x + 1] !== 1) moves.push({ x: 1, y: 0 })
+            if (x > 0 && map[y][x - 1] !== 1) moves.push({ x: -1, y: 0 })
+            if (y < ROWS - 1 && map[y + 1][x] !== 1) moves.push({ x: 0, y: 1 })
+            if (y > 0 && map[y - 1][x] !== 1) moves.push({ x: 0, y: -1 })
+
             return moves
         }
 
         const bfs = (startX, startY, targetType) => {
+            // Basic implementation, but robust for wrapping needs special care?
+            // For now, let's assume ghosts don't use the tunnel for simplicity in pathfinding
+            // Or they can, but let's prevent them to avoid complexity
+
             let queue = [{ x: startX, y: startY, path: [] }]
             let visited = new Set(`${startX},${startY}`)
 
@@ -102,11 +123,11 @@ const PacmanGame = () => {
         }
 
         const resetGame = () => {
-            // Simple respawn of dots if all eaten
+            // Respawn dots/power pellets
             let dotsLeft = false
             for (let r = 0; r < ROWS; r++) {
                 for (let c = 0; c < COLS; c++) {
-                    if (map[r][c] === 2) dotsLeft = true
+                    if (map[r][c] === 2 || map[r][c] === 3) dotsLeft = true
                 }
             }
             if (!dotsLeft) {
@@ -116,12 +137,11 @@ const PacmanGame = () => {
                         if (r > 7 && r < 12 && c > 7 && c < 13) {
                             map[r][c] = 0 // House
                         } else {
-                            // Crude restore logic
                             if (map[r][c] === 0) map[r][c] = 2
                         }
                     }
                 }
-                // Restore corners
+                // Restore corners (Power Pellets)
                 map[1][1] = 3; map[1][19] = 3; map[18][1] = 3; map[18][19] = 3;
             }
 
@@ -159,12 +179,12 @@ const PacmanGame = () => {
             }
 
             // --- PACMAN ---
-            // Choose logic
             if (pacman.progress === 0) {
-                // Find nearest dot or pellet
-                // Simplified: BFS for nearest "2" or "3"
-                // ...
                 const nextMove = bfs(Math.round(pacman.x), Math.round(pacman.y), 'dot')
+
+                // Tunnel Logic: if we are at edge, can we go into tunnel?
+                // Logic handled by getValidMoves mostly, but pathfinding might fail.
+                // Simple random move fallback works for tunnel entry usually.
 
                 if (nextMove && Math.random() > 0.1) {
                     pacman.nextDir = nextMove
@@ -172,6 +192,9 @@ const PacmanGame = () => {
                     const moves = getValidMoves(Math.round(pacman.x), Math.round(pacman.y))
                     if (moves.length > 0) pacman.nextDir = moves[Math.floor(Math.random() * moves.length)]
                 }
+
+                // Force tunnel usage if aligned? 
+                // If at (0,8) and moving left (-1,0), next move is valid in getValidMoves
                 pacman.dir = pacman.nextDir
             }
 
@@ -183,26 +206,36 @@ const PacmanGame = () => {
                     pacman.y += pacman.dir.y
                     pacman.progress = 0
 
-                    const tile = map[Math.round(pacman.y)][Math.round(pacman.x)]
-                    // Eat dot
-                    if (tile === 2) {
-                        map[Math.round(pacman.y)][Math.round(pacman.x)] = 0
-                        audioController.playTone(300 + Math.random() * 200, 0.05, 'triangle', 0.1)
+                    // WRAPPING
+                    if (pacman.x <= -1) {
+                        pacman.x = COLS - 1
                     }
-                    // Eat Power Pellet
-                    else if (tile === 3) {
-                        map[Math.round(pacman.y)][Math.round(pacman.x)] = 0
-                        pacman.poweredUp = true
-                        pacman.powerTimer = 600 // 10 seconds (approx)
-                        ghosts.forEach(g => {
-                            if (g.state !== 'dead') g.state = 'scared'
-                        })
-                        audioController.playSweep(600, 800, 0.5, 'sine', 0.1)
+                    else if (pacman.x >= COLS) {
+                        pacman.x = 0
                     }
 
-                    // Wrap around
-                    if (pacman.x < 0) pacman.x = COLS - 1
-                    if (pacman.x >= COLS) pacman.x = 0
+                    // Normalize for map access
+                    const mapX = Math.round(pacman.x)
+                    const mapY = Math.round(pacman.y)
+
+                    if (mapX >= 0 && mapX < COLS && mapY >= 0 && mapY < ROWS) {
+                        const tile = map[mapY][mapX]
+                        // Eat dot
+                        if (tile === 2) {
+                            map[mapY][mapX] = 0
+                            audioController.playTone(300 + Math.random() * 200, 0.05, 'triangle', 0.1)
+                        }
+                        // Eat Power Pellet
+                        else if (tile === 3) {
+                            map[mapY][mapX] = 0
+                            pacman.poweredUp = true
+                            pacman.powerTimer = 600
+                            ghosts.forEach(g => {
+                                if (g.state !== 'dead') g.state = 'scared'
+                            })
+                            audioController.playSweep(600, 800, 0.5, 'sine', 0.1)
+                        }
+                    }
                 }
             }
 
@@ -212,17 +245,12 @@ const PacmanGame = () => {
                     let move = null
 
                     if (g.state === 'dead') {
-                        // Return to center
                         move = bfs(Math.round(g.x), Math.round(g.y), 'home')
-                        if (!move) { // Arrived
-                            g.state = 'chase'
-                        }
+                        if (!move) { g.state = 'chase' }
                     } else if (g.state === 'scared') {
-                        // Move randomly or away? Random is easier for MVP
                         const moves = getValidMoves(Math.round(g.x), Math.round(g.y))
                         move = moves[Math.floor(Math.random() * moves.length)]
                     } else {
-                        // Chase
                         move = bfs(Math.round(g.x), Math.round(g.y), 'pacman')
                     }
 
@@ -235,7 +263,6 @@ const PacmanGame = () => {
                 }
 
                 if (g.nextDir) {
-                    // Speed var
                     let currentSpeed = g.speed
                     if (g.state === 'scared') currentSpeed *= 0.6
                     if (g.state === 'dead') currentSpeed *= 2.0
@@ -245,6 +272,10 @@ const PacmanGame = () => {
                         g.x += g.nextDir.x
                         g.y += g.nextDir.y
                         g.progress = 0
+
+                        // Wrap Ghosts too?
+                        if (g.x <= -1) g.x = COLS - 1
+                        if (g.x >= COLS) g.x = 0
                     }
                 }
 
@@ -253,7 +284,6 @@ const PacmanGame = () => {
                 const dy = (g.y + (g.nextDir?.y || 0) * g.progress) - (pacman.y + pacman.dir.y * pacman.progress)
                 if (Math.sqrt(dx * dx + dy * dy) < 0.8) {
                     if (g.state === 'scared') {
-                        // Eat Ghost
                         g.state = 'dead'
                         audioController.playTone(800, 0.1, 'square', 0.2)
                     } else if (g.state === 'chase') {
@@ -265,7 +295,11 @@ const PacmanGame = () => {
         }
 
         const draw = () => {
-            // Clear
+            // Clear (White Background to keep B&W aesthetic consistent with Pong? or Black?)
+            // User said "black and white". Pong is White bg with black items.
+            // Donkey Kong is Black bg with white items.
+            // Let's stick to WHITE BG for Pacman as it was before, but remove colors.
+
             ctx.fillStyle = '#ffffff'
             ctx.fillRect(0, 0, canvas.width, canvas.height)
 
@@ -290,14 +324,11 @@ const PacmanGame = () => {
                         ctx.arc(c * CELL_SIZE + CELL_SIZE / 2, r * CELL_SIZE + CELL_SIZE / 2, 2, 0, Math.PI * 2)
                         ctx.fill()
                     } else if (map[r][c] === 3) {
-                        // Power Pellet
                         ctx.fillStyle = 'black'
                         ctx.beginPath()
-
-                        // Flash effect
-                        const r = (Date.now() % 400 < 200) ? 6 : 4
-
-                        ctx.arc(c * CELL_SIZE + CELL_SIZE / 2, r * CELL_SIZE + CELL_SIZE / 2, r, 0, Math.PI * 2)
+                        // Slower flash
+                        const rRadius = (Date.now() % 600 < 300) ? 6 : 4
+                        ctx.arc(c * CELL_SIZE + CELL_SIZE / 2, r * CELL_SIZE + CELL_SIZE / 2, rRadius, 0, Math.PI * 2)
                         ctx.fill()
                     }
                 }
@@ -325,18 +356,39 @@ const PacmanGame = () => {
                 const gx = (g.x + (g.nextDir?.x || 0) * g.progress) * CELL_SIZE
                 const gy = (g.y + (g.nextDir?.y || 0) * g.progress) * CELL_SIZE
 
-                if (g.state === 'scared') ctx.fillStyle = 'blue'
-                else if (g.state === 'dead') ctx.fillStyle = '#e0e0e0' // gray eyes
-                else ctx.fillStyle = g.color
+                // B&W Logic
+                if (g.state === 'scared') {
+                    // Flashing white/black outline
+                    if (Date.now() % 400 < 200) {
+                        ctx.fillStyle = 'white'
+                        ctx.strokeStyle = 'black'
+                    } else {
+                        ctx.fillStyle = 'black'
+                        ctx.strokeStyle = 'white'
+                    }
+                    ctx.lineWidth = 1
+                } else if (g.state === 'dead') {
+                    ctx.fillStyle = '#ffffff' // invisible body
+                    ctx.strokeStyle = 'black'
+                    ctx.lineWidth = 1
+                } else {
+                    ctx.fillStyle = g.color
+                    ctx.strokeStyle = 'black'
+                }
 
                 ctx.beginPath()
                 ctx.arc(gx + CELL_SIZE / 2, gy + CELL_SIZE / 2 - 2, CELL_SIZE / 2 - 2, Math.PI, 0)
                 ctx.lineTo(gx + CELL_SIZE - 2, gy + CELL_SIZE)
                 ctx.lineTo(gx + 2, gy + CELL_SIZE)
                 ctx.fill()
+                // if dead or scared, stroke
+                if (g.state === 'scared' || g.state === 'dead') ctx.stroke()
 
                 // Eyes
-                ctx.fillStyle = 'white'
+                ctx.fillStyle = (g.state === 'scared' && ctx.fillStyle === 'black') ? 'white' : 'white'
+                // If dead, eyes act as body
+                if (g.state === 'dead') ctx.fillStyle = 'black'
+
                 ctx.beginPath()
                 ctx.arc(gx + CELL_SIZE / 3, gy + CELL_SIZE / 2 - 4, 2, 0, Math.PI * 2)
                 ctx.arc(gx + 2 * CELL_SIZE / 3, gy + CELL_SIZE / 2 - 4, 2, 0, Math.PI * 2)
