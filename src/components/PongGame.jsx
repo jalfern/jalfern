@@ -32,6 +32,10 @@ const PongGame = () => {
                 dx: (Math.random() > 0.5 ? 1 : -1) * BASE_SPEED,
                 dy: (Math.random() * 2 - 1) * BASE_SPEED
             }
+            // Randomize paddle positions
+            const maxPaddleY = state.height - PADDLE_HEIGHT
+            state.leftPaddle.y = Math.random() * maxPaddleY
+            state.rightPaddle.y = Math.random() * maxPaddleY
         }
 
         const resize = () => {
@@ -39,8 +43,7 @@ const PongGame = () => {
             canvas.height = window.innerHeight
             state.width = canvas.width
             state.height = canvas.height
-            state.leftPaddle.y = canvas.height / 2 - PADDLE_HEIGHT / 2
-            state.rightPaddle.y = canvas.height / 2 - PADDLE_HEIGHT / 2
+
 
             // Only reset ball if it's off screen or initialized at 0,0
             if (state.ball.x === 0 && state.ball.y === 0) {
@@ -92,6 +95,8 @@ const PongGame = () => {
             ) {
                 state.ball.dx *= -1.05 // Slight speed up
                 state.ball.x = PADDLE_OFFSET + PADDLE_WIDTH + 1 // Push out to avoid sticking
+                // Add slight vertical randomness to prevent loops
+                state.ball.dy += (Math.random() * 2 - 1)
             }
 
             // Right
@@ -103,6 +108,7 @@ const PongGame = () => {
             ) {
                 state.ball.dx *= -1.05
                 state.ball.x = state.width - PADDLE_OFFSET - PADDLE_WIDTH - BALL_SIZE - 1
+                state.ball.dy += (Math.random() * 2 - 1)
             }
 
             // Scoring (Ball goes off screen)
