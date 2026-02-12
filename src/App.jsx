@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext, useContext } from 'react'
+import { useState, useEffect, createContext, useContext, useCallback, useMemo } from 'react'
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import PongGame from './components/PongGame'
 import SpaceInvadersGame from './components/SpaceInvadersGame'
@@ -49,11 +49,19 @@ function GameRoute({ component: Component, label, theme }) {
 function Layout({ children }) {
   const [info, setInfo] = useState({ label: '', theme: 'light' })
 
+  // Stabilize the setter to check for changes and prevent unnecessary updates
+  const setGameInfo = useCallback((l, t) => {
+    setInfo(prev => {
+      if (prev.label === l && prev.theme === t) return prev
+      return { label: l, theme: t }
+    })
+  }, [])
+
   // Context provider value
-  const contextValue = {
+  const contextValue = useMemo(() => ({
     label: info.label,
-    setGameInfo: (l, t) => setInfo({ label: l, theme: t })
-  }
+    setGameInfo
+  }), [info.label, setGameInfo])
 
   // Dynamic text color
   const textColor = info.theme === 'dark' ? 'text-white' : 'text-black'
