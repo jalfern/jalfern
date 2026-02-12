@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { audioController } from '../utils/AudioController'
 
 const PacmanGame = () => {
     const canvasRef = useRef(null)
@@ -158,6 +159,7 @@ const PacmanGame = () => {
                     // Eat dot
                     if (map[Math.round(pacman.y)][Math.round(pacman.x)] === 2) {
                         map[Math.round(pacman.y)][Math.round(pacman.x)] = 0
+                        audioController.playTone(300 + Math.random() * 200, 0.05, 'triangle', 0.1)
                     }
 
                     // Wrap around (tunnel)
@@ -195,6 +197,7 @@ const PacmanGame = () => {
                 const dy = (g.y + (g.nextDir?.y || 0) * g.progress) - (pacman.y + pacman.dir.y * pacman.progress)
                 if (Math.sqrt(dx * dx + dy * dy) < 0.8) {
                     gameOver = true
+                    audioController.playSweep(400, 100, 0.5, 'sawtooth', 0.2)
                 }
             })
 

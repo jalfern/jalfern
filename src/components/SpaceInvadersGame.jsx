@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { audioController } from '../utils/AudioController'
 
 const SpaceInvadersGame = () => {
     const canvasRef = useRef(null)
@@ -116,6 +117,7 @@ const SpaceInvadersGame = () => {
                     w: 4, h: 10
                 })
                 state.player.cooldown = 40 // frames
+                audioController.playTone(800, 0.05, 'square', 0.1)
             }
 
             // --- UPDATE ENTITIES ---
@@ -179,6 +181,7 @@ const SpaceInvadersGame = () => {
                         inv.active = false
                         // Remove bullet (hacky splice)
                         b.y = -100
+                        audioController.playNoise(0.1, 0.1)
                     }
                 })
             })
@@ -191,6 +194,7 @@ const SpaceInvadersGame = () => {
                     b.y + b.h > state.height - 20 - state.player.height) {
                     // Player hit -> restart
                     initGame()
+                    audioController.playNoise(0.5, 0.3)
                 }
             })
         }

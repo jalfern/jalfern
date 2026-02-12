@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { audioController } from '../utils/AudioController'
 
 const PongGame = () => {
     const canvasRef = useRef(null)
@@ -62,6 +63,7 @@ const PongGame = () => {
             // Wall collisions (Top/Bottom)
             if (state.ball.y <= 0 || state.ball.y + BALL_SIZE >= state.height) {
                 state.ball.dy *= -1
+                audioController.playTone(300, 0.05, 'square')
             }
 
             // AI Logic (Simple tracking)
@@ -97,6 +99,7 @@ const PongGame = () => {
                 state.ball.x = PADDLE_OFFSET + PADDLE_WIDTH + 1 // Push out to avoid sticking
                 // Add slight vertical randomness to prevent loops
                 state.ball.dy += (Math.random() * 2 - 1)
+                audioController.playTone(400, 0.1, 'square')
             }
 
             // Right
@@ -109,15 +112,18 @@ const PongGame = () => {
                 state.ball.dx *= -1.05
                 state.ball.x = state.width - PADDLE_OFFSET - PADDLE_WIDTH - BALL_SIZE - 1
                 state.ball.dy += (Math.random() * 2 - 1)
+                audioController.playTone(400, 0.1, 'square')
             }
 
             // Scoring (Ball goes off screen)
             if (state.ball.x < 0) {
                 state.rightPaddle.score++
                 resetBall()
+                audioController.playTone(200, 0.2, 'sawtooth')
             } else if (state.ball.x > state.width) {
                 state.leftPaddle.score++
                 resetBall()
+                audioController.playTone(200, 0.2, 'sawtooth')
             }
         }
 
