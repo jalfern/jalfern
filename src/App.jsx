@@ -1,9 +1,60 @@
-import { useState } from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import PongGame from './components/PongGame'
 import SpaceInvadersGame from './components/SpaceInvadersGame'
 import PacmanGame from './components/PacmanGame'
+import AsteroidsGame from './components/AsteroidsGame'
 import { audioController } from './utils/AudioController'
+
+const GAMES = [
+  { path: '/pong', component: PongGame, label: 'PONG' },
+  { path: '/invaders', component: SpaceInvadersGame, label: 'SPACE INVADERS' },
+  { path: '/pacman', component: PacmanGame, label: 'PAC-MAN' },
+  { path: '/asteroids', component: AsteroidsGame, label: 'ASTEROIDS' }
+]
+
+function RandomHome() {
+  const [GameComponent, setGameComponent] = useState(null)
+
+  useEffect(() => {
+    const randomGame = GAMES[Math.floor(Math.random() * GAMES.length)]
+    setGameComponent(() => randomGame.component)
+  }, [])
+
+  if (!GameComponent) return null
+  return <GameComponent />
+}
+
+function Layout({ children }) {
+  const location = useLocation()
+  let label = 'JALFERN.COM'
+
+  // Determine label based on path or random home
+  // If home, we might want to know which one is rendering, but simple "JALFERN.COM" is fine or generic.
+  // Actually user asked for "name of the game". 
+  // Since RandomHome renders a game, maybe we should just overlay the label based on what it *looks* like?
+  // Or: RandomHome could update a context?
+  // Let's keep it simple: Map known routes to names. For Home, we display "ARCHADE".
+
+  if (location.pathname === '/pong') label = 'PONG'
+  else if (location.pathname === '/invaders') label = 'SPACE INVADERS'
+  else if (location.pathname === '/pacman') label = 'PAC-MAN'
+  else if (location.pathname === '/asteroids') label = 'ASTEROIDS'
+  else label = 'JALFERN.COM / RANDOM'
+
+  return (
+    <div className="w-full h-screen bg-white overflow-hidden relative">
+      {children}
+
+      {/* Footer Label */}
+      <div className="fixed bottom-8 left-0 right-0 text-center pointer-events-none opacity-40 hover:opacity-100 transition-opacity duration-500">
+        <h1 className="text-black font-mono text-sm tracking-widest border-b-2 border-transparent hover:border-black inline-block pb-1">
+          {label}
+        </h1>
+      </div>
+    </div>
+  )
+}
 
 function App() {
   const [muted, setMuted] = useState(true)
@@ -14,18 +65,35 @@ function App() {
     audioController.init()
     audioController.setMuted(newMuted)
     if (!newMuted) {
-      // Feedback sound
       setTimeout(() => audioController.playTone(440, 0.1, 'sine'), 100)
     }
   }
 
+  // Mobile Audio Unlock
+  useEffect(() => {
+    const unlockAudio = () => {
+      audioController.init()
+      if (audioController.ctx && audioController.ctx.state === 'suspended') {
+        audioController.ctx.resume()
+      }
+    }
+    window.addEventListener('touchstart', unlockAudio, { once: true })
+    window.addEventListener('click', unlockAudio, { once: true })
+    return () => {
+      window.removeEventListener('touchstart', unlockAudio)
+      window.removeEventListener('click', unlockAudio)
+    }
+  }, [])
+
   return (
     <BrowserRouter>
-      <div className="w-full h-screen bg-white overflow-hidden relative">
+      <Layout>
         <Routes>
-          <Route path="/" element={<PongGame />} />
+          <Route path="/" element={<RandomHome />} />
+          <Route path="/pong" element={<PongGame />} />
           <Route path="/invaders" element={<SpaceInvadersGame />} />
           <Route path="/pacman" element={<PacmanGame />} />
+          <Route path="/asteroids" element={<AsteroidsGame />} />
         </Routes>
 
         {/* Mute Toggle */}
@@ -43,14 +111,7 @@ function App() {
             </svg>
           )}
         </button>
-
-        {/* Optional overlay for the domain name, subtle and unobtrusive */}
-        <div className="fixed bottom-8 left-0 right-0 text-center pointer-events-none opacity-20 hover:opacity-100 transition-opacity duration-500">
-          <h1 className="text-black font-mono text-sm tracking-widest">
-            JALFERN.COM
-          </h1>
-        </div>
-      </div>
+      </Layout>
     </BrowserRouter>
   )
 }

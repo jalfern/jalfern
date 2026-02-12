@@ -98,7 +98,7 @@ const PongGame = () => {
                 state.ball.dx *= -1.05 // Slight speed up
                 state.ball.x = PADDLE_OFFSET + PADDLE_WIDTH + 1 // Push out to avoid sticking
                 // Add slight vertical randomness to prevent loops
-                state.ball.dy += (Math.random() * 2 - 1)
+                state.ball.dy += (Math.random() * 4 - 2) // Increased spin
                 audioController.playTone(400, 0.1, 'square')
             }
 
@@ -111,7 +111,7 @@ const PongGame = () => {
             ) {
                 state.ball.dx *= -1.05
                 state.ball.x = state.width - PADDLE_OFFSET - PADDLE_WIDTH - BALL_SIZE - 1
-                state.ball.dy += (Math.random() * 2 - 1)
+                state.ball.dy += (Math.random() * 4 - 2) // Increased spin
                 audioController.playTone(400, 0.1, 'square')
             }
 

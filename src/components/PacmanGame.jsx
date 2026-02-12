@@ -136,12 +136,17 @@ const PacmanGame = () => {
             // --- PACMAN ---
             // Choose logic
             if (pacman.progress === 0) {
+                // simple "stuck" detector: if in same 3x3 area too long?
+                // Easier: just add 10% chance to pick random valid move even if dot found
+
                 // Find nearest dot
                 const nextMove = bfs(Math.round(pacman.x), Math.round(pacman.y), 'dot')
-                if (nextMove) {
+
+                // 10% chance to ignore optimal path to break loops
+                if (nextMove && Math.random() > 0.1) {
                     pacman.nextDir = nextMove
                 } else {
-                    // No dots found? random move or idle
+                    // No dots found OR random wander
                     const moves = getValidMoves(Math.round(pacman.x), Math.round(pacman.y))
                     if (moves.length > 0) pacman.nextDir = moves[Math.floor(Math.random() * moves.length)]
                 }
