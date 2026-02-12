@@ -5,6 +5,7 @@ import AsteroidsGame from '../components/AsteroidsGame'
 import DonkeyKongGame from '../components/DonkeyKongGame'
 import CentipedeGame from '../components/CentipedeGame'
 import DefenderGame from '../components/DefenderGame'
+import PitfallGame from '../components/PitfallGame'
 
 // Game Registry
 // Theme 'dark' = white text (background is black)
@@ -16,5 +17,6 @@ export const GAMES = [
     { path: '/asteroids', component: AsteroidsGame, label: 'ASTEROIDS', theme: 'dark' },
     { path: '/donkeykong', component: DonkeyKongGame, label: 'DONKEY KONG', theme: 'dark' },
     { path: '/centipede', component: CentipedeGame, label: 'CENTIPEDE', theme: 'dark' },
-    { path: '/defender', component: DefenderGame, label: 'DEFENDER', theme: 'dark' }
+    { path: '/defender', component: DefenderGame, label: 'DEFENDER', theme: 'dark' },
+    { path: '/pitfall', component: PitfallGame, label: 'PITFALL', theme: 'light' }
 ]
