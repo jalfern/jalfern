@@ -269,7 +269,7 @@ const AsteroidsGame = () => {
         }
     }, [])
 
-    return <canvas ref={canvasRef} className="block fixed inset-0 w-full h-full cursor-none" />
+    return <canvas ref={canvasRef} className="block fixed inset-0 w-full h-full" />
 }
 
 export default AsteroidsGame
