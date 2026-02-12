@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import PongGame from './components/PongGame'
 import SpaceInvadersGame from './components/SpaceInvadersGame'
+import PacmanGame from './components/PacmanGame'
 
 function App() {
   return (
@@ -9,6 +10,7 @@ function App() {
         <Routes>
           <Route path="/" element={<PongGame />} />
           <Route path="/invaders" element={<SpaceInvadersGame />} />
+          <Route path="/pacman" element={<PacmanGame />} />
         </Routes>
 
         {/* Optional overlay for the domain name, subtle and unobtrusive */}
