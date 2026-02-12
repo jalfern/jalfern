@@ -74,17 +74,27 @@ const DefenderGame = () => {
         // INIT
         const init = () => {
             resize()
-            generateTerrain(WORLD_WIDTH, canvas.height)
+            generateTerrain(WORLD_WIDTH, window.innerHeight)
             spawnEnemies()
 
             window.addEventListener('keydown', handleKeyDown)
             window.addEventListener('keyup', handleKeyUp)
             window.addEventListener('resize', resize)
+
+            // Force focus
+            canvas.focus()
+
+            // Start Loop
+            loop()
         }
 
         const resize = () => {
-            canvas.width = window.innerWidth
-            canvas.height = window.innerHeight
+            const dpr = window.devicePixelRatio || 1
+            canvas.width = window.innerWidth * dpr
+            canvas.height = window.innerHeight * dpr
+            canvas.style.width = `${window.innerWidth}px`
+            canvas.style.height = `${window.innerHeight}px`
+            ctx.scale(dpr, dpr)
         }
 
         const handleKeyDown = (e) => {
@@ -331,7 +341,7 @@ const DefenderGame = () => {
             draw()
             animationFrameId = requestAnimationFrame(loop)
         }
-        loop()
+        init()
 
         return () => {
             window.removeEventListener('keydown', handleKeyDown)
