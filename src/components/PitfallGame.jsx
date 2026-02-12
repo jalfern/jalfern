@@ -14,9 +14,9 @@ const PitfallGame = () => {
         const SCREEN_HEIGHT = 600
         const GROUND_Y = 450
         const UNDERGROUND_Y = 550
-        const PLAYER_SPEED = 4
-        const JUMP_FORCE = -12
-        const GRAVITY = 0.6
+        const PLAYER_SPEED = 3 // Was 4
+        const JUMP_FORCE = -10 // Was -12 (adjusted for lower gravity)
+        const GRAVITY = 0.4 // Was 0.6
 
         // GAME STATE
         // GAME STATE
