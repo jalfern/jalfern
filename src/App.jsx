@@ -13,6 +13,10 @@ function App() {
     setMuted(newMuted)
     audioController.init()
     audioController.setMuted(newMuted)
+    if (!newMuted) {
+      // Feedback sound
+      setTimeout(() => audioController.playTone(440, 0.1, 'sine'), 100)
+    }
   }
 
   return (

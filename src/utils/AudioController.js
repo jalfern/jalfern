@@ -22,6 +22,11 @@ class AudioController {
     playTone(freq, duration, type = 'square', vol = 0.1) {
         if (this.muted || !this.ctx) return
 
+        // Auto-resume if needed (browser policy fix)
+        if (this.ctx.state === 'suspended') {
+            this.ctx.resume()
+        }
+
         const osc = this.ctx.createOscillator()
         const gain = this.ctx.createGain()
 
