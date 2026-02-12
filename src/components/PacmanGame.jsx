@@ -11,10 +11,6 @@ const PacmanGame = () => {
 
         // MAP DATA (V3 - Block Based)
         // 0: Path, 1: Wall Block, 2: Dot, 3: Power, 4: Door
-        // To get "Thick" walls, we use 2x2 blocks of 1s.
-        // To get "Thin" walls, we use 1xN lines of 1s.
-        // This is a 28x31 grid.
-
         const map = [
             [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
             [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
@@ -296,57 +292,57 @@ const PacmanGame = () => {
         }
 
         const drawWalls = (ctx) => {
-            // STROKE & HOLLOW TECHNIQUE (V3)
-            // 1. Draw Paths thick (Body)
-            // 2. Clear center (Hollow)
+            // EDGE-BASED RENDERING (V3.3)
+            // Detect boundaries between Wall(1) and Path(0) and draw distinct lines.
+            // This removes internal grid lines, eliminating "dots" inside wall blocks.
 
-            // Define connected paths for all '1's
             ctx.lineCap = 'round'
             ctx.lineJoin = 'round'
 
-            const drawPath = () => {
+            const drawEdges = () => {
                 ctx.beginPath()
-                // We need to trace every connector
+                // Simpler Loop: Iterate all cells, stroke boundaries of '1's
                 for (let r = 0; r < ROWS; r++) {
                     for (let c = 0; c < COLS; c++) {
                         if (map[r][c] === 1) {
-                            const x = c * CELL_SIZE + CELL_SIZE / 2
-                            const y = r * CELL_SIZE + CELL_SIZE / 2
+                            const x = c * CELL_SIZE
+                            const y = r * CELL_SIZE
 
-                            // Connectors
-                            if (r < ROWS - 1 && map[r + 1][c] === 1) { ctx.moveTo(x, y); ctx.lineTo(x, y + CELL_SIZE) }
-                            if (c < COLS - 1 && map[r][c + 1] === 1) { ctx.moveTo(x, y); ctx.lineTo(x + CELL_SIZE, y) }
+                            // Top Edge
+                            if (r === 0 || map[r - 1][c] !== 1) {
+                                ctx.moveTo(x, y); ctx.lineTo(x + CELL_SIZE, y)
+                            }
+                            // Bottom Edge
+                            if (r === ROWS - 1 || map[r + 1][c] !== 1) {
+                                ctx.moveTo(x, y + CELL_SIZE); ctx.lineTo(x + CELL_SIZE, y + CELL_SIZE)
+                            }
+                            // Left Edge
+                            if (c === 0 || map[r][c - 1] !== 1) {
+                                ctx.moveTo(x, y); ctx.lineTo(x, y + CELL_SIZE)
+                            }
+                            // Right Edge
+                            if (c === COLS - 1 || map[r][c + 1] !== 1) {
+                                ctx.moveTo(x + CELL_SIZE, y); ctx.lineTo(x + CELL_SIZE, y + CELL_SIZE)
+                            }
                         }
                     }
                 }
             }
 
-            // PASS 1: The "Body" (White)
-            // Width approx 80% of cell
-            ctx.strokeStyle = '#2121ff' // Use "Authentic Blue" or White?? User asked for B&W.
-            // But "Reference" has blue lines. 
-            // "Strict B&W" task was completed. But User showed reference. 
-            // Let's stick to White for now to match B&W request, but maybe use gray?
-            // Actually, user said "looks right" to previous B&W, just wanted shapes.
-            ctx.strokeStyle = 'white'
-            ctx.lineWidth = CELL_SIZE * 0.8
-            drawPath()
+            // PASS 1: The "Tube" (Blue)
+            ctx.strokeStyle = '#2121ff'
+            ctx.lineWidth = 6
+            drawEdges()
             ctx.stroke()
 
-            // PASS 2: The "Hollow" (Black)
-            // Width approx 40% of cell
+            // PASS 2: Hollow
             ctx.strokeStyle = 'black'
-            ctx.lineWidth = CELL_SIZE * 0.4
-            // Composite operation destination-out acts as eraser
+            ctx.lineWidth = 2
             ctx.globalCompositeOperation = 'destination-out'
-            drawPath()
+            drawEdges()
             ctx.stroke()
 
-            // Reset
             ctx.globalCompositeOperation = 'source-over'
-
-            // Re-draw thin outline? No, the Eraser leaves the outline. 
-            // White Body minus Black Inner = White Outline. Correct.
         }
 
         const drawGhost = (ctx, x, y, color, state, dir) => {
