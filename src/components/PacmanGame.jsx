@@ -312,8 +312,6 @@ const PacmanGame = () => {
                         if (map[r][c] === 1) {
                             const x = c * CELL_SIZE + CELL_SIZE / 2
                             const y = r * CELL_SIZE + CELL_SIZE / 2
-                            // Paint centers
-                            ctx.moveTo(x, y); ctx.lineTo(x, y)
 
                             // Connectors
                             if (r < ROWS - 1 && map[r + 1][c] === 1) { ctx.moveTo(x, y); ctx.lineTo(x, y + CELL_SIZE) }
