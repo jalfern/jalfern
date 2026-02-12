@@ -269,7 +269,8 @@ const MissileCommandGame = () => {
                 // If explosion center is close to structure (Enemy warhead hit)
                 // Actually, standard Missile Command: Enemy warhead creates explosion. 
                 // Any structure touching that explosion dies.
-                [...cities, ...silos].forEach(t => {
+                const targets = [...cities, ...silos]
+                targets.forEach(t => {
                     if (t.alive) {
                         const dx = t.x - e.x
                         const dy = t.y - e.y // Structure y is center of base
@@ -279,175 +280,175 @@ const MissileCommandGame = () => {
                         }
                     }
                 })
-    })
-    explosions = explosions.filter(e => !e.dead)
-    enemyMissiles = enemyMissiles.filter(m => !m.dead)
+            })
+            explosions = explosions.filter(e => !e.dead)
+            enemyMissiles = enemyMissiles.filter(m => !m.dead)
 
-}
-
-const draw = () => {
-    // Scale
-    const scaleX = window.innerWidth / SCREEN_WIDTH
-    const scaleY = window.innerHeight / SCREEN_HEIGHT
-    const scale = Math.min(scaleX, scaleY) * 0.95
-
-    const transX = (window.innerWidth - SCREEN_WIDTH * scale) / 2
-    const transY = (window.innerHeight - SCREEN_HEIGHT * scale) / 2
-
-    ctx.fillStyle = '#000000'
-    ctx.fillRect(0, 0, window.innerWidth, window.innerHeight)
-
-    ctx.save()
-    ctx.translate(transX, transY)
-    ctx.scale(scale, scale)
-
-    // Clip
-    ctx.beginPath()
-    ctx.rect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
-    ctx.clip()
-
-    // Ground
-    ctx.fillStyle = '#ffff00' // Yellow ground line
-    ctx.fillRect(0, GROUND_Y, SCREEN_WIDTH, 5)
-
-    // Cities
-    ctx.fillStyle = '#0000ff' // Blue cities
-    cities.forEach(c => {
-        if (c.alive) {
-            // Simple City Shape
-            ctx.beginPath()
-            ctx.moveTo(c.x - 15, GROUND_Y)
-            ctx.lineTo(c.x - 15, GROUND_Y - 10)
-            ctx.lineTo(c.x - 5, GROUND_Y - 10)
-            ctx.lineTo(c.x, GROUND_Y - 20)
-            ctx.lineTo(c.x + 5, GROUND_Y - 10)
-            ctx.lineTo(c.x + 15, GROUND_Y - 10)
-            ctx.lineTo(c.x + 15, GROUND_Y)
-            ctx.fill()
         }
-    })
 
-    // Silos
-    ctx.fillStyle = '#aaaaaa'
-    silos.forEach(s => {
-        if (s.alive) {
-            // Pyramid
+        const draw = () => {
+            // Scale
+            const scaleX = window.innerWidth / SCREEN_WIDTH
+            const scaleY = window.innerHeight / SCREEN_HEIGHT
+            const scale = Math.min(scaleX, scaleY) * 0.95
+
+            const transX = (window.innerWidth - SCREEN_WIDTH * scale) / 2
+            const transY = (window.innerHeight - SCREEN_HEIGHT * scale) / 2
+
+            ctx.fillStyle = '#000000'
+            ctx.fillRect(0, 0, window.innerWidth, window.innerHeight)
+
+            ctx.save()
+            ctx.translate(transX, transY)
+            ctx.scale(scale, scale)
+
+            // Clip
             ctx.beginPath()
-            ctx.moveTo(s.x - 20, GROUND_Y)
-            ctx.lineTo(s.x, GROUND_Y - 30) // Top
-            ctx.lineTo(s.x + 20, GROUND_Y)
-            ctx.fill()
+            ctx.rect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
+            ctx.clip()
 
-            // Ammo
-            ctx.fillStyle = '#ffffff'
-            // Draw missiles inside
-            for (let i = 0; i < s.ammo; i++) {
-                let row = 0
-                let col = i
-                if (i > 3) { row = 1; col = i - 4 }
-                if (i > 7) { row = 2; col = i - 8 }
-                // Just visualize roughly
-                ctx.fillRect(s.x - 12 + (col * 6), GROUND_Y - 10 + (row * 4), 4, 4)
+            // Ground
+            ctx.fillStyle = '#ffff00' // Yellow ground line
+            ctx.fillRect(0, GROUND_Y, SCREEN_WIDTH, 5)
+
+            // Cities
+            ctx.fillStyle = '#0000ff' // Blue cities
+            cities.forEach(c => {
+                if (c.alive) {
+                    // Simple City Shape
+                    ctx.beginPath()
+                    ctx.moveTo(c.x - 15, GROUND_Y)
+                    ctx.lineTo(c.x - 15, GROUND_Y - 10)
+                    ctx.lineTo(c.x - 5, GROUND_Y - 10)
+                    ctx.lineTo(c.x, GROUND_Y - 20)
+                    ctx.lineTo(c.x + 5, GROUND_Y - 10)
+                    ctx.lineTo(c.x + 15, GROUND_Y - 10)
+                    ctx.lineTo(c.x + 15, GROUND_Y)
+                    ctx.fill()
+                }
+            })
+
+            // Silos
+            ctx.fillStyle = '#aaaaaa'
+            silos.forEach(s => {
+                if (s.alive) {
+                    // Pyramid
+                    ctx.beginPath()
+                    ctx.moveTo(s.x - 20, GROUND_Y)
+                    ctx.lineTo(s.x, GROUND_Y - 30) // Top
+                    ctx.lineTo(s.x + 20, GROUND_Y)
+                    ctx.fill()
+
+                    // Ammo
+                    ctx.fillStyle = '#ffffff'
+                    // Draw missiles inside
+                    for (let i = 0; i < s.ammo; i++) {
+                        let row = 0
+                        let col = i
+                        if (i > 3) { row = 1; col = i - 4 }
+                        if (i > 7) { row = 2; col = i - 8 }
+                        // Just visualize roughly
+                        ctx.fillRect(s.x - 12 + (col * 6), GROUND_Y - 10 + (row * 4), 4, 4)
+                    }
+                    ctx.fillStyle = '#aaaaaa' // Restore color
+                }
+            })
+
+            // Player Missiles
+            playerMissiles.forEach(m => {
+                ctx.strokeStyle = '#0000ff' // Blue trail
+                ctx.lineWidth = 1
+                ctx.beginPath()
+                ctx.moveTo(m.startX, m.startY)
+                ctx.lineTo(m.x, m.y)
+                ctx.stroke()
+
+                // Warhead
+                ctx.fillStyle = '#ffffff'
+                ctx.fillRect(m.x - 1, m.y - 1, 2, 2)
+
+                // Target Marker (X)
+                ctx.strokeStyle = '#ffffff'
+                ctx.lineWidth = 1
+                const tx = m.targetX, ty = m.targetY
+                ctx.beginPath()
+                ctx.moveTo(tx - 3, ty - 3); ctx.lineTo(tx + 3, ty + 3)
+                ctx.moveTo(tx + 3, ty - 3); ctx.lineTo(tx - 3, ty + 3)
+                ctx.stroke()
+            })
+
+            // Enemy Missiles
+            enemyMissiles.forEach(m => {
+                ctx.strokeStyle = '#ff0000' // Red trail
+                ctx.lineWidth = 1
+                ctx.beginPath()
+                ctx.moveTo(m.startX, m.startY)
+                ctx.lineTo(m.x, m.y)
+                ctx.stroke()
+
+                // Warhead
+                ctx.fillStyle = '#ffffff'
+                ctx.fillRect(m.x - 1, m.y - 1, 2, 2)
+            })
+
+            // Explosions
+            explosions.forEach(e => {
+                ctx.fillStyle = e.color
+                ctx.beginPath()
+                ctx.arc(e.x, e.y, e.radius, 0, Math.PI * 2)
+                ctx.fill()
+            })
+
+            // Crosshair
+            ctx.strokeStyle = '#ff00ff'
+            ctx.lineWidth = 2
+            const cx = crosshair.x, cy = crosshair.y
+            ctx.beginPath()
+            ctx.moveTo(cx - 10, cy); ctx.lineTo(cx + 10, cy)
+            ctx.moveTo(cx, cy - 10); ctx.lineTo(cx, cy + 10)
+            ctx.stroke()
+
+            // UI
+            ctx.fillStyle = '#ff0000'
+            ctx.font = '24px monospace'
+            ctx.textAlign = 'center'
+            ctx.fillText(`SCORE: ${score}`, SCREEN_WIDTH / 2, 30)
+            ctx.fillStyle = '#0000ff'
+            ctx.fillText(`WAVE: ${wave}`, SCREEN_WIDTH / 2, 60)
+
+            if (gameState === 'waveEnd') {
+                ctx.fillStyle = '#00ff00'
+                ctx.font = '40px monospace'
+                ctx.fillText(`WAVE COMPLETE`, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
+                ctx.font = '20px monospace'
+                ctx.fillText(`BONUS POINTS`, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 40)
             }
-            ctx.fillStyle = '#aaaaaa' // Restore color
+
+            if (gameState === 'gameOver') {
+                ctx.fillStyle = '#ff0000'
+                ctx.font = '60px monospace'
+                ctx.fillText(`THE END`, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
+            }
+
+            ctx.restore()
         }
-    })
 
-    // Player Missiles
-    playerMissiles.forEach(m => {
-        ctx.strokeStyle = '#0000ff' // Blue trail
-        ctx.lineWidth = 1
-        ctx.beginPath()
-        ctx.moveTo(m.startX, m.startY)
-        ctx.lineTo(m.x, m.y)
-        ctx.stroke()
+        const loop = () => {
+            update()
+            draw()
+            animationFrameId = requestAnimationFrame(loop)
+        }
+        init()
 
-        // Warhead
-        ctx.fillStyle = '#ffffff'
-        ctx.fillRect(m.x - 1, m.y - 1, 2, 2)
-
-        // Target Marker (X)
-        ctx.strokeStyle = '#ffffff'
-        ctx.lineWidth = 1
-        const tx = m.targetX, ty = m.targetY
-        ctx.beginPath()
-        ctx.moveTo(tx - 3, ty - 3); ctx.lineTo(tx + 3, ty + 3)
-        ctx.moveTo(tx + 3, ty - 3); ctx.lineTo(tx - 3, ty + 3)
-        ctx.stroke()
-    })
-
-    // Enemy Missiles
-    enemyMissiles.forEach(m => {
-        ctx.strokeStyle = '#ff0000' // Red trail
-        ctx.lineWidth = 1
-        ctx.beginPath()
-        ctx.moveTo(m.startX, m.startY)
-        ctx.lineTo(m.x, m.y)
-        ctx.stroke()
-
-        // Warhead
-        ctx.fillStyle = '#ffffff'
-        ctx.fillRect(m.x - 1, m.y - 1, 2, 2)
-    })
-
-    // Explosions
-    explosions.forEach(e => {
-        ctx.fillStyle = e.color
-        ctx.beginPath()
-        ctx.arc(e.x, e.y, e.radius, 0, Math.PI * 2)
-        ctx.fill()
-    })
-
-    // Crosshair
-    ctx.strokeStyle = '#ff00ff'
-    ctx.lineWidth = 2
-    const cx = crosshair.x, cy = crosshair.y
-    ctx.beginPath()
-    ctx.moveTo(cx - 10, cy); ctx.lineTo(cx + 10, cy)
-    ctx.moveTo(cx, cy - 10); ctx.lineTo(cx, cy + 10)
-    ctx.stroke()
-
-    // UI
-    ctx.fillStyle = '#ff0000'
-    ctx.font = '24px monospace'
-    ctx.textAlign = 'center'
-    ctx.fillText(`SCORE: ${score}`, SCREEN_WIDTH / 2, 30)
-    ctx.fillStyle = '#0000ff'
-    ctx.fillText(`WAVE: ${wave}`, SCREEN_WIDTH / 2, 60)
-
-    if (gameState === 'waveEnd') {
-        ctx.fillStyle = '#00ff00'
-        ctx.font = '40px monospace'
-        ctx.fillText(`WAVE COMPLETE`, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
-        ctx.font = '20px monospace'
-        ctx.fillText(`BONUS POINTS`, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 40)
-    }
-
-    if (gameState === 'gameOver') {
-        ctx.fillStyle = '#ff0000'
-        ctx.font = '60px monospace'
-        ctx.fillText(`THE END`, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
-    }
-
-    ctx.restore()
-}
-
-const loop = () => {
-    update()
-    draw()
-    animationFrameId = requestAnimationFrame(loop)
-}
-init()
-
-return () => {
-    window.removeEventListener('mousemove', handleMouseMove)
-    window.removeEventListener('mousedown', handleClick)
-    window.removeEventListener('resize', resize)
-    cancelAnimationFrame(animationFrameId)
-}
+        return () => {
+            window.removeEventListener('mousemove', handleMouseMove)
+            window.removeEventListener('mousedown', handleClick)
+            window.removeEventListener('resize', resize)
+            cancelAnimationFrame(animationFrameId)
+        }
     }, [])
 
-return <canvas ref={canvasRef} className="block fixed inset-0 w-full h-full bg-black cursor-none" />
+    return <canvas ref={canvasRef} className="block fixed inset-0 w-full h-full bg-black cursor-none" />
 }
 
 export default MissileCommandGame
