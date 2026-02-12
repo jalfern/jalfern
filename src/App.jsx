@@ -1,10 +1,15 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, createContext, useContext } from 'react'
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import PongGame from './components/PongGame'
 import SpaceInvadersGame from './components/SpaceInvadersGame'
 import PacmanGame from './components/PacmanGame'
 import AsteroidsGame from './components/AsteroidsGame'
 import { audioController } from './utils/AudioController'
+
+const GameLabelContext = createContext({
+  label: '',
+  setLabel: () => { }
+})
 
 const GAMES = [
   { path: '/pong', component: PongGame, label: 'PONG' },
@@ -14,50 +19,67 @@ const GAMES = [
 ]
 
 function RandomHome() {
+  const { setLabel } = useContext(GameLabelContext)
   const [GameComponent, setGameComponent] = useState(null)
 
   useEffect(() => {
     const randomGame = GAMES[Math.floor(Math.random() * GAMES.length)]
     setGameComponent(() => randomGame.component)
-  }, [])
+    setLabel(randomGame.label)
+  }, [setLabel])
 
   if (!GameComponent) return null
   return <GameComponent />
 }
 
+// Wrapper to set label for specific routes
+function GameRoute({ component: Component, label }) {
+  const { setLabel } = useContext(GameLabelContext)
+  useEffect(() => {
+    setLabel(label)
+  }, [label, setLabel])
+  return <Component />
+}
+
 function Layout({ children }) {
-  const location = useLocation()
-  let label = 'JALFERN.COM'
-
-  // Determine label based on path or random home
-  // If home, we might want to know which one is rendering, but simple "JALFERN.COM" is fine or generic.
-  // Actually user asked for "name of the game". 
-  // Since RandomHome renders a game, maybe we should just overlay the label based on what it *looks* like?
-  // Or: RandomHome could update a context?
-  // Let's keep it simple: Map known routes to names. For Home, we display "ARCHADE".
-
-  if (location.pathname === '/pong') label = 'PONG'
-  else if (location.pathname === '/invaders') label = 'SPACE INVADERS'
-  else if (location.pathname === '/pacman') label = 'PAC-MAN'
-  else if (location.pathname === '/asteroids') label = 'ASTEROIDS'
-  else label = 'JALFERN.COM / RANDOM'
+  const { label } = useContext(GameLabelContext)
 
   return (
     <div className="w-full h-screen bg-white overflow-hidden relative">
       {children}
 
       {/* Footer Label */}
-      <div className="fixed bottom-8 left-0 right-0 text-center pointer-events-none opacity-40 hover:opacity-100 transition-opacity duration-500">
+      <div className="fixed bottom-8 left-0 right-0 text-center pointer-events-none opacity-40 hover:opacity-100 transition-opacity duration-500 flex flex-col items-center gap-1">
         <h1 className="text-black font-mono text-sm tracking-widest border-b-2 border-transparent hover:border-black inline-block pb-1">
-          {label}
+          JALFERN.COM
         </h1>
+        {label && (
+          <p className="text-black font-mono text-xs tracking-wider opacity-75">
+            {label}
+          </p>
+        )}
       </div>
     </div>
   )
 }
 
+function AppContent() {
+  return (
+    <Layout>
+      <Routes>
+        <Route path="/" element={<RandomHome />} />
+        <Route path="/pong" element={<GameRoute component={PongGame} label="PONG" />} />
+        <Route path="/invaders" element={<GameRoute component={SpaceInvadersGame} label="SPACE INVADERS" />} />
+        <Route path="/pacman" element={<GameRoute component={PacmanGame} label="PAC-MAN" />} />
+        <Route path="/asteroids" element={<GameRoute component={AsteroidsGame} label="ASTEROIDS" />} />
+      </Routes>
+    </Layout>
+  )
+}
+
 function App() {
   const [muted, setMuted] = useState(true)
+  const [gameLabel, setGameLabel] = useState('')
 
   const toggleMute = () => {
     const newMuted = !muted
@@ -86,15 +108,9 @@ function App() {
   }, [])
 
   return (
-    <BrowserRouter>
-      <Layout>
-        <Routes>
-          <Route path="/" element={<RandomHome />} />
-          <Route path="/pong" element={<PongGame />} />
-          <Route path="/invaders" element={<SpaceInvadersGame />} />
-          <Route path="/pacman" element={<PacmanGame />} />
-          <Route path="/asteroids" element={<AsteroidsGame />} />
-        </Routes>
+    <GameLabelContext.Provider value={{ label: gameLabel, setLabel: setGameLabel }}>
+      <BrowserRouter>
+        <AppContent />
 
         {/* Mute Toggle */}
         <button
@@ -111,8 +127,8 @@ function App() {
             </svg>
           )}
         </button>
-      </Layout>
-    </BrowserRouter>
+      </BrowserRouter>
+    </GameLabelContext.Provider>
   )
 }
 
