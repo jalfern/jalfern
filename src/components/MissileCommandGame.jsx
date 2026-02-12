@@ -220,70 +220,70 @@ const MissileCommandGame = () => {
 
                 if (dist < m.speed) {
                     // Hit Target
-                    spawnExplosion(m.targetX, m.targetY)
-                    m.dead = true
+                    spawnExplosion(m.targetX, m.targetY); // Semicolon added
+                    m.dead = true; // Semicolon added
 
                     // Destroy Logic
                     // Check specific collision with structures
                     // Simple check: distance to any live target
                     [...cities, ...silos].forEach(t => {
-                        if (t.alive && Math.abs(t.x - m.TARGET_X_LOCKED_MAYBE) < 20) {
+                        if (t.alive && Math.abs(t.x - m.targetX) < 20) {
                             // Actually, let explosion logic kill them? 
                             // Or direct hit logic.
                             // Original: Direct hit destroys, explosion destroys.
                         }
                     })
-                     // Let the explosion created by the enemy missile do the destruction
-                 } else {
-                const angle = Math.atan2(dy, dx)
-                     m.x += Math.cos(angle) * m.speed
-        m.y += Math.sin(angle) * m.speed
-    }
-            })
-    // Filter dead later
-
-    // --- EXPLOSIONS ---
-    explosions.forEach(e => {
-        if (e.growing) {
-            e.radius += EXPLOSION_SPEED
-            if (e.radius >= EXPLOSION_RADIUS_MAX) e.growing = false
-        } else {
-            e.radius -= EXPLOSION_SPEED
-            if (e.radius <= 0) e.dead = true
-        }
-
-        // Collision with Enemies
-        enemyMissiles.forEach(m => {
-            const dx = m.x - e.x
-            const dy = m.y - e.y
-            const dist = Math.sqrt(dx * dx + dy * dy)
-            if (dist < e.radius) {
-                m.dead = true
-                score += 25
-                // Chain reaction? Maybe just one explosion per enemy
-                // spawnExplosion(m.x, m.y) // Makes it too easy?
-            }
-        })
-
-        // Collision with Structures
-        // If explosion center is close to structure (Enemy warhead hit)
-        // Actually, standard Missile Command: Enemy warhead creates explosion. 
-        // Any structure touching that explosion dies.
-        [...cities, ...silos].forEach(t => {
-            if (t.alive) {
-                const dx = t.x - e.x
-                const dy = t.y - e.y // Structure y is center of base
-                if (Math.sqrt(dx * dx + dy * dy) < e.radius) {
-                    t.alive = false
-                    checkGameOver()
+                    // Let the explosion created by the enemy missile do the destruction
+                } else {
+                    const angle = Math.atan2(dy, dx)
+                    m.x += Math.cos(angle) * m.speed
+                    m.y += Math.sin(angle) * m.speed
                 }
-            }
-        })
-    })
-explosions = explosions.filter(e => !e.dead)
-enemyMissiles = enemyMissiles.filter(m => !m.dead)
+            })
+            // Filter dead later
 
-        }
+            // --- EXPLOSIONS ---
+            explosions.forEach(e => {
+                if (e.growing) {
+                    e.radius += EXPLOSION_SPEED
+                    if (e.radius >= EXPLOSION_RADIUS_MAX) e.growing = false
+                } else {
+                    e.radius -= EXPLOSION_SPEED
+                    if (e.radius <= 0) e.dead = true
+                }
+
+                // Collision with Enemies
+                enemyMissiles.forEach(m => {
+                    const dx = m.x - e.x
+                    const dy = m.y - e.y
+                    const dist = Math.sqrt(dx * dx + dy * dy)
+                    if (dist < e.radius) {
+                        m.dead = true
+                        score += 25
+                        // Chain reaction? Maybe just one explosion per enemy
+                        // spawnExplosion(m.x, m.y) // Makes it too easy?
+                    }
+                })
+
+                // Collision with Structures
+                // If explosion center is close to structure (Enemy warhead hit)
+                // Actually, standard Missile Command: Enemy warhead creates explosion. 
+                // Any structure touching that explosion dies.
+                [...cities, ...silos].forEach(t => {
+                    if (t.alive) {
+                        const dx = t.x - e.x
+                        const dy = t.y - e.y // Structure y is center of base
+                        if (Math.sqrt(dx * dx + dy * dy) < e.radius) {
+                            t.alive = false
+                            checkGameOver()
+                        }
+                    }
+                })
+    })
+    explosions = explosions.filter(e => !e.dead)
+    enemyMissiles = enemyMissiles.filter(m => !m.dead)
+
+}
 
 const draw = () => {
     // Scale
