@@ -14,14 +14,11 @@ const DonkeyKongGame = () => {
         const JUMP_FORCE = -8
         const SPEED = 3
         const LADDER_SPEED = 2
-        const BARREL_SPEED = 2.5
 
         // Colors (Strict B&W)
-        const COLOR_PLATFORM = '#ffffff'
         const COLOR_LADDER = '#cccccc'
         const COLOR_BARREL = '#ffffff'
-        const COLOR_DK = '#ffffff'
-        const COLOR_PAULINE = '#ffffff'
+        const COLOR_PLATFORM = '#ffffff'
 
         let state = {
             width: 0,
@@ -32,7 +29,7 @@ const DonkeyKongGame = () => {
                 grounded: false,
                 climbing: false,
                 dead: false,
-                dir: 1, // 1 right, -1 left
+                dir: 1,
                 frame: 0
             },
             platforms: [],
@@ -47,42 +44,27 @@ const DonkeyKongGame = () => {
         const createLevel = () => {
             const w = state.width
             const h = state.height
-            const ground = h - 20
-
-            // Classic 25m Layout (Zig Zag)
-            // 7 Tiers roughly
-            // Base logic: Platforms are slightly slanted in real game, but flat here for physics simplicity.
-
-            const pHeight = 20
             const gap = 90 // Vertical gap
 
             state.platforms = [
-                // Bottom (Start)
                 { x: 0, y: h - 20, w: w, h: 20 },
-                // 1st Floor (Right to Left)
                 { x: 0, y: h - 20 - gap, w: w - 60, h: 20 },
-                // 2nd Floor (Left to Right)
                 { x: 60, y: h - 20 - gap * 2, w: w - 60, h: 20 },
-                // 3rd Floor (Right to Left)
                 { x: 0, y: h - 20 - gap * 3, w: w - 60, h: 20 },
-                // 4th Floor (Left to Right)
                 { x: 60, y: h - 20 - gap * 4, w: w - 60, h: 20 },
-                // 5th Floor (Right to Left)
                 { x: 0, y: h - 20 - gap * 5, w: w - 60, h: 20 },
-                // Top Floor (Pauline)
                 { x: w / 2 - 60, y: h - 20 - gap * 6, w: 120, h: 20 }
             ]
 
             state.ladders = [
-                { x: w - 100, y: h - 20 - gap, h: gap }, // 0->1
-                { x: 100, y: h - 20 - gap * 2, h: gap },   // 1->2
-                { x: w - 100, y: h - 20 - gap * 3, h: gap }, // 2->3
-                { x: 100, y: h - 20 - gap * 4, h: gap },   // 3->4
-                { x: w - 100, y: h - 20 - gap * 5, h: gap }, // 4->5
-                // Broken ladders?
-                { x: w / 2, y: h - 20 - gap * 5, h: gap },     // 4->5 center
-                { x: w / 2 - 40, y: h - 20 - gap * 6, h: gap }, // 5->Top
-                { x: w / 2 + 40, y: h - 20 - gap * 6, h: gap }  // 5->Top
+                { x: w - 100, y: h - 20 - gap, h: gap },
+                { x: 100, y: h - 20 - gap * 2, h: gap },
+                { x: w - 100, y: h - 20 - gap * 3, h: gap },
+                { x: 100, y: h - 20 - gap * 4, h: gap },
+                { x: w - 100, y: h - 20 - gap * 5, h: gap },
+                { x: w / 2, y: h - 20 - gap * 5, h: gap },
+                { x: w / 2 - 40, y: h - 20 - gap * 6, h: gap },
+                { x: w / 2 + 40, y: h - 20 - gap * 6, h: gap }
             ]
 
             state.player.x = 20
@@ -114,55 +96,50 @@ const DonkeyKongGame = () => {
             state.dkFrame++
 
             if (state.player.dead) {
-                if (state.player.frame % 180 === 0) { // 3 seconds
+                if (state.player.frame % 180 === 0) {
                     state.player.dead = false
                     createLevel()
                 }
                 return
             }
 
-            const moveDir = 0 // Player input simulated not needed for this walkthrough logic, but...
-            // Wait, we need the "AI" or controls? The previous code had a simple AI.
-            // Let's keep the simple AI for the demo loop.
-
             let aiMove = 0
             let aiJump = false
             let aiClimb = false
 
-            // Simple AI Logic Re-implementation
-            const targetY = 50
+            // AI LOGIC
+            // 1. Find nearest ladder going UP
+            // Range expanded to ensure detection (15px)
             const nearbyLadder = state.ladders.find(l =>
-                Math.abs(l.y + l.h - (state.player.y + state.player.h)) < 5 &&
-                Math.abs(state.player.x - l.x) < 15
+                Math.abs(l.y + l.h - (state.player.y + state.player.h)) < 10 &&
+                Math.abs(state.player.x + state.player.w / 2 - l.x) < 20
             )
 
-            if (nearbyLadder && state.player.y > state.platforms[state.platforms.length - 1].y + 10) {
+            // Decisions
+            if (state.player.climbing) {
+                // Keep climbing
                 aiClimb = true
+            } else if (nearbyLadder) {
+                // If we found a ladder and we are not already at the very top level
+                if (state.player.y > state.platforms[state.platforms.length - 1].y + 20) {
+                    // Align perfectly first? No, snap in execution.
+                    aiClimb = true
+                } else {
+                    // On top level, go to center (Pauline)
+                    if (state.player.x < state.width / 2) aiMove = 1
+                    else aiMove = -1
+                }
             } else {
-                const levelHeight = 90
-                // Determine direction based on level parity (zig zag)
-                const currentLevel = Math.floor((state.height - state.player.y) / levelHeight)
-                // This is tricky with dynamic gaps, simple heuristic:
-                // Find center of current platform, if Ladder is left, go left.
-                // Actually just ping-pong
+                // Move towards ladder on this level
+                // Simple zig-zag heuristic based on level parity
+                const levelH = 90
+                const currentLevel = Math.floor((state.height - state.player.y) / levelH)
+
+                // If no ladder found nearby, we need to find WHERE the ladder is.
+                // This is simple demo AI, so we just ping pong essentially, knowing the ladders are at edges.
                 if (state.player.x < 50) state.player.dir = 1
                 if (state.player.x > state.width - 50) state.player.dir = -1
                 aiMove = state.player.dir
-            }
-
-            // Refined AI: Go towards UP ladder
-            if (!aiClimb) {
-                // Find nearest ladder that goes UP
-                const upLadder = state.ladders.find(l =>
-                    Math.abs(l.y + l.h - (state.player.y + state.player.h)) < 5
-                )
-                if (upLadder) {
-                    if (Math.abs(state.player.x - upLadder.x) < 5) aiClimb = true
-                    else aiMove = Math.sign(upLadder.x - state.player.x)
-                } else {
-                    // No ladder on this floor? (Top floor logic)
-                    aiMove = Math.sign(state.width / 2 - state.player.x)
-                }
             }
 
             // Barrel Avoidance
@@ -175,25 +152,30 @@ const DonkeyKongGame = () => {
                 aiJump = true
             }
 
-            // Apply
-            if (state.player.climbing) {
+            // MOVEMENT APPLICATION
+            if (aiClimb && nearbyLadder) {
+                // *** FIX: SNAP TO LADDER CENTER ***
+                if (!state.player.climbing) {
+                    // Start climbing
+                    state.player.climbing = true
+                    state.player.x = nearbyLadder.x - state.player.w / 2
+                    state.player.vx = 0
+                }
+
                 state.player.y -= LADDER_SPEED
-                state.player.vx = 0
-                // Reached top of ladder?
+
+                // Check if reached top of ladder (Platform)
                 if (state.platforms.some(p => Math.abs((state.player.y + state.player.h) - p.y) < 5)) {
                     state.player.climbing = false
-                    state.player.y -= 5
+                    state.player.y -= 5 // Pop up
                 }
             } else {
-                if (aiClimb) {
-                    state.player.climbing = true
-                } else {
-                    state.player.vx = aiMove * SPEED
-                    if (aiJump) {
-                        state.player.vy = JUMP_FORCE
-                        state.player.grounded = false
-                        audioController.playTone(300, 0.1, 'square')
-                    }
+                state.player.climbing = false
+                state.player.vx = aiMove * SPEED
+                if (aiJump) {
+                    state.player.vy = JUMP_FORCE
+                    state.player.grounded = false
+                    audioController.playTone(300, 0.1, 'square')
                 }
             }
 
@@ -207,7 +189,6 @@ const DonkeyKongGame = () => {
             // Ground Collision
             state.player.grounded = false
             state.platforms.forEach(p => {
-                // One-way platform logic
                 if (state.player.vy >= 0 &&
                     state.player.y + state.player.h >= p.y &&
                     state.player.y + state.player.h <= p.y + 20 &&
@@ -217,6 +198,7 @@ const DonkeyKongGame = () => {
                     state.player.grounded = true
                     state.player.vy = 0
                     state.player.y = p.y - state.player.h
+                    // If we hit ground, stop climbing (failsafe)
                     state.player.climbing = false
                 }
             })
@@ -227,15 +209,8 @@ const DonkeyKongGame = () => {
 
             // --- BARRELS ---
             if (state.barrelTimer-- <= 0) {
-                // Spawn barrel near DK (Top Leftish)
-                // DK is at top left in previous code because of bad layout?
-                // DK logic: Top Left of the zig zag? No, usually Top Left.
-                // Let's spawn at Top Left platform start
-                const spawnP = state.platforms[state.platforms.length - 2] // 2nd to last is usually top left
-                // Actually in 25m, DK is at Top Left.
-
                 state.barrels.push({
-                    x: 60, y: 150, // Approx DK POS
+                    x: 60, y: 150,
                     w: 16, h: 16,
                     vx: 2, vy: 0, rot: 0
                 })
@@ -260,11 +235,8 @@ const DonkeyKongGame = () => {
                     }
                 })
 
-                // Reverse at direction edges?
                 if (b.x <= 10 && b.vx < 0) b.vx = -b.vx
                 if (b.x >= state.width - 26 && b.vx > 0) b.vx = -b.vx
-
-                // Fall down ladders randomly? (Not implemented for simple demo)
 
                 if (AABB(state.player, b)) {
                     state.player.dead = true
@@ -280,22 +252,17 @@ const DonkeyKongGame = () => {
             }
         }
 
-        // --- DRAWING FUNCTIONS ---
-
+        // DRAWING
         const drawGirder = (x, y, w, h) => {
             ctx.fillStyle = 'black'
             ctx.fillRect(x, y, w, h)
-            ctx.strokeStyle = COLOR_PLATFORM
+            ctx.strokeStyle = '#ffffff' // Force white stroke for B&W
             ctx.lineWidth = 1
             ctx.strokeRect(x, y, w, h)
 
-            // Truss Pattern
             ctx.beginPath()
-            // Top/Bottom lines
             ctx.moveTo(x, y + 3); ctx.lineTo(x + w, y + 3)
             ctx.moveTo(x, y + h - 3); ctx.lineTo(x + w, y + h - 3)
-
-            // Cross hatching
             for (let i = x; i < x + w; i += 10) {
                 ctx.moveTo(i, y + 3); ctx.lineTo(i + 5, y + h - 3)
                 ctx.moveTo(i + 5, y + h - 3); ctx.lineTo(i + 10, y + 3)
@@ -307,21 +274,14 @@ const DonkeyKongGame = () => {
             ctx.fillStyle = 'black'
             ctx.strokeStyle = 'white'
             ctx.lineWidth = 2
-
-            // Barrel Body
             ctx.strokeRect(x, y - 30, 25, 30)
-            // Ribs
             ctx.beginPath()
             ctx.moveTo(x, y - 20); ctx.lineTo(x + 25, y - 20)
             ctx.moveTo(x, y - 10); ctx.lineTo(x + 25, y - 10)
             ctx.stroke()
-
-            // TEXT: OIL
             ctx.fillStyle = 'white'
             ctx.font = '10px monospace'
             ctx.fillText("OIL", x + 4, y - 12)
-
-            // Fire
             if (Math.random() > 0.5) {
                 ctx.beginPath()
                 ctx.moveTo(x + 5, y - 30)
@@ -336,48 +296,33 @@ const DonkeyKongGame = () => {
             ctx.save()
             ctx.translate(x, y)
             ctx.scale(scale, scale)
-
             ctx.fillStyle = 'white'
-
-            // Pose: Beat Chest
             const beat = Math.floor(Date.now() / 200) % 2 === 0
-
             if (beat) {
-                // Arms Wide
-                ctx.fillRect(5, 5, 30, 20) // Chest
-                ctx.fillRect(0, 5, 5, 15)  // L Arm
-                ctx.fillRect(35, 5, 5, 15) // R Arm
+                ctx.fillRect(5, 5, 30, 20)
+                ctx.fillRect(0, 5, 5, 15)
+                ctx.fillRect(35, 5, 5, 15)
             } else {
-                // Arms In
-                ctx.fillRect(5, 5, 30, 20) // Chest
-                ctx.fillRect(10, 10, 5, 15)  // L Arm
-                ctx.fillRect(25, 10, 5, 15) // R Arm
+                ctx.fillRect(5, 5, 30, 20)
+                ctx.fillRect(10, 10, 5, 15)
+                ctx.fillRect(25, 10, 5, 15)
             }
-
-            // Head
-            ctx.fillRect(12, 0, 16, 12) // Head
-            ctx.fillRect(12, 4, 20, 4) // Brow/Eyes
-            // Mouth (Grin)
+            ctx.fillRect(12, 0, 16, 12)
+            ctx.fillRect(12, 4, 20, 4)
             ctx.fillStyle = 'black'
             ctx.fillRect(14, 8, 12, 2)
             ctx.fillStyle = 'white'
-
-            // Legs
             ctx.fillRect(5, 25, 10, 10)
             ctx.fillRect(25, 25, 10, 10)
-
             ctx.restore()
         }
 
         const drawPauline = (x, y) => {
             ctx.fillStyle = 'white'
-            // Dress
             ctx.beginPath()
             ctx.moveTo(x, y); ctx.lineTo(x + 10, y - 20); ctx.lineTo(x + 20, y);
             ctx.fill()
-            // Head
             ctx.fillRect(x + 7, y - 26, 6, 6)
-            // Arms (Help!)
             if (Math.floor(Date.now() / 300) % 2 === 0) {
                 ctx.strokeStyle = 'white'
                 ctx.lineWidth = 2
@@ -385,8 +330,6 @@ const DonkeyKongGame = () => {
                 ctx.moveTo(x + 5, y - 15); ctx.lineTo(x, y - 25)
                 ctx.moveTo(x + 15, y - 15); ctx.lineTo(x + 20, y - 25)
                 ctx.stroke()
-
-                // HELP Text
                 ctx.font = '10px monospace'
                 ctx.fillText("HELP!", x + 25, y - 25)
             }
@@ -396,15 +339,11 @@ const DonkeyKongGame = () => {
             ctx.save()
             ctx.translate(x + w / 2, y + h)
             ctx.scale(dir, 1)
-
             ctx.fillStyle = '#ffffff'
-            // Body
             ctx.fillRect(-6, -12, 12, 10)
-            // Head
             ctx.fillRect(-5, -18, 10, 6)
-            ctx.fillRect(2, -18, 4, 2) // Visor
+            ctx.fillRect(2, -18, 4, 2)
 
-            // Legs
             const legOffset = (frame % 10 < 5) ? 2 : -2
             if (climbing) {
                 ctx.fillRect(-6, -2, 4, 4 + legOffset)
@@ -417,10 +356,8 @@ const DonkeyKongGame = () => {
                 ctx.fillRect(2, -2, 4, 4)
             }
 
-            // Arms/Hammer
             const hammerUp = frame % 20 < 10
             ctx.fillStyle = '#ffffff'
-
             if (hammerUp) {
                 ctx.fillRect(4, -20, 4, 10)
                 ctx.fillRect(2, -24, 8, 5)
@@ -435,12 +372,10 @@ const DonkeyKongGame = () => {
             ctx.fillStyle = '#000000'
             ctx.fillRect(0, 0, state.width, state.height)
 
-            // Platforms
             state.platforms.forEach(p => {
                 drawGirder(p.x, p.y, p.w, p.h)
             })
 
-            // Ladders
             ctx.fillStyle = COLOR_LADDER
             state.ladders.forEach(l => {
                 for (let y = l.y; y < l.y + l.h; y += 8) {
@@ -450,28 +385,19 @@ const DonkeyKongGame = () => {
                 ctx.fillRect(l.x + 8, l.y, 2, l.h)
             })
 
-            // Props
             drawOilDrum(40, state.height - 20)
-            // DK Position (Top Leftish, 5th floor)
-            // 5th floor is index 4? No, Top floor is index 6.
-            // Let's put him on the 2nd to last platform
             const dkPlat = state.platforms[state.platforms.length - 2]
-            drawDK(dkPlat.x + 10, dkPlat.y - 70) // Approx
-
-            // Pauline
+            drawDK(dkPlat.x + 10, dkPlat.y - 70)
             const topPlat = state.platforms[state.platforms.length - 1]
             drawPauline(topPlat.x + topPlat.w / 2 - 10, topPlat.y)
 
-            // Player
             if (!state.player.dead) {
                 drawMario(ctx, state.player.x, state.player.y, state.player.w, state.player.h, state.player.dir, state.player.frame, state.player.climbing)
             } else {
-                // Outline dead
                 ctx.strokeStyle = 'white'
                 ctx.strokeRect(state.player.x, state.player.y, state.player.w, state.player.h)
             }
 
-            // Barrels
             ctx.strokeStyle = COLOR_BARREL
             ctx.lineWidth = 2
             state.barrels.forEach(b => {
@@ -481,7 +407,6 @@ const DonkeyKongGame = () => {
                 ctx.beginPath()
                 ctx.arc(0, 0, b.w / 2, 0, Math.PI * 2)
                 ctx.stroke()
-                // Rolling lines
                 ctx.beginPath()
                 ctx.moveTo(-b.w / 2, 0); ctx.lineTo(b.w / 2, 0)
                 ctx.moveTo(0, -b.w / 2); ctx.lineTo(0, b.w / 2)
