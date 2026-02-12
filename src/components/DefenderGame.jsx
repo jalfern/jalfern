@@ -34,7 +34,7 @@ const DefenderGame = () => {
         let player = {
             x: 200,
             y: 300,
-            vx: 0,
+            vx: 3, // Initial velocity so game "starts" moving
             vy: 0,
             facing: 1, // 1 or -1
             cooldown: 0
@@ -95,6 +95,11 @@ const DefenderGame = () => {
             canvas.style.width = `${window.innerWidth}px`
             canvas.style.height = `${window.innerHeight}px`
             ctx.scale(dpr, dpr)
+
+            // Vector Graphics visual style
+            ctx.imageSmoothingEnabled = false
+            ctx.shadowBlur = 4
+            ctx.shadowColor = 'rgba(255, 255, 255, 0.5)'
         }
 
         const handleKeyDown = (e) => {
@@ -223,13 +228,23 @@ const DefenderGame = () => {
             // Stars (Static parallax?)
             // Just random white dots for now, scrolling slower
             // Actually, static world stars:
+            // Stars (Dynamic Twinkle)
             ctx.fillStyle = 'white'
             for (let i = 0; i < 100; i++) {
-                // deterministic stars based on i
+                // deterministic stars based on i, but with twinkle
+                if ((Date.now() + i * 100) % 1000 < 200) continue; // Twinkle effect (skip drawing sometimes)
+
                 const sx = (i * 137) % WORLD_WIDTH
                 const sy = (i * 53) % canvas.height
-                if (sx > cameraX && sx < cameraX + canvas.width)
-                    ctx.fillRect(sx, sy, 1, 1)
+
+                // Parallax scrolling (slower than foreground)
+                let parallaxX = sx - cameraX * 0.5
+                if (parallaxX < 0) parallaxX += WORLD_WIDTH
+                if (parallaxX > canvas.width) parallaxX -= WORLD_WIDTH
+
+                if (parallaxX >= 0 && parallaxX <= canvas.width) {
+                    ctx.fillRect(parallaxX, sy, 2, 2)
+                }
             }
 
             // Terrain
