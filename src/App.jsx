@@ -11,7 +11,8 @@ const GameLabelContext = createContext({
   label: '',
   setGameInfo: () => { }
 })
-
+// Version 1.1 - Force Refresh
+useEffect(() => { console.log("Jalfern Arcade v1.1 - Refined") }, [])
 // Game Registry
 // Theme 'dark' = white text (background is black)
 // Theme 'light' = black text (background is white)
