@@ -111,8 +111,8 @@ const DonkeyKongGame = () => {
             // 1. Find nearest ladder going UP
             // Range expanded to ensure detection (15px)
             const nearbyLadder = state.ladders.find(l =>
-                Math.abs(l.y + l.h - (state.player.y + state.player.h)) < 10 &&
-                Math.abs(state.player.x + state.player.w / 2 - l.x) < 20
+                Math.abs(l.y + l.h - (state.player.y + state.player.h)) < 20 && // Vertical leniency (was 10)
+                Math.abs((state.player.x + state.player.w / 2) - l.x) < 30        // Horizontal leniency (was 20)
             )
 
             // Decisions
@@ -161,6 +161,9 @@ const DonkeyKongGame = () => {
                     state.player.x = nearbyLadder.x - state.player.w / 2
                     state.player.vx = 0
                 }
+
+                // FORCE SNAP CONTINUOUSLY to prevent drift
+                state.player.x = nearbyLadder.x - state.player.w / 2
 
                 state.player.y -= LADDER_SPEED
 

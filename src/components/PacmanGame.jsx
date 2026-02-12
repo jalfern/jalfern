@@ -309,42 +309,136 @@ const PacmanGame = () => {
             })
         }
 
-        const drawWalls = (ctx, scale, mapWidth, mapHeight) => {
+        const drawWalls = (ctx, scale) => {
+            // EDGE DETECTION RENDERING
+            // We only draw a line if there is a boundary between Wall (1) and Path (not 1)
+            // Inner squares are skipped.
             ctx.lineCap = 'round'
             ctx.lineJoin = 'round'
-            const getCenter = (c, r) => ({ x: c * CELL_SIZE + CELL_SIZE / 2, y: r * CELL_SIZE + CELL_SIZE / 2 })
+            ctx.strokeStyle = '#0000FF' // Classic Blue (but B&W -> White?)
+            // User wants B&W, but "Arcade" style. Arcade is Blue lines, black fill.
+            // We will use White lines, black fill.
+            ctx.strokeStyle = 'white'
+            ctx.lineWidth = 1.5 // Thin, precise lines
 
-            // PASS 1: Thick Black (Outer)
-            // Reduced thickness to prevent clipping (0.8 -> 0.6)
-            const outerWidth = CELL_SIZE * 0.6
-            // Inner white needs to be smaller
-            const innerWidth = CELL_SIZE * 0.3
-
-            ctx.strokeStyle = 'black'
-            ctx.lineWidth = outerWidth
             ctx.beginPath()
+
             for (let r = 0; r < ROWS; r++) {
                 for (let c = 0; c < COLS; c++) {
                     if (map[r][c] === 1) {
-                        const { x, y } = getCenter(c, r)
-                        ctx.moveTo(x, y)
-                        if (c < COLS - 1 && map[r][c + 1] === 1) ctx.lineTo(x + CELL_SIZE, y)
-                        ctx.moveTo(x, y)
-                        if (r < ROWS - 1 && map[r + 1][c] === 1) ctx.lineTo(x, y + CELL_SIZE)
+                        const x = c * CELL_SIZE
+                        const y = r * CELL_SIZE
+
+                        // Check neighbors (0 = Path/Empty)
+                        const top = (r > 0) ? map[r - 1][c] : 1
+                        const bottom = (r < ROWS - 1) ? map[r + 1][c] : 1
+                        const left = (c > 0) ? map[r][c - 1] : 1
+                        const right = (c < COLS - 1) ? map[r][c + 1] : 1
+
+                        // DRAW BOUNDARIES
+                        // If Top is NOT wall, draw Top Edge
+                        if (top !== 1) {
+                            ctx.moveTo(x, y); ctx.lineTo(x + CELL_SIZE, y)
+                        }
+                        // If Bottom is NOT wall, draw Bottom Edge
+                        if (bottom !== 1) {
+                            ctx.moveTo(x, y + CELL_SIZE); ctx.lineTo(x + CELL_SIZE, y + CELL_SIZE)
+                        }
+                        // If Left is NOT wall
+                        if (left !== 1) {
+                            ctx.moveTo(x, y); ctx.lineTo(x, y + CELL_SIZE)
+                        }
+                        // If Right is NOT wall
+                        if (right !== 1) {
+                            ctx.moveTo(x + CELL_SIZE, y); ctx.lineTo(x + CELL_SIZE, y + CELL_SIZE)
+                        }
+
+                        // CURVES:
+                        // This logic produces straight lines. To get curves, we'd need to detect corners of blocks.
+                        // Simple hack: lineJoin = 'round' handles small intersections, 
+                        // but for true Arcade smoothed corners we need to detect convex/concave corners.
+                        // Given constraints, thin crisp lines (like drawn above) with rounded lineCaps 
+                        // is 90% there and cleaner than the previous "Block" method.
                     }
                 }
             }
-            ctx.stroke()
 
-            // PASS 2: Thin White (Inner "Hollow")
-            ctx.strokeStyle = 'white'
-            ctx.lineWidth = innerWidth
+            // Double Stroke Effect (Hollow lines)? 
+            // User said "connected paths, no inner lines".
+            // The above code draws ONLY the outline of the wall clusters.
+            // The inside of a 2x2 wall block will be empty.
+            // This matches the request perfectly.
+
             ctx.stroke()
+        }
+
+        const drawGhost = (ctx, x, y, color, state, dir) => {
+            const size = CELL_SIZE * 1.6 // Bigger than cell slightly
+            ctx.save()
+            ctx.translate(x + CELL_SIZE / 2, y + CELL_SIZE / 2)
+
+            if (state === 'dead') {
+                // Eyes only
+                ctx.fillStyle = 'white'
+                ctx.beginPath()
+                ctx.arc(-4, -2, 3, 0, Math.PI * 2); ctx.fill()
+                ctx.arc(4, -2, 3, 0, Math.PI * 2); ctx.fill()
+                ctx.fillStyle = 'black'
+                ctx.beginPath()
+                ctx.arc(-4, -2, 1, 0, Math.PI * 2); ctx.fill()
+                ctx.arc(4, -2, 1, 0, Math.PI * 2); ctx.fill()
+                ctx.restore()
+                return
+            }
+
+            // Body Color
+            if (state === 'scared') {
+                ctx.fillStyle = (Date.now() % 400 < 200) ? 'white' : 'black'
+                ctx.strokeStyle = (ctx.fillStyle === 'white') ? 'black' : 'white'
+            } else {
+                // Normal: White outline, Black fill (or gray fill?)
+                // User said "B&W", usually means White Sprite on Black BG.
+                // Or "Gray" ghosts.
+                ctx.fillStyle = color // Gray scale
+                ctx.strokeStyle = 'white' // Pop
+            }
+
+            // Draw Bell Shape
+            ctx.beginPath()
+            ctx.arc(0, -2, 6, Math.PI, 0) // Head
+            ctx.lineTo(6, 6)
+            // Feet (3 bumps)
+            ctx.lineTo(4, 5); ctx.lineTo(2, 6); ctx.lineTo(0, 5); ctx.lineTo(-2, 6); ctx.lineTo(-4, 5); ctx.lineTo(-6, 6)
+            ctx.lineTo(-6, -2)
+            ctx.fill()
+
+            // Scared Face
+            if (state === 'scared') {
+                ctx.fillStyle = (ctx.fillStyle === 'white') ? 'black' : 'white'
+                ctx.fillRect(-3, -2, 2, 2); ctx.fillRect(1, -2, 2, 2)
+                ctx.beginPath();
+                ctx.moveTo(-3, 2); ctx.lineTo(-1, 0); ctx.lineTo(1, 2); ctx.lineTo(3, 0);
+                ctx.stroke()
+            } else {
+                // Normal Eyes
+                ctx.fillStyle = 'white'
+                ctx.beginPath()
+                ctx.arc(-2.5, -3, 2.5, 0, Math.PI * 2); ctx.fill()
+                ctx.arc(2.5, -3, 2.5, 0, Math.PI * 2); ctx.fill()
+                // Pupils
+                ctx.fillStyle = 'black'
+                let lx = dir?.x * 1.5 || 0
+                let ly = dir?.y * 1.5 || 0
+                ctx.beginPath()
+                ctx.arc(-2.5 + lx, -3 + ly, 1.2, 0, Math.PI * 2); ctx.fill()
+                ctx.arc(2.5 + lx, -3 + ly, 1.2, 0, Math.PI * 2); ctx.fill()
+            }
+            ctx.restore()
         }
 
         const draw = () => {
             // Clear
-            ctx.fillStyle = '#ffffff'
+            ctx.fillStyle = '#000000'
             ctx.fillRect(0, 0, canvas.width, canvas.height)
 
             const mapWidth = COLS * CELL_SIZE
@@ -355,33 +449,24 @@ const PacmanGame = () => {
             ctx.translate((canvas.width - mapWidth * scale) / 2, (canvas.height - mapHeight * scale) / 2)
             ctx.scale(scale, scale)
 
-            drawWalls(ctx, scale, mapWidth, mapHeight)
+            drawWalls(ctx, scale)
 
-            // Draw Dots
+            // Draw Dots (White)
+            ctx.fillStyle = '#ffb8ae' // Peach? No B&W.
+            ctx.fillStyle = '#ffffff'
             for (let r = 0; r < ROWS; r++) {
                 for (let c = 0; c < COLS; c++) {
                     const x = c * CELL_SIZE
                     const y = r * CELL_SIZE
                     if (map[r][c] === 2) {
-                        ctx.fillStyle = 'black'
-                        ctx.beginPath()
-                        ctx.arc(x + CELL_SIZE / 2, y + CELL_SIZE / 2, 2, 0, Math.PI * 2)
-                        ctx.fill()
+                        ctx.fillRect(x + CELL_SIZE / 2 - 1, y + CELL_SIZE / 2 - 1, 2, 2)
                     } else if (map[r][c] === 3) {
-                        ctx.fillStyle = 'black'
-                        const rRadius = (Date.now() % 600 < 300) ? 5 : 3
-                        ctx.beginPath()
-                        ctx.arc(x + CELL_SIZE / 2, y + CELL_SIZE / 2, rRadius, 0, Math.PI * 2)
-                        ctx.fill()
+                        if (Date.now() % 400 < 200) {
+                            ctx.beginPath()
+                            ctx.arc(x + CELL_SIZE / 2, y + CELL_SIZE / 2, 5, 0, Math.PI * 2)
+                            ctx.fill()
+                        }
                     }
-                }
-            }
-
-            // Door
-            ctx.fillStyle = '#ccc'
-            for (let r = 0; r < ROWS; r++) {
-                for (let c = 0; c < COLS; c++) {
-                    if (map[r][c] === 4) ctx.fillRect(c * CELL_SIZE, r * CELL_SIZE + CELL_SIZE / 2 - 2, CELL_SIZE, 4)
                 }
             }
 
@@ -389,8 +474,8 @@ const PacmanGame = () => {
             const px = (pacman.x + pacman.dir.x * pacman.progress) * CELL_SIZE + CELL_SIZE / 2
             const py = (pacman.y + pacman.dir.y * pacman.progress) * CELL_SIZE + CELL_SIZE / 2
 
-            // PACMAN DRAW: Bigger
-            ctx.fillStyle = 'black'
+            // PACMAN: Yellow? No B&W -> White
+            ctx.fillStyle = '#ffffff'
             ctx.beginPath()
             const mouthOpen = 0.2 * Math.sin(Date.now() / 50) + 0.2
             let angle = 0
@@ -399,75 +484,15 @@ const PacmanGame = () => {
             if (pacman.dir.y === 1) angle = Math.PI / 2
             if (pacman.dir.y === -1) angle = -Math.PI / 2
 
-            // Increased radius (CELL_SIZE/2 - 1)
-            const pacRadius = CELL_SIZE / 2 - 0.5
-            ctx.arc(px, py, Math.max(0, pacRadius), angle + mouthOpen, angle + 2 * Math.PI - mouthOpen)
+            const pacRadius = CELL_SIZE / 2 + 1 // Slightly larger than cell
+            ctx.arc(px, py, pacRadius, angle + mouthOpen, angle + 2 * Math.PI - mouthOpen)
             ctx.lineTo(px, py)
             ctx.fill()
 
             ghosts.forEach(g => {
                 const gx = (g.x + (g.nextDir?.x || 0) * g.progress) * CELL_SIZE
                 const gy = (g.y + (g.nextDir?.y || 0) * g.progress) * CELL_SIZE
-
-                // GHOST DRAW FIX
-                if (g.state === 'scared') {
-                    // Simple flash: White body, Black Outline OR Black Body, White Outline
-                    if (Date.now() % 400 < 200) {
-                        ctx.fillStyle = 'white'
-                        ctx.strokeStyle = 'black'
-                    } else {
-                        ctx.fillStyle = 'black'
-                        ctx.strokeStyle = 'white'
-                    }
-                    ctx.lineWidth = 1
-
-                    // Scared shape: Wavy bottom
-                    ctx.beginPath()
-                    ctx.arc(gx + CELL_SIZE / 2, gy + CELL_SIZE / 2 - 2, CELL_SIZE / 2 - 2, Math.PI, 0)
-                    ctx.lineTo(gx + CELL_SIZE - 2, gy + CELL_SIZE)
-                    ctx.lineTo(gx + 2, gy + CELL_SIZE)
-                    ctx.fill()
-                    ctx.stroke()
-
-                    // Face (Scared)
-                    ctx.fillStyle = (ctx.fillStyle === 'white') ? 'black' : 'white'
-                    ctx.fillRect(gx + 4, gy + 6, 2, 2)
-                    ctx.fillRect(gx + 10, gy + 6, 2, 2)
-                    ctx.beginPath()
-                    ctx.moveTo(gx + 4, gy + 10); ctx.lineTo(gx + 8, gy + 8); ctx.lineTo(gx + 12, gy + 10);
-                    ctx.stroke()
-
-                } else if (g.state === 'dead') {
-                    ctx.strokeStyle = 'black'; ctx.lineWidth = 1
-                    // Just eyes
-                    ctx.fillStyle = 'black'
-                    ctx.beginPath()
-                    ctx.arc(gx + 5, gy + 8, 2, 0, Math.PI * 2); ctx.fill()
-                    ctx.arc(gx + 11, gy + 8, 2, 0, Math.PI * 2); ctx.fill()
-                } else {
-                    ctx.fillStyle = g.color; ctx.strokeStyle = 'black'
-                    ctx.beginPath()
-                    ctx.arc(gx + CELL_SIZE / 2, gy + CELL_SIZE / 2 - 2, CELL_SIZE / 2 - 2, Math.PI, 0)
-                    ctx.lineTo(gx + CELL_SIZE - 2, gy + CELL_SIZE)
-                    ctx.lineTo(gx + 2, gy + CELL_SIZE)
-                    ctx.fill()
-
-                    // Eyes
-                    ctx.fillStyle = 'white'
-                    ctx.beginPath()
-                    ctx.arc(gx + CELL_SIZE / 3, gy + CELL_SIZE / 2 - 4, 3, 0, Math.PI * 2)
-                    ctx.arc(gx + 2 * CELL_SIZE / 3, gy + CELL_SIZE / 2 - 4, 3, 0, Math.PI * 2)
-                    ctx.fill()
-                    // Pupils
-                    ctx.fillStyle = 'black'
-                    // Look dir
-                    let lx = 0, ly = 0
-                    if (g.nextDir) { lx = g.nextDir.x * 1; ly = g.nextDir.y * 1 }
-                    ctx.beginPath()
-                    ctx.arc(gx + CELL_SIZE / 3 + lx, gy + CELL_SIZE / 2 - 4 + ly, 1.5, 0, Math.PI * 2)
-                    ctx.arc(gx + 2 * CELL_SIZE / 3 + lx, gy + CELL_SIZE / 2 - 4 + ly, 1.5, 0, Math.PI * 2)
-                    ctx.fill()
-                }
+                drawGhost(ctx, gx, gy, g.color, g.state, g.nextDir || g.dir)
             })
 
             ctx.restore()

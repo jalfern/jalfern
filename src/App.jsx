@@ -5,6 +5,7 @@ import SpaceInvadersGame from './components/SpaceInvadersGame'
 import PacmanGame from './components/PacmanGame'
 import AsteroidsGame from './components/AsteroidsGame'
 import DonkeyKongGame from './components/DonkeyKongGame'
+import CentipedeGame from './components/CentipedeGame'
 import { audioController } from './utils/AudioController'
 
 const GameLabelContext = createContext({
@@ -20,7 +21,8 @@ const GAMES = [
   { path: '/invaders', component: SpaceInvadersGame, label: 'SPACE INVADERS', theme: 'light' },
   { path: '/pacman', component: PacmanGame, label: 'PAC-MAN', theme: 'light' },
   { path: '/asteroids', component: AsteroidsGame, label: 'ASTEROIDS', theme: 'dark' },
-  { path: '/donkeykong', component: DonkeyKongGame, label: 'DONKEY KONG', theme: 'dark' }
+  { path: '/donkeykong', component: DonkeyKongGame, label: 'DONKEY KONG', theme: 'dark' },
+  { path: '/centipede', component: CentipedeGame, label: 'CENTIPEDE', theme: 'dark' }
 ]
 
 function RandomHome() {
@@ -158,6 +160,7 @@ function App() {
           <Route path="/pacman" element={<GameRoute component={PacmanGame} label="PAC-MAN" theme="light" />} />
           <Route path="/asteroids" element={<GameRoute component={AsteroidsGame} label="ASTEROIDS" theme="dark" />} />
           <Route path="/donkeykong" element={<GameRoute component={DonkeyKongGame} label="DONKEY KONG" theme="dark" />} />
+          <Route path="/centipede" element={<GameRoute component={CentipedeGame} label="CENTIPEDE" theme="dark" />} />
         </Routes>
       </Layout>
     </BrowserRouter>
