@@ -75,7 +75,8 @@ const PitfallGame = () => {
             l: '#552200', // Log Brown
             y: '#FFD700', // Gold
             e: '#00AA00', // Snake Green
-            h: '#FFFFFF'  // White/Grey (Scorpion Body)
+            h: '#FFFFFF', // White/Grey (Scorpion Body)
+            n: '#331100'  // Dark Brown (Scorpion Legs)
         }
 
         const SPRITES = {
@@ -729,19 +730,7 @@ const PitfallGame = () => {
 
             // Underground
             ctx.fillStyle = '#905000' // Reddish Brown
-            // PALETTE
-            const PALETTE = {
-                g: '#228822', // Green (Shirt)
-                w: '#DDDDDD', // White (Pants)
-                s: '#FFCCAA', // Skin
-                b: '#000000', // Black
-                r: '#FF4400', // Red (Fire/Scorpion Tail)
-                l: '#552200', // Log Brown
-                y: '#FFD700', // Gold
-                e: '#00AA00', // Snake Green
-                h: '#FFFFFF', // White/Grey (Scorpion Body)
-                n: '#331100'  // Dark Brown (Scorpion Legs)
-            }
+
             ctx.fillRect(0, 470, SCREEN_WIDTH, 130)
 
             // Underground Wall Pattern (Brick)
