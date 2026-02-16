@@ -457,6 +457,7 @@ const PitfallGame = () => {
             if (pausedRef.current) return
             if (gameOver) return
 
+            const dpr = window.devicePixelRatio || 1
             // Physics Scale for implementation simplification
             // Map 0-800 to canvas width
             const scaleX = canvas.width / dpr / SCREEN_WIDTH
