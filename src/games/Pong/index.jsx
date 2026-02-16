@@ -1,8 +1,21 @@
-import { useEffect, useRef } from 'react'
-import { audioController } from '../utils/AudioController'
+import React, { useEffect, useRef } from 'react'
+import { audioController } from '../../utils/AudioController'
+import PauseOverlay from '../../components/PauseOverlay'
+import VirtualControls from '../../components/VirtualControls'
+import { GAMES } from '../../config/games'
 
 const PongGame = () => {
     const canvasRef = useRef(null)
+    const containerRef = useRef(null)
+    const [paused, setPaused] = React.useState(false)
+    const pausedRef = useRef(false)
+
+    // Resume callback
+    const handleResume = () => {
+        setPaused(false)
+        pausedRef.current = false
+        canvasRef.current?.focus()
+    }
 
     useEffect(() => {
         const canvas = canvasRef.current
@@ -40,19 +53,47 @@ const PongGame = () => {
         }
 
         const resize = () => {
-            canvas.width = window.innerWidth
-            canvas.height = window.innerHeight
-            state.width = canvas.width
-            state.height = canvas.height
+            if (containerRef.current && canvas) {
+                const { width, height } = containerRef.current.getBoundingClientRect()
+                canvas.width = width
+                canvas.height = height
+                state.width = width
+                state.height = height
 
-
-            // Only reset ball if it's off screen or initialized at 0,0
-            if (state.ball.x === 0 && state.ball.y === 0) {
-                resetBall()
+                // Only reset ball if it's off screen or initialized at 0,0
+                if (state.ball.x === 0 && state.ball.y === 0) {
+                    resetBall()
+                }
             }
         }
 
+        // INPUT
+        let isAttractMode = true
+        const keys = { ArrowUp: false, ArrowDown: false }
+
+        const handleKeyDown = (e) => {
+            if (e.key === '?' || (e.shiftKey && e.key === '/')) {
+                const newState = !pausedRef.current
+                pausedRef.current = newState
+                setPaused(newState)
+                return
+            }
+            if (pausedRef.current) return
+
+            if (isAttractMode) {
+                isAttractMode = false;
+                // Reset score? Maybe
+            }
+            if (keys[e.code] !== undefined) keys[e.code] = true
+        }
+
+        const handleKeyUp = (e) => {
+            if (keys[e.code] !== undefined) keys[e.code] = false
+        }
+
         window.addEventListener('resize', resize)
+        window.addEventListener('keydown', handleKeyDown)
+        window.addEventListener('keyup', handleKeyUp)
         resize() // Initial sizing
 
         const update = () => {
@@ -68,11 +109,17 @@ const PongGame = () => {
 
             // AI Logic (Simple tracking)
             // Left Paddle
-            const leftCenter = state.leftPaddle.y + PADDLE_HEIGHT / 2
-            if (leftCenter < state.ball.y - 10) {
-                state.leftPaddle.y += AI_SPEED
-            } else if (leftCenter > state.ball.y + 10) {
-                state.leftPaddle.y -= AI_SPEED
+            if (isAttractMode) {
+                const leftCenter = state.leftPaddle.y + PADDLE_HEIGHT / 2
+                if (leftCenter < state.ball.y - 10) {
+                    state.leftPaddle.y += AI_SPEED
+                } else if (leftCenter > state.ball.y + 10) {
+                    state.leftPaddle.y -= AI_SPEED
+                }
+            } else {
+                // Manual Control
+                if (keys.ArrowUp) state.leftPaddle.y -= BASE_SPEED * 1.5
+                if (keys.ArrowDown) state.leftPaddle.y += BASE_SPEED * 1.5
             }
 
             // Right Paddle
@@ -128,11 +175,11 @@ const PongGame = () => {
         }
 
         const draw = () => {
-            // Clear background (White)
-            ctx.fillStyle = '#ffffff'
+            // Clear background (Black)
+            ctx.fillStyle = '#000000'
             ctx.fillRect(0, 0, state.width, state.height)
 
-            ctx.fillStyle = '#000000'
+            ctx.fillStyle = '#ffffff'
 
             // Draw Paddles
             ctx.fillRect(PADDLE_OFFSET, state.leftPaddle.y, PADDLE_WIDTH, PADDLE_HEIGHT)
@@ -146,34 +193,50 @@ const PongGame = () => {
             ctx.setLineDash([10, 15])
             ctx.moveTo(state.width / 2, 0)
             ctx.lineTo(state.width / 2, state.height)
-            ctx.strokeStyle = '#e5e5e5' // Very subtle net
+            ctx.strokeStyle = '#333333' // Very subtle net (dark grey)
             ctx.stroke()
 
             // Draw minimal score (optional, keep it clean)
-            // ctx.font = '40px monospace'
-            // ctx.fillText(state.leftPaddle.score, state.width / 4, 50)
-            // ctx.fillText(state.rightPaddle.score, 3 * state.width / 4, 50)
+            ctx.font = '40px monospace'
+            ctx.textAlign = 'center'
+            if (isAttractMode) {
+                ctx.fillStyle = '#ffffff'
+                ctx.fillText("PRESS ARROW KEYS TO START", state.width / 2, state.height / 2)
+                ctx.fillText("ATTRACT MODE", state.width / 2, state.height / 2 - 50)
+            } else {
+                // Game Score
+                ctx.fillStyle = '#333333'
+                ctx.fillText(state.leftPaddle.score, state.width / 4, 50)
+                ctx.fillText(state.rightPaddle.score, 3 * state.width / 4, 50)
+            }
         }
 
         const loop = () => {
-            update()
-            draw()
+            if (!pausedRef.current) {
+                update()
+                draw()
+            }
             animationFrameId = requestAnimationFrame(loop)
         }
 
         loop()
 
         return () => {
+            window.removeEventListener('keydown', handleKeyDown)
+            window.removeEventListener('keyup', handleKeyUp)
             window.removeEventListener('resize', resize)
             cancelAnimationFrame(animationFrameId)
         }
     }, [])
 
     return (
-        <canvas
-            ref={canvasRef}
-            className="block fixed inset-0 w-full h-full"
-        />
+        <div className="fixed inset-0 bg-black flex items-center justify-center p-4">
+            <div ref={containerRef} className="relative w-full max-w-[600px] aspect-[3/4] border-2 border-neutral-800 rounded-lg overflow-hidden shadow-2xl shadow-neutral-900 bg-black">
+                <canvas ref={canvasRef} className="block w-full h-full" />
+                {paused && <PauseOverlay game={GAMES.find(g => g.label === 'PONG')} onResume={handleResume} />}
+            </div>
+            <VirtualControls />
+        </div>
     )
 }
 

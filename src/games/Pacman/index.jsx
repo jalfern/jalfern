@@ -1,13 +1,29 @@
-import { useEffect, useRef } from 'react'
-import { audioController } from '../utils/AudioController'
+import React, { useEffect, useRef } from 'react'
+import { audioController } from '../../utils/AudioController'
+import PauseOverlay from '../../components/PauseOverlay'
+import VirtualControls from '../../components/VirtualControls'
+import { GAMES } from '../../config/games'
 
 const PacmanGame = () => {
     const canvasRef = useRef(null)
+    const containerRef = useRef(null)
+    const [paused, setPaused] = React.useState(false)
+    const pausedRef = useRef(false)
+
+    // Resume callback
+    const handleResume = () => {
+        setPaused(false)
+        pausedRef.current = false
+        canvasRef.current?.focus()
+    }
 
     useEffect(() => {
         const canvas = canvasRef.current
         const ctx = canvas.getContext('2d')
         let animationFrameId
+
+        let isAttractMode = true
+        let keys = { ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false }
 
         // MAP DATA (V3 - Block Based)
         // 0: Path, 1: Wall Block, 2: Dot, 3: Power, 4: Door
@@ -155,13 +171,17 @@ const PacmanGame = () => {
         }
 
         const resize = () => {
-            canvas.width = window.innerWidth
-            canvas.height = window.innerHeight
+            if (containerRef.current && canvas) {
+                const { width, height } = containerRef.current.getBoundingClientRect()
+                canvas.width = width
+                canvas.height = height
+            }
         }
         window.addEventListener('resize', resize)
         resize()
 
         const update = () => {
+            if (pausedRef.current) return
             if (gameOver) {
                 if (Math.random() < 0.05) resetGame();
                 return
@@ -177,51 +197,81 @@ const PacmanGame = () => {
 
             // PACMAN AI
             if (pacman.progress === 0) {
-                const mapX = Math.round(pacman.x)
-                const mapY = Math.round(pacman.y)
-                let dangerGhost = ghosts.find(g => g.state === 'chase' && Math.sqrt(Math.pow(g.x - mapX, 2) + Math.pow(g.y - mapY, 2)) < 8)
-                if (dangerGhost) {
-                    pacman.nextDir = getSafeMove(mapX, mapY)
-                } else {
-                    const nearbyPower = bfs(mapX, mapY, 'power')
-                    if (nearbyPower && !pacman.poweredUp) {
-                        pacman.nextDir = nearbyPower
+                if (isAttractMode) {
+                    const mapX = Math.round(pacman.x)
+                    const mapY = Math.round(pacman.y)
+                    let dangerGhost = ghosts.find(g => g.state === 'chase' && Math.sqrt(Math.pow(g.x - mapX, 2) + Math.pow(g.y - mapY, 2)) < 8)
+                    if (dangerGhost) {
+                        pacman.nextDir = getSafeMove(mapX, mapY)
                     } else {
-                        const nextDot = bfs(mapX, mapY, 'dot')
-                        if (nextDot) pacman.nextDir = nextDot
-                        else {
-                            const moves = getValidMoves(mapX, mapY)
-                            if (moves.length > 0) pacman.nextDir = moves[Math.floor(Math.random() * moves.length)]
+                        const nearbyPower = bfs(mapX, mapY, 'power')
+                        if (nearbyPower && !pacman.poweredUp) {
+                            pacman.nextDir = nearbyPower
+                        } else {
+                            const nextDot = bfs(mapX, mapY, 'dot')
+                            if (nextDot) pacman.nextDir = nextDot
+                            else {
+                                const moves = getValidMoves(mapX, mapY)
+                                if (moves.length > 0) pacman.nextDir = moves[Math.floor(Math.random() * moves.length)]
+                            }
+                        }
+                    }
+                    pacman.dir = pacman.nextDir || pacman.dir
+                } else {
+                    // Manual Turn Logic
+                    // Allow turning if valid
+                    if (pacman.nextDir.x !== 0 || pacman.nextDir.y !== 0) {
+                        const mapX = Math.round(pacman.x)
+                        const mapY = Math.round(pacman.y)
+                        const nextX = mapX + pacman.nextDir.x
+                        const nextY = mapY + pacman.nextDir.y
+                        if (nextY === 14 && (nextX < 0 || nextX >= COLS)) {
+                            pacman.dir = pacman.nextDir
+                        } else if (nextX >= 0 && nextX < COLS && nextY >= 0 && nextY < ROWS && map[nextY][nextX] !== 1) {
+                            pacman.dir = pacman.nextDir
                         }
                     }
                 }
-                pacman.dir = pacman.nextDir || pacman.dir
             }
 
             // Move Pacman
             if (pacman.dir.x !== 0 || pacman.dir.y !== 0) {
-                pacman.progress += pacman.speed
-                if (pacman.progress >= 1) {
-                    pacman.x += pacman.dir.x
-                    pacman.y += pacman.dir.y
-                    pacman.progress = 0
-                    pacman.x = Math.round(pacman.x)
-                    pacman.y = Math.round(pacman.y)
-                    if (pacman.x <= -1) pacman.x = COLS - 1
-                    else if (pacman.x >= COLS) pacman.x = 0
+                // PREDICT COLLISION
+                if (pacman.progress === 0) {
                     const mapX = Math.round(pacman.x)
                     const mapY = Math.round(pacman.y)
-                    if (mapX >= 0 && mapX < COLS && mapY >= 0 && mapY < ROWS) {
-                        const tile = map[mapY][mapX]
-                        if (tile === 2) {
-                            map[mapY][mapX] = 0
-                            audioController.playTone(300 + Math.random() * 200, 0.05, 'triangle', 0.1)
-                        } else if (tile === 3) {
-                            map[mapY][mapX] = 0
-                            pacman.poweredUp = true
-                            pacman.powerTimer = 600
-                            ghosts.forEach(g => { if (g.state !== 'dead') g.state = 'scared' })
-                            audioController.playSweep(600, 800, 0.5, 'sine', 0.1)
+                    const nextX = mapX + pacman.dir.x
+                    const nextY = mapY + pacman.dir.y
+                    if (nextX >= 0 && nextX < COLS && nextY >= 0 && nextY < ROWS && map[nextY][nextX] === 1) {
+                        // Hit wall
+                        pacman.dir = { x: 0, y: 0 }
+                    }
+                }
+
+                if (pacman.dir.x !== 0 || pacman.dir.y !== 0) { // Check again after collision stop
+                    pacman.progress += pacman.speed
+                    if (pacman.progress >= 1) {
+                        pacman.x += pacman.dir.x
+                        pacman.y += pacman.dir.y
+                        pacman.progress = 0
+                        pacman.x = Math.round(pacman.x)
+                        pacman.y = Math.round(pacman.y)
+                        if (pacman.x <= -1) pacman.x = COLS - 1
+                        else if (pacman.x >= COLS) pacman.x = 0
+                        const mapX = Math.round(pacman.x)
+                        const mapY = Math.round(pacman.y)
+                        if (mapX >= 0 && mapX < COLS && mapY >= 0 && mapY < ROWS) {
+                            const tile = map[mapY][mapX]
+                            if (tile === 2) {
+                                map[mapY][mapX] = 0
+                                audioController.playTone(300 + Math.random() * 200, 0.05, 'triangle', 0.1)
+                            } else if (tile === 3) {
+                                map[mapY][mapX] = 0
+                                pacman.poweredUp = true
+                                pacman.powerTimer = 600
+                                ghosts.forEach(g => { if (g.state !== 'dead') g.state = 'scared' })
+                                audioController.playSweep(600, 800, 0.5, 'sine', 0.1)
+                            }
                         }
                     }
                 }
@@ -450,6 +500,14 @@ const PacmanGame = () => {
                 drawGhost(ctx, gx, gy, g.color, g.state, g.nextDir || g.dir)
             })
 
+            if (isAttractMode) {
+                ctx.fillStyle = '#ffffff'
+                ctx.font = '20px monospace'
+                ctx.textAlign = 'center'
+                ctx.fillText("PRESS ARROW KEYS TO START", canvas.width / 2, canvas.height / 2)
+                ctx.fillText("ATTRACT MODE (AUTO)", canvas.width / 2, canvas.height / 2 - 40)
+            }
+
             ctx.restore()
         }
 
@@ -458,15 +516,47 @@ const PacmanGame = () => {
             draw()
             animationFrameId = requestAnimationFrame(loop)
         }
+        const handleKeyDown = (e) => {
+            if (e.key === '?' || (e.shiftKey && e.key === '/')) {
+                const newState = !pausedRef.current
+                pausedRef.current = newState
+                setPaused(newState)
+                return
+            }
+            if (pausedRef.current) return
+
+            if (isAttractMode) {
+                isAttractMode = false
+                // resetGame() // Optional: restart on take over
+            }
+            if (e.code === 'ArrowUp') pacman.nextDir = { x: 0, y: -1 }
+            if (e.code === 'ArrowDown') pacman.nextDir = { x: 0, y: 1 }
+            if (e.code === 'ArrowLeft') pacman.nextDir = { x: -1, y: 0 }
+            if (e.code === 'ArrowRight') pacman.nextDir = { x: 1, y: 0 }
+        }
+
+        // Init Logic
+        resize()
+        window.addEventListener('keydown', handleKeyDown)
+        window.addEventListener('resize', resize)
         loop()
 
         return () => {
+            window.removeEventListener('keydown', handleKeyDown)
             window.removeEventListener('resize', resize)
             cancelAnimationFrame(animationFrameId)
         }
     }, [])
 
-    return <canvas ref={canvasRef} className="block fixed inset-0 w-full h-full" />
+    return (
+        <div className="fixed inset-0 bg-black flex items-center justify-center p-4">
+            <div ref={containerRef} className="relative w-full max-w-[600px] aspect-[3/4] border-2 border-neutral-800 rounded-lg overflow-hidden shadow-2xl shadow-neutral-900 bg-black">
+                <canvas ref={canvasRef} className="block w-full h-full" />
+                {paused && <PauseOverlay game={GAMES.find(g => g.label === 'PAC-MAN')} onResume={handleResume} />}
+            </div>
+            <VirtualControls />
+        </div>
+    )
 }
 
 export default PacmanGame

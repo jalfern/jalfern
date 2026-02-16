@@ -1,8 +1,21 @@
-import { useEffect, useRef } from 'react'
-import { audioController } from '../utils/AudioController'
+import React, { useEffect, useRef } from 'react'
+import { audioController } from '../../utils/AudioController'
+import PauseOverlay from '../../components/PauseOverlay'
+import VirtualControls from '../../components/VirtualControls'
+import { GAMES } from '../../config/games'
 
 const DefenderGame = () => {
     const canvasRef = useRef(null)
+    const containerRef = useRef(null)
+    const [paused, setPaused] = React.useState(false)
+    const pausedRef = useRef(false)
+
+    // Resume callback
+    const handleResume = () => {
+        setPaused(false)
+        pausedRef.current = false
+        canvasRef.current?.focus()
+    }
 
     useEffect(() => {
         const canvas = canvasRef.current
@@ -20,6 +33,7 @@ const DefenderGame = () => {
         // GAME STATE
         let cameraX = 0
         let gameTime = 0
+        let isAttractMode = true
 
         // INPUT
         const keys = {
@@ -59,11 +73,12 @@ const DefenderGame = () => {
         }
 
         // SPAWN ENEMIES
-        const spawnEnemies = () => {
+        const spawnEnemies = (h) => {
+            const height = h || window.innerHeight
             for (let i = 0; i < 15; i++) {
                 enemies.push({
                     x: Math.random() * WORLD_WIDTH,
-                    y: Math.random() * (window.innerHeight - 200) + 50,
+                    y: Math.random() * (height - 200) + 50,
                     vx: (Math.random() - 0.5) * 2,
                     vy: (Math.random() - 0.5) * 2,
                     type: 'lander'
@@ -74,8 +89,13 @@ const DefenderGame = () => {
         // INIT
         const init = () => {
             resize()
-            generateTerrain(WORLD_WIDTH, window.innerHeight)
-            spawnEnemies()
+            if (containerRef.current) {
+                generateTerrain(WORLD_WIDTH, containerRef.current.getBoundingClientRect().height)
+                spawnEnemies(containerRef.current.getBoundingClientRect().height)
+            } else {
+                generateTerrain(WORLD_WIDTH, window.innerHeight)
+                spawnEnemies(window.innerHeight)
+            }
 
             window.addEventListener('keydown', handleKeyDown)
             window.addEventListener('keyup', handleKeyUp)
@@ -89,20 +109,38 @@ const DefenderGame = () => {
         }
 
         const resize = () => {
+            if (!canvas || !ctx || !containerRef.current) return
+            const { width, height } = containerRef.current.getBoundingClientRect()
             const dpr = window.devicePixelRatio || 1
-            canvas.width = window.innerWidth * dpr
-            canvas.height = window.innerHeight * dpr
-            canvas.style.width = `${window.innerWidth}px`
-            canvas.style.height = `${window.innerHeight}px`
+            canvas.width = width * dpr
+            canvas.height = height * dpr
+            canvas.style.width = `${width}px`
+            canvas.style.height = `${height}px`
             ctx.scale(dpr, dpr)
 
             // Vector Graphics visual style
             ctx.imageSmoothingEnabled = false
             ctx.shadowBlur = 4
             ctx.shadowColor = 'rgba(255, 255, 255, 0.5)'
+
+            // Re-gen terrain if size changes drastically?
+            // For now, just clear and update spawns?
+            // Actually, spawnEnemies depends on height, so we might want to respawn if attract mode
         }
 
         const handleKeyDown = (e) => {
+            if (e.key === '?' || (e.shiftKey && e.key === '/')) {
+                const newState = !pausedRef.current
+                pausedRef.current = newState
+                setPaused(newState)
+                return
+            }
+            if (pausedRef.current) return
+
+            if (isAttractMode) {
+                isAttractMode = false
+                Object.keys(keys).forEach(k => keys[k] = false)
+            }
             if (e.code === 'Space') keys.Space = true
             if (e.code === 'ArrowUp' || e.key === 'w') keys.ArrowUp = true
             if (e.code === 'ArrowDown' || e.key === 's') keys.ArrowDown = true
@@ -119,6 +157,45 @@ const DefenderGame = () => {
         }
 
         const update = () => {
+            // --- AI LOGIC ---
+            if (isAttractMode) {
+                // Find nearest enemy
+                let target = null
+                let minDist = Infinity
+                enemies.forEach(e => {
+                    const dist = Math.abs(e.x - player.x)
+                    if (dist < minDist) {
+                        minDist = dist
+                        target = e
+                    }
+                })
+
+                if (target) {
+                    const dx = target.x - player.x
+                    const dy = target.y - player.y
+
+                    // Horizontal Move
+                    if (dx > 0) { keys.ArrowRight = true; keys.ArrowLeft = false }
+                    else { keys.ArrowLeft = true; keys.ArrowRight = false }
+
+                    // Vertical Move
+                    if (dy > 10) { keys.ArrowDown = true; keys.ArrowUp = false }
+                    else if (dy < -10) { keys.ArrowUp = true; keys.ArrowDown = false }
+                    else { keys.ArrowUp = false; keys.ArrowDown = false }
+
+                    // Shoot
+                    // If facing target and aligned
+                    if ((dx > 0 && player.facing === 1) || (dx < 0 && player.facing === -1)) {
+                        if (Math.abs(dy) < 50 && Math.random() < 0.1) keys.Space = true
+                        else keys.Space = false
+                    }
+                } else {
+                    // Patrol
+                    keys.ArrowRight = true
+                    keys.ArrowLeft = false
+                }
+            }
+
             // Player Physics
             if (keys.ArrowLeft) player.vx -= PLAYER_SPEED
             if (keys.ArrowRight) player.vx += PLAYER_SPEED
@@ -349,11 +426,20 @@ const DefenderGame = () => {
             ctx.strokeStyle = 'white'
             ctx.strokeRect(cameraX * scannerScale, 2, canvas.width * scannerScale, scannerH - 4)
 
+            if (isAttractMode) {
+                ctx.fillStyle = '#ffffff'
+                ctx.font = '20px monospace'
+                ctx.textAlign = 'center'
+                ctx.fillText("PRESS ANY KEY TO START", canvas.width / 2, canvas.height / 2)
+                ctx.fillText("ATTRACT MODE", canvas.width / 2, canvas.height / 2 - 40)
+            }
         }
 
         const loop = () => {
-            update()
-            draw()
+            if (!pausedRef.current) {
+                update()
+                draw()
+            }
             animationFrameId = requestAnimationFrame(loop)
         }
         init()
@@ -366,7 +452,15 @@ const DefenderGame = () => {
         }
     }, [])
 
-    return <canvas ref={canvasRef} className="block fixed inset-0 w-full h-full" />
+    return (
+        <div className="fixed inset-0 bg-black flex items-center justify-center p-4">
+            <div ref={containerRef} className="relative w-full max-w-[600px] aspect-[3/4] border-2 border-neutral-800 rounded-lg overflow-hidden shadow-2xl shadow-neutral-900 bg-black">
+                <canvas ref={canvasRef} className="block w-full h-full" />
+                {paused && <PauseOverlay game={GAMES.find(g => g.label === 'DEFENDER')} onResume={handleResume} />}
+            </div>
+            <VirtualControls />
+        </div>
+    )
 }
 
 export default DefenderGame

@@ -1,8 +1,21 @@
-import { useEffect, useRef } from 'react'
-import { audioController } from '../utils/AudioController'
+import React, { useEffect, useRef } from 'react'
+import { audioController } from '../../utils/AudioController'
+import PauseOverlay from '../../components/PauseOverlay'
+import VirtualControls from '../../components/VirtualControls'
+import { GAMES } from '../../config/games'
 
 const CentipedeGame = () => {
     const canvasRef = useRef(null)
+    const containerRef = useRef(null)
+    const [paused, setPaused] = React.useState(false)
+    const pausedRef = useRef(false)
+
+    // Resume callback
+    const handleResume = () => {
+        setPaused(false)
+        pausedRef.current = false
+        canvasRef.current?.focus()
+    }
 
     useEffect(() => {
         const canvas = canvasRef.current
@@ -59,16 +72,33 @@ const CentipedeGame = () => {
         }
 
         const resize = () => {
-            canvas.width = window.innerWidth
-            canvas.height = window.innerHeight
-            init()
+            if (containerRef.current && canvas) {
+                const { width, height } = containerRef.current.getBoundingClientRect()
+                canvas.width = width
+                canvas.height = height
+                init()
+            }
         }
         window.addEventListener('resize', resize)
         resize()
 
         // Input
+        let isAttractMode = true
         let keys = { ArrowLeft: false, ArrowRight: false, ArrowUp: false, ArrowDown: false, Space: false }
-        const handleDown = (e) => {
+        const handleKeyDown = (e) => {
+            if (e.key === '?' || (e.shiftKey && e.key === '/')) {
+                const newState = !pausedRef.current
+                pausedRef.current = newState
+                setPaused(newState)
+                return
+            }
+            if (pausedRef.current) return
+
+            if (isAttractMode) {
+                isAttractMode = false
+                // Reset keys
+                Object.keys(keys).forEach(k => keys[k] = false)
+            }
             if (keys[e.code] !== undefined) keys[e.code] = true
             if (e.code === 'Space') {
                 if (state.player.dead) init();
@@ -95,7 +125,35 @@ const CentipedeGame = () => {
 
         const update = () => {
             state.frame++
-            if (state.player.dead) return
+            if (state.player.dead) {
+                if (isAttractMode && state.frame % 120 === 0) init() // Auto restart in attract mode
+                return
+            }
+
+            // --- AI LOGIC ---
+            if (isAttractMode) {
+                // Find lowest centipede
+                let target = null
+                let maxY = -1
+                state.centipedes.forEach(c => {
+                    if (c.y > maxY) {
+                        maxY = c.y
+                        target = c
+                    }
+                })
+
+                if (target) {
+                    const dx = target.x - state.player.x
+                    if (Math.abs(dx) > 4) {
+                        if (dx > 0) { keys.ArrowRight = true; keys.ArrowLeft = false }
+                        else { keys.ArrowLeft = true; keys.ArrowRight = false }
+                    } else {
+                        keys.ArrowRight = false; keys.ArrowLeft = false
+                        // Fire
+                        if (state.frame % 10 === 0) fireBullet()
+                    }
+                }
+            }
 
             // Player Move
             if (keys.ArrowLeft) state.player.x -= PLAYER_SPEED
@@ -273,14 +331,24 @@ const CentipedeGame = () => {
             if (state.player.dead) {
                 ctx.fillText("PRESS SPACE", state.width / 2 - 40, state.height / 2)
             }
+
+            if (isAttractMode && !state.player.dead) {
+                ctx.fillStyle = 'white'
+                ctx.textAlign = 'center'
+                ctx.fillText("ATTRACT MODE", state.width / 2, state.height / 2 - 20)
+                ctx.fillText("PRESS ANY KEY", state.width / 2, state.height / 2 + 20)
+                ctx.textAlign = 'start'
+            }
         }
 
         const loop = () => {
-            update()
-            draw()
+            if (!pausedRef.current) {
+                update()
+                draw()
+            }
             animationFrameId = requestAnimationFrame(loop)
         }
-        loop()
+        init()
 
         return () => {
             window.removeEventListener('keydown', handleDown)
@@ -290,7 +358,15 @@ const CentipedeGame = () => {
         }
     }, [])
 
-    return <canvas ref={canvasRef} className="block fixed inset-0 w-full h-full" />
+    return (
+        <div className="fixed inset-0 bg-black flex items-center justify-center p-4">
+            <div ref={containerRef} className="relative w-full max-w-[600px] aspect-[3/4] border-2 border-neutral-800 rounded-lg overflow-hidden shadow-2xl shadow-neutral-900 bg-black">
+                <canvas ref={canvasRef} className="block w-full h-full" />
+                {paused && <PauseOverlay game={GAMES.find(g => g.label === 'CENTIPEDE')} onResume={handleResume} />}
+            </div>
+            <VirtualControls />
+        </div>
+    )
 }
 
 export default CentipedeGame

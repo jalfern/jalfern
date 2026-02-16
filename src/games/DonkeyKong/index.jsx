@@ -1,8 +1,21 @@
-import { useEffect, useRef } from 'react'
-import { audioController } from '../utils/AudioController'
+import React, { useEffect, useRef } from 'react'
+import { audioController } from '../../utils/AudioController'
+import PauseOverlay from '../../components/PauseOverlay'
+import VirtualControls from '../../components/VirtualControls'
+import { GAMES } from '../../config/games'
 
 const DonkeyKongGame = () => {
     const canvasRef = useRef(null)
+    const containerRef = useRef(null)
+    const [paused, setPaused] = React.useState(false)
+    const pausedRef = useRef(false)
+
+    // Resume callback
+    const handleResume = () => {
+        setPaused(false)
+        pausedRef.current = false
+        canvasRef.current?.focus()
+    }
 
     useEffect(() => {
         const canvas = canvasRef.current
@@ -38,7 +51,17 @@ const DonkeyKongGame = () => {
             score: 0,
             level: 1,
             barrelTimer: 0,
-            dkFrame: 0
+            dkFrame: 0,
+            isAttractMode: true
+        }
+
+        // Input
+        const keys = {
+            ArrowUp: false,
+            ArrowDown: false,
+            ArrowLeft: false,
+            ArrowRight: false,
+            Space: false
         }
 
         const createLevel = () => {
@@ -75,14 +98,44 @@ const DonkeyKongGame = () => {
         }
 
         const resize = () => {
-            canvas.width = window.innerWidth
-            canvas.height = window.innerHeight
-            state.width = canvas.width
-            state.height = canvas.height
-            createLevel()
+            if (containerRef.current && canvas) {
+                const { width, height } = containerRef.current.getBoundingClientRect()
+                canvas.width = width
+                canvas.height = height
+                state.width = width
+                state.height = height
+                createLevel()
+            }
         }
         window.addEventListener('resize', resize)
         resize()
+
+        const handleKeyDown = (e) => {
+            if (e.key === '?' || (e.shiftKey && e.key === '/')) {
+                const newState = !pausedRef.current
+                pausedRef.current = newState
+                setPaused(newState)
+                return
+            }
+            if (pausedRef.current) return
+
+            if (state.isAttractMode) {
+                state.isAttractMode = false
+            }
+            if (keys.hasOwnProperty(e.code)) {
+                keys[e.code] = true
+            }
+            if (e.code === 'ArrowUp' || e.code === 'ArrowDown' || e.code === 'Space') {
+                e.preventDefault()
+            }
+        }
+        const handleKeyUp = (e) => {
+            if (keys.hasOwnProperty(e.code)) {
+                keys[e.code] = false
+            }
+        }
+        window.addEventListener('keydown', handleKeyDown)
+        window.addEventListener('keyup', handleKeyUp)
 
         const AABB = (r1, r2) => {
             return r1.x < r2.x + r2.w &&
@@ -103,82 +156,96 @@ const DonkeyKongGame = () => {
                 return
             }
 
-            let aiMove = 0
-            let aiJump = false
-            let aiClimb = false
+            let move = 0
+            let jump = false
+            let climbUp = false
+            let climbDown = false
 
-            // AI LOGIC
-            // 1. Find nearest ladder going UP
-            // Range expanded to ensure detection (15px)
-            const nearbyLadder = state.ladders.find(l =>
-                Math.abs(l.y + l.h - (state.player.y + state.player.h)) < 20 && // Vertical leniency (was 10)
-                Math.abs((state.player.x + state.player.w / 2) - l.x) < 30        // Horizontal leniency (was 20)
-            )
+            // --- AI & CONTROL LOGIC ---
+            if (state.isAttractMode) {
+                // AI LOGIC (Original)
+                // 1. Find nearest ladder going UP
+                const nearbyLadder = state.ladders.find(l =>
+                    Math.abs(l.y + l.h - (state.player.y + state.player.h)) < 20 &&
+                    Math.abs((state.player.x + state.player.w / 2) - l.x) < 30
+                )
 
-            // Decisions
-            if (state.player.climbing) {
-                // Keep climbing
-                aiClimb = true
-            } else if (nearbyLadder) {
-                // If we found a ladder and we are not already at the very top level
-                if (state.player.y > state.platforms[state.platforms.length - 1].y + 20) {
-                    // Align perfectly first? No, snap in execution.
-                    aiClimb = true
+                if (state.player.climbing) {
+                    climbUp = true
+                } else if (nearbyLadder) {
+                    if (state.player.y > state.platforms[state.platforms.length - 1].y + 20) {
+                        climbUp = true
+                    } else {
+                        if (state.player.x < state.width / 2) move = 1
+                        else move = -1
+                    }
                 } else {
-                    // On top level, go to center (Pauline)
-                    if (state.player.x < state.width / 2) aiMove = 1
-                    else aiMove = -1
+                    if (state.player.x < 50) state.player.dir = 1
+                    if (state.player.x > state.width - 50) state.player.dir = -1
+                    move = state.player.dir
+                }
+
+                // Barrel Avoidance
+                const approachingBarrel = state.barrels.find(b =>
+                    Math.abs(b.y - state.player.y) < 30 &&
+                    Math.abs(b.x - state.player.x) < 70 &&
+                    Math.sign(b.vx) !== Math.sign(move)
+                )
+                if (approachingBarrel && state.player.grounded) {
+                    jump = true
                 }
             } else {
-                // Move towards ladder on this level
-                // Simple zig-zag heuristic based on level parity
-                const levelH = 90
-                const currentLevel = Math.floor((state.height - state.player.y) / levelH)
-
-                // If no ladder found nearby, we need to find WHERE the ladder is.
-                // This is simple demo AI, so we just ping pong essentially, knowing the ladders are at edges.
-                if (state.player.x < 50) state.player.dir = 1
-                if (state.player.x > state.width - 50) state.player.dir = -1
-                aiMove = state.player.dir
-            }
-
-            // Barrel Avoidance
-            const approachingBarrel = state.barrels.find(b =>
-                Math.abs(b.y - state.player.y) < 30 &&
-                Math.abs(b.x - state.player.x) < 70 &&
-                Math.sign(b.vx) !== Math.sign(aiMove)
-            )
-            if (approachingBarrel && state.player.grounded) {
-                aiJump = true
+                // MANUAL CONTROL
+                if (keys.ArrowLeft) move = -1
+                if (keys.ArrowRight) move = 1
+                if (keys.ArrowUp) climbUp = true
+                if (keys.ArrowDown) climbDown = true
+                if (keys.Space && state.player.grounded) jump = true
             }
 
             // MOVEMENT APPLICATION
-            if (aiClimb && nearbyLadder) {
-                // *** FIX: SNAP TO LADDER CENTER ***
-                if (!state.player.climbing) {
-                    // Start climbing
-                    state.player.climbing = true
-                    state.player.x = nearbyLadder.x - state.player.w / 2
-                    state.player.vx = 0
+            // Check ladder interaction for manual/AI
+            // Find ladder intersection
+            const ladder = state.ladders.find(l =>
+                state.player.x + state.player.w > l.x - 10 &&
+                state.player.x < l.x + 10 &&
+                state.player.y + state.player.h > l.y &&
+                state.player.y < l.y + l.h + state.player.h
+            )
+
+            if (state.player.climbing) {
+                if (climbUp || climbDown) {
+                    state.player.y += (climbUp ? -1 : 1) * LADDER_SPEED
+                    state.player.frame++ // Animate climb
                 }
+                // Check top/bottom of ladder
+                // If at bottom and pressing down, dismount?
+                // If at top
 
-                // FORCE SNAP CONTINUOUSLY to prevent drift
-                state.player.x = nearbyLadder.x - state.player.w / 2
-
-                state.player.y -= LADDER_SPEED
-
-                // Check if reached top of ladder (Platform)
-                if (state.platforms.some(p => Math.abs((state.player.y + state.player.h) - p.y) < 5)) {
+                // Fall off ladder if not overlaps
+                if (!ladder) {
                     state.player.climbing = false
-                    state.player.y -= 5 // Pop up
                 }
             } else {
-                state.player.climbing = false
-                state.player.vx = aiMove * SPEED
-                if (aiJump) {
-                    state.player.vy = JUMP_FORCE
-                    state.player.grounded = false
-                    audioController.playTone(300, 0.1, 'square')
+                // Try to mount ladder
+                if (ladder && (climbUp || climbDown)) {
+                    // Snap to ladder x
+                    if (Math.abs((state.player.x + state.player.w / 2) - ladder.x) < 20) {
+                        state.player.x = ladder.x - state.player.w / 2
+                        state.player.climbing = true
+                        state.player.vx = 0
+                    }
+                }
+
+                if (!state.player.climbing) {
+                    state.player.vx = move * SPEED
+                    if (move !== 0) state.player.dir = move
+
+                    if (jump) {
+                        state.player.vy = JUMP_FORCE
+                        state.player.grounded = false
+                        audioController.playTone(300, 0.1, 'square')
+                    }
                 }
             }
 
@@ -187,6 +254,8 @@ const DonkeyKongGame = () => {
                 state.player.vy += GRAVITY
                 state.player.y += state.player.vy
                 state.player.x += state.player.vx
+            } else {
+                state.player.vy = 0
             }
 
             // Ground Collision
@@ -198,11 +267,17 @@ const DonkeyKongGame = () => {
                     state.player.x + state.player.w > p.x &&
                     state.player.x < p.x + p.w
                 ) {
-                    state.player.grounded = true
-                    state.player.vy = 0
-                    state.player.y = p.y - state.player.h
-                    // If we hit ground, stop climbing (failsafe)
-                    state.player.climbing = false
+                    if (!state.player.climbing || (state.player.climbing && climbDown && state.player.y + state.player.h >= p.y)) {
+                        // Land logic
+                        // If climbing down and hit ground, dismount
+                        if (state.player.climbing && state.player.y + state.player.h >= p.y) state.player.climbing = false
+
+                        if (!state.player.climbing) {
+                            state.player.grounded = true
+                            state.player.vy = 0
+                            state.player.y = p.y - state.player.h
+                        }
+                    }
                 }
             })
 
@@ -416,22 +491,42 @@ const DonkeyKongGame = () => {
                 ctx.stroke()
                 ctx.restore()
             })
+
+            if (state.isAttractMode) {
+                ctx.fillStyle = '#ffffff'
+                ctx.font = '20px monospace'
+                ctx.textAlign = 'center'
+                ctx.fillText("PRESS ANY KEY TO START", state.width / 2, state.height - 50)
+                ctx.fillText("ATTRACT MODE", state.width / 2, 50)
+            }
         }
 
         const loop = () => {
-            update()
-            draw()
+            if (!pausedRef.current) {
+                update()
+                draw()
+            }
             animationFrameId = requestAnimationFrame(loop)
         }
         loop()
 
         return () => {
             window.removeEventListener('resize', resize)
+            window.removeEventListener('keydown', handleKeyDown)
+            window.removeEventListener('keyup', handleKeyUp)
             cancelAnimationFrame(animationFrameId)
         }
     }, [])
 
-    return <canvas ref={canvasRef} className="block fixed inset-0 w-full h-full" />
+    return (
+        <div className="fixed inset-0 bg-black flex items-center justify-center p-4">
+            <div ref={containerRef} className="relative w-full max-w-[600px] aspect-[3/4] border-2 border-neutral-800 rounded-lg overflow-hidden shadow-2xl shadow-neutral-900 bg-black">
+                <canvas ref={canvasRef} className="block w-full h-full" />
+                {paused && <PauseOverlay game={GAMES.find(g => g.label === 'DONKEY KONG')} onResume={handleResume} />}
+            </div>
+            <VirtualControls />
+        </div>
+    )
 }
 
 export default DonkeyKongGame

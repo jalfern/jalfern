@@ -1,8 +1,21 @@
-import { useEffect, useRef } from 'react'
-import { audioController } from '../utils/AudioController'
+import React, { useEffect, useRef } from 'react'
+import { audioController } from '../../utils/AudioController'
+import PauseOverlay from '../../components/PauseOverlay'
+import VirtualControls from '../../components/VirtualControls'
+import { GAMES } from '../../config/games'
 
 const MissileCommandGame = () => {
     const canvasRef = useRef(null)
+    const containerRef = useRef(null)
+    const [paused, setPaused] = React.useState(false)
+    const pausedRef = useRef(false)
+
+    // Resume callback
+    const handleResume = () => {
+        setPaused(false)
+        pausedRef.current = false
+        canvasRef.current?.focus()
+    }
 
     useEffect(() => {
         const canvas = canvasRef.current
@@ -26,6 +39,10 @@ const MissileCommandGame = () => {
         let spawnTimer = 0
         let gameOver = false
         let gameState = 'playing' // playing, waveEnd, gameOver
+        let isAttractMode = true
+
+        // INPUT STATE
+        const keys = { ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false, Space: false }
 
         // ENTITIES
         // Cities: 6 total
@@ -52,6 +69,8 @@ const MissileCommandGame = () => {
 
         // MOUSE INPUT
         const handleMouseMove = (e) => {
+            if (pausedRef.current) return
+            if (isAttractMode) isAttractMode = false
             const rect = canvas.getBoundingClientRect()
             const scaleX = SCREEN_WIDTH / rect.width
             const scaleY = SCREEN_HEIGHT / rect.height
@@ -60,6 +79,11 @@ const MissileCommandGame = () => {
         }
 
         const handleClick = () => {
+            if (pausedRef.current) return
+            if (isAttractMode) {
+                isAttractMode = false
+                return
+            }
             if (gameOver || gameState !== 'playing') return
 
             // Find nearest silo with ammo
@@ -136,22 +160,55 @@ const MissileCommandGame = () => {
             }
         }
 
+        const handleKeyDown = (e) => {
+            if (e.key === '?' || (e.shiftKey && e.key === '/')) {
+                const newState = !pausedRef.current
+                pausedRef.current = newState
+                setPaused(newState)
+                return
+            }
+            if (keys.hasOwnProperty(e.code)) keys[e.code] = true
+            if (e.code === 'Space') handleClick() // Fire
+        }
+
+        const handleKeyUp = (e) => {
+            if (keys.hasOwnProperty(e.code)) keys[e.code] = false
+        }
+
         const init = () => {
             console.log("Missile Command Init")
             resize()
+
+            window.addEventListener('keydown', handleKeyDown)
+            window.addEventListener('keyup', handleKeyUp)
+
             window.addEventListener('mousemove', handleMouseMove)
             window.addEventListener('mousedown', handleClick)
             window.addEventListener('resize', resize)
+
+            // cleanup needs to remove keydown too, effectively done in return but logic structure is init-return separate here.
+            // Actually `init` is called once. The return of useEffect is where cleanup is.
+            // I should assign handleKeyDown to a variable accessible in cleanup?
+            // `init` defines `handleKeyDown` locally.
+            // I should move `handleKeyDown` out of `init` or modify cleanup.
+            // Let's attach to window in `init` but we need to reference it in cleanup.
+            // Better: Move handleKeyDown to main scope and attach/detach in useEffect explicitly. Use a ref to hold valid cleanup.
+
+            // The `init` function is weirdly structure.
+            // Let's just add it to window in `init` but we need to remove it.
+            // `init` is inside useEffect. `handleKeyDown` needs to be defined in useEffect scope.
+            // I will inject `handleKeyDown` definition before `init`.
             loop()
         }
 
         const resize = () => {
-            if (!canvas || !ctx) return
+            if (!canvas || !ctx || !containerRef.current) return
+            const { width, height } = containerRef.current.getBoundingClientRect()
             const dpr = window.devicePixelRatio || 1
-            canvas.width = window.innerWidth * dpr
-            canvas.height = window.innerHeight * dpr
-            canvas.style.width = `${window.innerWidth}px`
-            canvas.style.height = `${window.innerHeight}px`
+            canvas.width = width * dpr
+            canvas.height = height * dpr
+            canvas.style.width = `${width}px`
+            canvas.style.height = `${height}px`
             ctx.scale(dpr, dpr)
             ctx.imageSmoothingEnabled = false
         }
@@ -159,7 +216,69 @@ const MissileCommandGame = () => {
         const update = () => {
             if (gameState === 'gameOver') return
 
-            // Scaling for mouse logic (re-calculated in draw mostly, but mouse event used rect)
+            // --- AI LOGIC (ATTRACT MODE) ---
+            if (isAttractMode && gameState === 'playing' && !gameOver) {
+                // Try to intercept
+                let targetMissile = null
+                let minHeight = Infinity
+
+                // Target lowest missile
+                enemyMissiles.forEach(m => {
+                    if (m.y < GROUND_Y && m.y < minHeight) {
+                        targetMissile = m
+                        minHeight = m.y
+                    }
+                })
+
+                if (targetMissile) {
+                    // Ideal intercept point? Just aim a bit ahead
+                    const leadX = targetMissile.x + Math.cos(Math.atan2(targetMissile.targetY - targetMissile.startX, targetMissile.targetX - targetMissile.startX)) * 50
+                    const leadY = targetMissile.y + Math.sin(Math.atan2(targetMissile.targetY - targetMissile.startY, targetMissile.targetX - targetMissile.startX)) * 50
+
+                    // Move crosshair
+                    const dx = leadX - crosshair.x
+                    const dy = leadY - crosshair.y
+                    crosshair.x += dx * 0.1
+                    crosshair.y += dy * 0.1
+
+                    // Fire?
+                    if (Math.random() < 0.05 && Math.abs(dx) < 20 && Math.abs(dy) < 20) {
+                        // AI Fire
+                        let bestSilo = null
+                        let maxAmmo = -1
+                        silos.forEach(silo => {
+                            if (silo.alive && silo.ammo > maxAmmo) {
+                                maxAmmo = silo.ammo
+                                bestSilo = silo
+                            }
+                        })
+                        if (bestSilo && bestSilo.ammo > 0) {
+                            bestSilo.ammo--
+                            fireMissile(bestSilo.x, bestSilo.y, crosshair.x, crosshair.y)
+                        }
+                    }
+                } else {
+                    // Wander crosshair
+                    crosshair.x += (Math.sin(Date.now() * 0.001) * SCREEN_WIDTH / 2 + SCREEN_WIDTH / 2 - crosshair.x) * 0.01
+                    crosshair.y += (SCREEN_HEIGHT / 2 - crosshair.y) * 0.01
+                }
+            }
+
+            // KEYBOARD AIMING
+            if (gameState === 'playing' && !pausedRef.current && !isAttractMode) {
+                const AIM_SPEED = 8
+                if (keys.ArrowLeft) crosshair.x -= AIM_SPEED
+                if (keys.ArrowRight) crosshair.x += AIM_SPEED
+                if (keys.ArrowUp) crosshair.y -= AIM_SPEED
+                if (keys.ArrowDown) crosshair.y += AIM_SPEED
+
+                // Clamp
+                if (crosshair.x < 0) crosshair.x = 0
+                if (crosshair.x > SCREEN_WIDTH) crosshair.x = SCREEN_WIDTH
+                if (crosshair.y < 0) crosshair.y = 0
+                if (crosshair.y > GROUND_Y) crosshair.y = GROUND_Y
+            }
+
 
             // --- SPAWNING ---
             if (spawning && gameState === 'playing') {
@@ -288,15 +407,16 @@ const MissileCommandGame = () => {
 
         const draw = () => {
             // Scale
-            const scaleX = window.innerWidth / SCREEN_WIDTH
-            const scaleY = window.innerHeight / SCREEN_HEIGHT
+            const dpr = window.devicePixelRatio || 1
+            const scaleX = canvas.width / dpr / SCREEN_WIDTH
+            const scaleY = canvas.height / dpr / SCREEN_HEIGHT
             const scale = Math.min(scaleX, scaleY) * 0.95
 
-            const transX = (window.innerWidth - SCREEN_WIDTH * scale) / 2
-            const transY = (window.innerHeight - SCREEN_HEIGHT * scale) / 2
+            const transX = (canvas.width / dpr - SCREEN_WIDTH * scale) / 2
+            const transY = (canvas.height / dpr - SCREEN_HEIGHT * scale) / 2
 
             ctx.fillStyle = '#000000'
-            ctx.fillRect(0, 0, window.innerWidth, window.innerHeight)
+            ctx.fillRect(0, 0, canvas.width, canvas.height)
 
             ctx.save()
             ctx.translate(transX, transY)
@@ -416,6 +536,13 @@ const MissileCommandGame = () => {
             ctx.fillStyle = '#0000ff'
             ctx.fillText(`WAVE: ${wave}`, SCREEN_WIDTH / 2, 60)
 
+            if (isAttractMode) {
+                ctx.fillStyle = '#ffffff'
+                ctx.font = '30px monospace'
+                ctx.fillText("CLICK TO START", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
+                ctx.fillText("ATTRACT MODE", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 40)
+            }
+
             if (gameState === 'waveEnd') {
                 ctx.fillStyle = '#00ff00'
                 ctx.font = '40px monospace'
@@ -434,13 +561,17 @@ const MissileCommandGame = () => {
         }
 
         const loop = () => {
-            update()
-            draw()
+            if (!pausedRef.current) {
+                update()
+                draw()
+            }
             animationFrameId = requestAnimationFrame(loop)
         }
         init()
 
         return () => {
+            window.removeEventListener('keydown', handleKeyDown)
+            window.removeEventListener('keyup', handleKeyUp)
             window.removeEventListener('mousemove', handleMouseMove)
             window.removeEventListener('mousedown', handleClick)
             window.removeEventListener('resize', resize)
@@ -448,7 +579,15 @@ const MissileCommandGame = () => {
         }
     }, [])
 
-    return <canvas ref={canvasRef} className="block fixed inset-0 w-full h-full bg-black cursor-none" />
+    return (
+        <div className="fixed inset-0 bg-black flex items-center justify-center p-4">
+            <div ref={containerRef} className="relative w-full max-w-[600px] aspect-[4/3] border-2 border-neutral-800 rounded-lg overflow-hidden shadow-2xl shadow-neutral-900 bg-black">
+                <canvas ref={canvasRef} className="block w-full h-full cursor-none" />
+                {paused && <PauseOverlay game={GAMES.find(g => g.label === 'MISSILE COMMAND')} onResume={handleResume} />}
+            </div>
+            <VirtualControls />
+        </div>
+    )
 }
 
 export default MissileCommandGame
