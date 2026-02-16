@@ -386,10 +386,21 @@ const PitfallGame = () => {
                 window.addEventListener('keyup', handleKeyUp)
                 window.addEventListener('resize', resize)
                 resize()
-                canvas.focus()
+                // canvas.focus() // Removing focus() as it might scroll or cause unexpected behavior on load
                 loop()
             } catch (e) {
                 console.error("Pitfall Init Failed:", e)
+                // Fallback Error Display
+                ctx.fillStyle = '#000000'
+                ctx.fillRect(0, 0, canvas.width, canvas.height)
+                ctx.fillStyle = '#FF0000'
+                ctx.font = '16px monospace'
+                ctx.textAlign = 'left'
+                ctx.fillText(`ERROR: ${e.message}`, 20, 100)
+
+                // Try to show stack trace line
+                const stackLine = e.stack ? e.stack.split('\n')[1] : ''
+                ctx.fillText(stackLine, 20, 130)
             }
         }
 
