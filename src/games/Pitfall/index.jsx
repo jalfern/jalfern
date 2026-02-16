@@ -32,8 +32,8 @@ const PitfallGame = () => {
         const GRAVITY = 0.4 // Was 0.6
 
         // GAME STATE
-        // GAME STATE
         let currentScreen = 0
+        let roomType = 'ground' // Added state for background rendering
         let gameTime = 0
         let score = 2000
         let timeLeft = 20 * 60 // 20 minutes
@@ -331,48 +331,28 @@ const PitfallGame = () => {
                 // Walls often appear with treasure
                 if (roomByte & 0x80) objects.push({ type: 'wall', x: 400 })
             } else {
-                // Ground Objects (0-2)
-                // 000: Rolling Logs
-                // 001: Fire?
-                // 010: Snake?
-                // ...
-                // For now, map a few distinct ones
-
-                // If Crocs (Type 4) -> No ground objects, but maybe Vine
-                if (typeBits === 4) {
-                    // Vine Logic: 010, 011, 110, 111
-                    if ([2, 3, 6, 7].includes(objBits)) {
-                        objects.push({ type: 'vine', x: 400, length: 190 })
-                    }
-                    // Add Crocs
-                    objects.push({ type: 'croc', x: 300 }, { type: 'croc', x: 500 }, { type: 'croc', x: 700 })
-                } else if (type === 'quicksand') {
-                    // Tar Pit always has vine?
-                    // "Shifting tar pits without a treasure ... will always have a vine"
-                    if (!hasTreasure) objects.push({ type: 'vine', x: 400, length: 190 })
-                } else {
-                    // Standard Ground Objects
-                    // 0: Logs
-                    if (objBits === 0) objects.push({ type: 'log', x: 750, count: 3 }) // 3 logs
-                    // 1: Fire
-                    if (objBits === 1) objects.push({ type: 'fire', x: 500 }) // Fire
-                    // 2: Snake
-                    if (objBits === 2) objects.push({ type: 'snake', x: 450 })
-                    // 3: Scorpion?
-                    if (objBits === 3) objects.push({ type: 'scorpion', x: 600 })
-                    // 4-7: Walls?
-                    if (objBits >= 4) objects.push({ type: 'wall', x: 400 })
-                }
-
-                // Ladders (Bit 7? Or random?)
-                // Original uses other logic. We'll density check.
-                // Arbitrary: If index is even, ladder exists?
-                // Let's use bit 6 of room byte for ladder
-                if (roomByte & 0x40) objects.push({ type: 'ladder', x: 400 })
+                // Standard Ground Objects
+                // 0: Logs
+                if (objBits === 0) objects.push({ type: 'log', x: 750, count: 3 }) // 3 logs
+                // 1: Fire
+                if (objBits === 1) objects.push({ type: 'fire', x: 500 }) // Fire
+                // 2: Snake
+                if (objBits === 2) objects.push({ type: 'snake', x: 450 })
+                // 3: Scorpion?
+                if (objBits === 3) objects.push({ type: 'scorpion', x: 600 })
+                // 4-7: Walls?
+                if (objBits >= 4) objects.push({ type: 'wall', x: 400 })
             }
+
+            // Ladders (Bit 7? Or random?)
+            // Original uses other logic. We'll density check.
+            // Arbitrary: If index is even, ladder exists?
+            // Let's use bit 6 of room byte for ladder
+            if (roomByte & 0x40) objects.push({ type: 'ladder', x: 400 })
 
             // Apply Types
             // If we have a pit/water but no crocs/vine, it's a hole 
+            roomType = type // persist to global
 
             currentScreen = index
 
@@ -416,6 +396,10 @@ const PitfallGame = () => {
             if (!canvas || !ctx || !containerRef.current) return
             const { width, height } = containerRef.current.getBoundingClientRect()
             const dpr = window.devicePixelRatio || 1
+            if (width === 0 || height === 0) {
+                setTimeout(resize, 100)
+                return
+            }
             canvas.width = width * dpr
             canvas.height = height * dpr
             canvas.style.width = `${width}px`
@@ -479,11 +463,10 @@ const PitfallGame = () => {
                 // Jump Hazards
                 if (player.onGround) {
                     // Check for hazards ahead
-                    const screen = screens[currentScreen]
                     let hazard = false
 
                     // Holes
-                    if (screen.type === 'water' || screen.type === 'pit' || screen.type === 'quicksand') {
+                    if (roomType === 'water' || roomType === 'pit' || roomType === 'quicksand') {
                         if (player.x > 200 && player.x < 300) hazard = true
                     }
 
@@ -529,11 +512,10 @@ const PitfallGame = () => {
 
             // Ground/Floor
             // Simple: Ground is always at GROUND_Y unless in a pit
-            const screen = screens[currentScreen]
             let groundLevel = GROUND_Y
 
             // Pit/Water logic
-            const isHole = (screen.type === 'water' || screen.type === 'pit' || screen.type === 'quicksand')
+            const isHole = (roomType === 'water' || roomType === 'pit' || roomType === 'quicksand')
             const inHoleZone = (player.x > 250 && player.x < 550) // Approximation of hole width
 
             if (isHole && inHoleZone) {
@@ -747,6 +729,19 @@ const PitfallGame = () => {
 
             // Underground
             ctx.fillStyle = '#905000' // Reddish Brown
+            // PALETTE
+            const PALETTE = {
+                g: '#228822', // Green (Shirt)
+                w: '#DDDDDD', // White (Pants)
+                s: '#FFCCAA', // Skin
+                b: '#000000', // Black
+                r: '#FF4400', // Red (Fire/Scorpion Tail)
+                l: '#552200', // Log Brown
+                y: '#FFD700', // Gold
+                e: '#00AA00', // Snake Green
+                h: '#FFFFFF', // White/Grey (Scorpion Body)
+                n: '#331100'  // Dark Brown (Scorpion Legs)
+            }
             ctx.fillRect(0, 470, SCREEN_WIDTH, 130)
 
             // Underground Wall Pattern (Brick)
@@ -759,21 +754,21 @@ const PitfallGame = () => {
             }
 
             // --- CURRENT SCREEN FEATURES ---
-            const screen = screens[currentScreen]
+            // const screen = screens[currentScreen]
 
             // Pit/Water Hole
-            if (screen.type !== 'ground') {
+            if (roomType !== 'ground') {
                 // The hole cutout
                 let holeColor = '#000000'
-                if (screen.type === 'water') holeColor = '#2244CC'
-                if (screen.type === 'pit') holeColor = '#000000'
-                if (screen.type === 'quicksand') holeColor = '#331100'
+                if (roomType === 'water') holeColor = '#2244CC'
+                if (roomType === 'pit') holeColor = '#000000'
+                if (roomType === 'quicksand') holeColor = '#331100'
 
                 ctx.fillStyle = holeColor
                 ctx.fillRect(250, 352, 300, 118) // Slightly smaller to keep edge?
 
                 // Water shine
-                if (screen.type === 'water') {
+                if (roomType === 'water') {
                     ctx.fillStyle = '#4466EE'
                     ctx.fillRect(260, 370, 20, 4)
                     ctx.fillRect(350, 400, 40, 4)
