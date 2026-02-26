@@ -1,1 +1,6 @@
-{}
+{
+  "rewrites": [
+    { "source": "/retrogames/:path*", "destination": "https://retrogames-psi.vercel.app/retrogames/:path*" },
+    { "source": "/retrogames", "destination": "https://retrogames-psi.vercel.app/retrogames" }
+  ]
+}
