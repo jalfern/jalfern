@@ -17,7 +17,7 @@ function App() {
             Jon's background
           </a>
           <a
-            href="https://jalfern-retrogames.vercel.app"
+            href="https://retrogames-psi.vercel.app"
             className="opacity-60 hover:opacity-100 transition-opacity duration-300 tracking-wide"
           >
             RetroGames exploration →
