@@ -22,6 +22,12 @@ function App() {
           >
             RetroGames exploration →
           </a>
+          <a
+            href="/retrogames/games"
+            className="opacity-40 hover:opacity-100 transition-opacity duration-300 tracking-wide text-xs"
+          >
+            Games list →
+          </a>
         </nav>
       </div>
     </div>
