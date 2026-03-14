@@ -7,6 +7,7 @@ import CentipedeGame from '../games/Centipede'
 import DefenderGame from '../games/Defender'
 import PitfallGame from '../games/Pitfall'
 import MissileCommandGame from '../games/MissileCommand'
+import AdventureGame from '../games/Adventure'
 
 // Game Registry
 // Theme 'dark' = white text (background is black)
@@ -83,5 +84,13 @@ export const GAMES = [
         theme: 'dark',
         description: 'Defend your cities from incoming ICBMs.',
         controls: ['Mouse Move: Aim', 'Click: Fire ABM']
+    },
+    {
+        path: '/adventure',
+        component: AdventureGame,
+        label: 'ADVENTURE',
+        theme: 'dark',
+        description: 'The classic Atari 2600 action-adventure. Find the Enchanted Chalice and return it to the Gold Castle. Beware the dragons and the thieving bat!',
+        controls: ['Arrow Keys: Move', 'Space: Pick up / Drop item', '1/2/3: Select Game Level']
     }
 ]
