@@ -10,9 +10,8 @@ function App() {
 
         <nav className="flex flex-col gap-4 text-sm">
           <a
-            href="#"
-            className="opacity-30 cursor-default tracking-wide"
-            onClick={(e) => e.preventDefault()}
+            href="https://www.linkedin.com/in/jonalferness"
+            className="opacity-30 hover:opacity-100 transition-opacity duration-300 tracking-wide"
           >
             Jon's background
           </a>
