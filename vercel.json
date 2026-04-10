@@ -1,6 +1,17 @@
 {
-  "rewrites": [
-    { "source": "/retrogames/(.*)", "destination": "/index.html" },
-    { "source": "/retrogames", "destination": "/index.html" }
+  "version": 2,
+  "builds": [
+    {
+      "src": "/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
+    }
+  ],
+  "routes": [
+    { "src": "/retrogames/(.*)", "dest": "/index.html" },
+    { "src": "/retrogames", "dest": "/index.html" },
+    { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
