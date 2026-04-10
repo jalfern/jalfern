@@ -10,7 +10,7 @@ function App() {
 
         <nav className="flex flex-col gap-4 text-sm">
           <a
-            href="https://www.linkedin.com/in/jonalferness"
+            href="https://www.linkedin.com/in/jon-alferness-b193a3"
             className="opacity-30 hover:opacity-100 transition-opacity duration-300 tracking-wide"
           >
             Jon's background
