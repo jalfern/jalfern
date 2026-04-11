@@ -1,5 +1,5 @@
 import { useState, useEffect, createContext, useContext, useCallback, useMemo } from 'react'
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useLocation, Link } from 'react-router-dom'
 import { GAMES } from './config/games'
 import GamesList from './components/GamesList'
 import { audioController } from './utils/AudioController'
@@ -8,6 +8,38 @@ const GameLabelContext = createContext({
   label: '',
   setGameInfo: () => { }
 })
+
+function Home() {
+  const { setGameInfo } = useContext(GameLabelContext)
+  useEffect(() => {
+    setGameInfo('', 'light')
+  }, [setGameInfo])
+
+  return (
+    <div className="absolute inset-0 bg-black text-white flex items-center justify-center font-mono">
+      <div className="text-center space-y-8">
+        <h1 className="text-2xl tracking-widest opacity-60">JALFERN.COM</h1>
+        <p className="text-sm tracking-wide opacity-40">
+          Jon's placeholder for fun stuff.
+        </p>
+        <nav className="flex flex-col gap-4 text-sm">
+          <a
+            href="https://www.linkedin.com/in/jon-alferness-b193a3/"
+            className="opacity-30 hover:opacity-100 transition-opacity duration-300 tracking-wide"
+          >
+            Jon's background
+          </a>
+          <Link
+            to="/retrogames"
+            className="opacity-60 hover:opacity-100 transition-opacity duration-300 tracking-wide"
+          >
+            RetroGames exploration →
+          </Link>
+        </nav>
+      </div>
+    </div>
+  )
+}
 
 function RandomHome() {
   const { setGameInfo } = useContext(GameLabelContext)
@@ -134,8 +166,10 @@ function App() {
     <BrowserRouter>
       <Layout>
         <Routes>
-          <Route path="/" element={<RandomHome />} />
+          <Route path="/" element={<Home />} />
+          <Route path="/retrogames" element={<GamesList />} />
           <Route path="/games" element={<GamesList />} />
+          <Route path="/random" element={<RandomHome />} />
           {GAMES.map(game => (
             <Route
               key={game.path}
