@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import RetroGames from './RetroGames.jsx';
 import GamesList from './GamesList.jsx';
+import GameDetail from './GameDetail.jsx';
 
 function Home() {
   return (
@@ -44,6 +45,7 @@ function App() {
       <Route path="/" element={<Home />} />
       <Route path="/retrogames" element={<RetroGames />} />
       <Route path="/retrogames/games" element={<GamesList />} />
+      <Route path="/retrogames/games/:id" element={<GameDetail />} />
     </Routes>
   )
 }
