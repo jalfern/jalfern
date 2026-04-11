@@ -1,6 +1,9 @@
 import { useState } from 'react';
+import { Routes, Route } from 'react-router-dom';
+import RetroGames from './RetroGames.jsx';
+import GamesList from './GamesList.jsx';
 
-function App() {
+function Home() {
   return (
     <div className="min-h-screen bg-black text-white flex items-center justify-center font-mono">
       <div className="text-center space-y-8">
@@ -35,4 +38,14 @@ function App() {
   )
 }
 
-export default App
+function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/retrogames" element={<RetroGames />} />
+      <Route path="/retrogames/games" element={<GamesList />} />
+    </Routes>
+  )
+}
+
+export default App;
