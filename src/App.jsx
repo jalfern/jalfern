@@ -36,6 +36,7 @@ function Home() {
             RetroGames exploration →
           </a>
         </nav>
+        <p className="text-xs opacity-30 tracking-widest mt-8">2026</p>
       </div>
     </div>
   )
