@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { GAMES } from './config/games'
 import GamesList from './components/GamesList'
 import NasaArtemisPicture from './components/NasaArtemisPicture'
+import Playground from './components/Playground'
 import { audioController } from './utils/AudioController'
 
 const GameLabelContext = createContext({
@@ -35,6 +36,12 @@ function Home() {
             className="opacity-50 hover:opacity-100 transition-opacity duration-300 tracking-wide"
           >
             Today's picture →
+          </a>
+          <a
+            href="/playground"
+            className="opacity-40 hover:opacity-100 transition-opacity duration-300 tracking-wide"
+          >
+            Model Playground →
           </a>
           <a
             href="/retrogames"
@@ -176,6 +183,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/artemis-picture" element={<NasaArtemisPicture />} />
+          <Route path="/playground" element={<Playground />} />
           <Route path="/retrogames" element={<GamesList />} />
           <Route path="/games" element={<GamesList />} />
           <Route path="/random" element={<RandomHome />} />
