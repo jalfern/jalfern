@@ -118,8 +118,8 @@ export default function Playground() {
 
         <div
           ref={outputRef}
-          className="flex-1 overflow-y-auto mb-4 space-y-4 pr-2"
-          style={{ scrollbarWidth: 'thin', scrollbarColor: '#444 #222' }}
+          className="flex-1 overflow-y-auto mb-4 space-y-4 pr-2 max-h-[60vh] min-h-[200px]"
+          style={{ scrollbarWidth: 'thin' }}
         >
           {turns.length === 0 && !loading && (
             <div className="text-center text-gray-500 text-sm mt-20">
