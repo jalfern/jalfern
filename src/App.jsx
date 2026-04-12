@@ -1,5 +1,5 @@
 import { useState, useEffect, createContext, useContext, useCallback, useMemo } from 'react'
-import { BrowserRouter, Routes, Route, useLocation, Link } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { GAMES } from './config/games'
 import GamesList from './components/GamesList'
 import { audioController } from './utils/AudioController'
@@ -29,12 +29,12 @@ function Home() {
           >
             Jon's background
           </a>
-          <Link
-            to="/retrogames"
+          <a
+            href="/retrogames"
             className="opacity-60 hover:opacity-100 transition-opacity duration-300 tracking-wide"
           >
             RetroGames exploration →
-          </Link>
+          </a>
         </nav>
       </div>
     </div>
