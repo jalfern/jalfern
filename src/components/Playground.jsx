@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useRef } from 'react'
 
 export default function Playground() {
   const [prompt, setPrompt] = useState('')
@@ -8,10 +8,6 @@ export default function Playground() {
   const [stats, setStats] = useState(null)
 
   const textareaRef = useRef(null)
-
-  useEffect(() => {
-    setGameInfo('Model Playground', 'dark')
-  }, [])
 
   const run = async () => {
     if (!prompt.trim()) return
