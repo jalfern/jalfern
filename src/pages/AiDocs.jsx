@@ -1,15 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
-// Embedded document content - works reliably in Vercel
-const DOCUMENTS = [
-  {
-    id: "claude-skills-guide",
-    title: "The Complete Guide to Building Skills for Claude",
-    description: "Official Anthropic guide covering fundamentals, planning, testing, and distribution of AI skills.",
-    added: "2026-04-13T19:30:00Z",
-    tags: ["claude", "skills", "ai", "mcp"],
-    content: `# The Complete Guide to Building Skills for Claude
+// Embedded document content
+const CLAUDE_SKILLS_CONTENT = `# The Complete Guide to Building Skills for Claude
 
 ## Introduction
 
@@ -147,10 +140,10 @@ description: What it does. Use when user asks to [specific phrases].
 * Step-by-step checklist with validation
 
 **Pattern 2: The "Quality Gate" skill**
-* Create → Review → Fix → Finalize loop
+* Create > Review > Fix > Finalize loop
 
 **Pattern 3: The "MCP Orchestrator" skill**
-* Plan → Execute parallel calls → Aggregate results → Format output
+* Plan > Execute parallel calls > Aggregate results > Format output
 
 ### Troubleshooting
 
@@ -175,7 +168,16 @@ description: What it does. Use when user asks to [specific phrases].
 * Search claude-skills on GitHub
 * Join the Anthropic Discord #skills channel
 
-*This guide was extracted from Anthropic's official documentation on building Skills for Claude.*
+*This guide was extracted from Anthropic's official documentation on building Skills for Claude.*`;
+
+const DOCUMENTS = [
+  {
+    id: "claude-skills-guide",
+    title: "The Complete Guide to Building Skills for Claude",
+    description: "Official Anthropic guide covering fundamentals, planning, testing, and distribution of AI skills.",
+    added: "2026-04-13T19:30:00Z",
+    tags: ["claude", "skills", "ai", "mcp"],
+    content: CLAUDE_SKILLS_CONTENT
   }
 ];
 
