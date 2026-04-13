@@ -1,31 +1,28 @@
 import React, { useState, useEffect, useCallback } from 'react';
 
-const WEATHER_API_URL = "https://swd.weatherflow.com/swd/rest/stations/133073?token=ac625564-c9b4-4e95-b509-561ca11be10a";
+const WEATHER_API_URL = "https://swd.weatherflow.com/swd/rest/observations/station/133073?token=ac625564-c9b4-4e95-b509-561ca11be10a";
 
 const Weather = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [stationName, setStationName] = useState("");
-  const [lastUpdated, setLast</ul>
   const [lastUpdated, setLastUpdated] = useState(null);
 
   const fetchWeather = useCallback(async () => {
     try {
       const response = await fetch(WEATHER_API_URL);
       if (!response.ok) throw new Error('Failed to fetch weather data');
-      const json = await response.json();
+      const json = await response/json();
       
-      const station = json.stations[0];
-      // Note: Looking at our previous curl, 'observations' was empty.
-      // This component assumes standard Tempest structure.
-      const obs = station.observations && station.observations.length > 0 ? station.observations[0] : null;
+      const station = json.station_name ? { name: json.station_name } : { name: "Unknown Station" };
+      const obs = json.obs && json.obs.length > 0 ? json.obs[0] : null;
       
-      setStationName(station.name || "Unknown Station");
+      setStationName(station.name);
       
       if (obs) {
         setData(obs);
-        setLastUpdated(new Date(station.last_modified_epoch * 1000));
+        setLastUpdated(new Date(json.timestamp * 1000));
       } else {
         setData(null);
         setError("No recent observations available.");
@@ -72,14 +69,13 @@ const Weather = () => {
         )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {/* We use a helper to safely get values since obs can be sparse */}
           <StatCard 
             label="Temperature" 
-            value={data?.temp_c ? `${(data.temp_c * 9/5 + 32).toFixed(1)}°F` : 'N/A'} 
+            value={data?.air_temperature ? `${(data.air_temperature * 9/5 + 32).toFixed(1)}°F` : 'N/A'} 
           />
           <StatCard 
             label="Feels Like" 
-            value={data?.feels_like_c ? `${(data.feels_like_c * 9/5 + 32).toFixed(1)}°F` : 'N/A'} 
+            value={data?.feels_like ? `${(data.feels_like * 9/5 + 32).toFixed(1)}°F` : 'N/A'} 
           />
           <StatCard 
             label="Humidity" 
@@ -87,7 +83,7 @@ const Weather = () => {
           />
           <StatCard 
             label="Wind Speed" 
-            value={data?.wind_speed ? `${(data.wind_speed * 2.237).toFixed(1)} mph` : 'N/A'} 
+            value={data?.wind_avg ? `${(data.wind_avg * 2.237).toFixed(1)} mph` : 'N/A'} 
           />
           <StatCard 
             label="Wind Gust" 
@@ -95,7 +91,7 @@ const Weather = () => {
           />
           <StatCard 
             label="Pressure" 
-            value={data?.pressure ? `${data.pressure.toFixed(1)} mb` : 'N/A'} 
+            value={data?.barometric_pressure ? `${data.barometric_pressure.toFixed(1)} mb` : 'N/A'} 
           />
           <StatCard 
             label="UV Index" 
@@ -117,7 +113,7 @@ const Weather = () => {
 
 const StatCard = ({ label, value }) => (
   <div className="bg-zinc-900/50 border border-zinc-800 p-4 rounded-sm">
-    <p className="text-zinc-500 text-[10px] uppercase tracking-widerm mb-1">{label}</p>
+    <p className="text-zinc-500 text-[10px] uppercase tracking-wider mb-1">{label}</p>
     <p className="text-xl font-medium text-zinc-100">{value}</p>
   </div>
 );
