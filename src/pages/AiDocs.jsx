@@ -8,8 +8,9 @@ const AiDocs = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch document index
-    fetch('/api/docs-index.json')
+    // Fetch document index (or full content if viewing a specific doc)
+    const url = docId ? '/api/docs-index.json?full=true' : '/api/docs-index.json';
+    fetch(url)
       .then(res => res.json())
       .then(data => {
         setDocs(data.docs || []);
@@ -37,7 +38,7 @@ const AiDocs = () => {
             </Link>
           </div>
           
-          <article className="prose prose-invert max-w-none">
+          <article className="prose prose-invert max-w-none text-sm leading-relaxed">
             <h1 className="text-3xl font-bold mb-2">{currentDoc.title}</h1>
             {currentDoc.description && (
               <p className="text-gray-400 mb-6">{currentDoc.description}</p>
@@ -45,7 +46,10 @@ const AiDocs = () => {
             <div className="text-xs text-gray-500 mb-8">
               Added: {new Date(currentDoc.added).toLocaleDateString()}
             </div>
-            <div dangerouslySetInnerHTML={{ __html: currentDoc.content }} />
+            {/* Render markdown as plain text with basic formatting */}
+            <pre className="whitespace-pre-wrap font-mono text-sm text-gray-200">
+              {currentDoc.content}
+            </pre>
           </article>
         </div>
       </div>
