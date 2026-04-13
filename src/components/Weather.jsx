@@ -13,7 +13,7 @@ const Weather = () => {
     try {
       const response = await fetch(WEATHER_API_URL);
       if (!response.ok) throw new Error('Failed to fetch weather data');
-      const json = await response/json();
+      const json = await response.json();
       
       const station = json.station_name ? { name: json.station_name } : { name: "Unknown Station" };
       const obs = json.obs && json.obs.length > 0 ? json.obs[0] : null;
