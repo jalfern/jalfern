@@ -212,7 +212,7 @@ const AiDocs = () => {
             <div className="text-xs text-gray-500 mb-8">
               Added: {new Date(currentDoc.added).toLocaleDateString()}
             </div>
-            <pre className="whitespace-pre-wrap font-mono text-sm text-gray-200 bg-zinc-900/50 p-6 rounded-sm border border-zinc-800">
+            <pre className="whitespace-pre-wrap font-mono text-sm text-gray-200 bg-zinc-900/50 p-6 rounded-sm border border-zinc-800 overflow-y-auto max-h-[calc(100vh-300px)]">
               {currentDoc.content}
             </pre>
           </article>
