@@ -1,29 +1,36 @@
 export default function handler(req, res) {
-  const docs = [
-    {
-      id: "claude-skills-guide",
-      title: "The Complete Guide to Building Skills for Claude",
-      description: "Official Anthropic guide covering fundamentals, planning, testing, and distribution of AI skills. Learn how to create reusable workflows for Claude.",
-      added: "2026-04-13T19:30:00Z",
-      tags: ["claude", "skills", "ai", "mcp", "guide"],
-      source: "https://resources.anthropic.com/hubfs/The-Complete-Guide-to-Building-Skill-for-Claude.pdf",
-      content: `# The Complete Guide to Building Skills for Claude\n\n## Introduction\n\nA **skill** is a set of instructions - packaged as a simple folder - that teaches Claude how to handle specific tasks or workflows. Skills are one of the most powerful ways to customize Claude for your specific needs.\n\nThis guide covers:\n* Technical requirements and best practices for skill structure\n* Patterns for standalone skills and MCP-enhanced workflows\n* How to test, iterate, and distribute your skills\n\n---\n\n## Chapter 1: Fundamentals\n\n### What is a skill?\nA skill is a folder containing:\n* **SKILL.md** (required): Instructions in Markdown with YAML frontmatter\n* **scripts/** (optional): Executable code (Python, Bash, etc.)\n* **references/** (optional): Documentation loaded as needed\n* **assets/** (optional): Templates, fonts, icons used in output\n\n### Core design principles\n\n**Progressive Disclosure**\nSkills use a three-level system:\n1. **First level (YAML frontmatter):** Always loaded in Claude's system prompt\n2. **Second level (SKILL.md body):** Loaded when Claude thinks the skill is relevant\n3. **Third level (Linked files):** Additional files bundled within the skill directory\n\n**Composability**\nClaude can load multiple skills simultaneously.\n\n**Portability**\nSkills work identically across Claude.ai, Claude Code, and API.\n\n### For MCP Builders: Skills + Connectors\n\n**The kitchen analogy**:\n* **MCP provides the professional kitchen:** access to tools, ingredients, and equipment.\n* **Skills provide the recipes:** step-by-step instructions on how to create something valuable.\n\n---\n\n## Chapter 2: Planning and design\n\n### Start with use cases\nIdentify 2-3 concrete use cases your skill should enable.\n\n### Common skill use case categories\n\n**Category 1: Document & Asset Creation**\n* Creating consistent, high-quality output (documents, presentations, apps, designs, code)\n* Example: frontend-design skill\n\n**Category 2: Workflow Automation**\n* Multi-step processes with consistent methodology\n* Example: skill-creator skill\n\n**Category 3: MCP Enhancement**\n* Workflow guidance to enhance MCP server tool access\n* Example: sentry-code-review skill\n\n### Technical requirements\n\n**File structure**:\n\\`\\`\\`\nyour-skill-name/\n├── SKILL.md       # Required\n├── scripts/       # Optional\n├── references/    # Optional\n└── assets/        # Optional\n\\`\\`\\`\n\n**Critical rules**:\n* **SKILL.md naming**: Must be exactly SKILL.md (case-sensitive)\n* **Skill folder naming**: Use kebab-case (e.g., notion-project-setup)\n* **No README.md** inside your skill folder\n\n**YAML frontmatter**:\n\\`\\`\\`yaml\n---\nname: your-skill-name\ndescription: What it does. Use when user asks to [specific phrases].\n---\n\\`\\`\\`\n\n**Description field requirements**:\n* MUST include BOTH: What the skill does AND When to use it\n* Under 1024 characters\n* No XML tags (< or >)\n* Include specific tasks users might say\n\n---\n\n## Chapter 3: Testing and iteration\n\n### Testing approaches\n* **Manual testing in Claude.ai**: Fast iteration, no setup\n* **Scripted testing in Claude Code**: Automated test cases\n* **Programmatic testing via skills API**: Systematic evaluation\n\n### Common signals\n\n**Undertriggering**:\n* Skill doesn't load when it should\n* **Solution**: Add more detail and nuance to description\n\n**Overtriggering**:\n* Skill loads for irrelevant queries\n* **Solution**: Add negative triggers, be more specific\n\n---\n\n## Chapter 4: Distribution and sharing\n\n**Current distribution model**:\n1. Download the skill folder\n2. Zip if needed\n3. Upload to Claude.ai via Settings > Capabilities > Skills\n4. Or place in Claude Code skills directory (~/.claude/skills/)\n\n**Recommended approach**:\n* Host on GitHub with public repo and README\n* Document in your MCP repo with installation guide\n* Link from your MCP documentation\n\n---\n\n## Chapter 5: Patterns and troubleshooting\n\n### Common patterns\n\n**Pattern 1: The "Onboarding" skill**\n* Step-by-step checklist with validation\n\n**Pattern 2: The "Quality Gate" skill**\n* Create → Review → Fix → Finalize loop\n\n**Pattern 3: The "MCP Orchestrator" skill**\n* Plan → Execute parallel calls → Aggregate results → Format output\n\n### Troubleshooting\n\n**Issue: Skill doesn't trigger**\n* **Cause**: Description missing trigger phrases\n* **Fix**: Add specific user phrases to description\n\n**Issue: Inconsistent results**\n* **Cause**: Instructions too vague\n* **Fix**: Add more specific steps and error handling\n\n---\n\n## Chapter 6: Resources and references\n\n### Official resources\n* Anthropic Skills Documentation: https://docs.anthropic.com/skills\n* MCP Specification: https://modelcontextprotocol.io\n* Claude API Reference: https://docs.anthropic.com/api\n\n### Community examples\n* Search claude-skills on GitHub\n* Join the Anthropic Discord #skills channel\n\n*This guide was extracted from Anthropic's official documentation on building Skills for Claude.`
-    }
-  ];
+  const fs = require('fs');
+  const path = require('path');
 
-  if (req.method === 'GET') {
-    // Return full docs with content
-    if (req.query.full === 'true') {
-      res.status(200).json({ docs });
-    } else {
-      // Return index only
-      const index = docs.map(({ id, title, description, added, tags }) => ({
-        id, title, description, added, tags
-      }));
-      res.status(200).json({ docs: index });
+  try {
+    // Read the index file
+    const indexPath = path.join(process.cwd(), 'data', 'docs-index.json');
+    if (!fs.existsSync(indexPath)) {
+      return res.status(404).json({ error: 'No index found' });
     }
-    return;
+
+    const indexData = JSON.parse(fs.readFileSync(indexPath, 'utf8'));
+    const docs = indexData.docs || [];
+
+    if (req.method === 'GET') {
+      // Return full docs with content
+      if (req.query.full === 'true') {
+        const fullDocs = docs.map(doc => {
+          const docPath = path.join(process.cwd(), 'data', 'docs', `${doc.id}.md`);
+          if (fs.existsSync(docPath)) {
+            return { ...doc, content: fs.readFileSync(docPath, 'utf8') };
+          }
+          return doc;
+        });
+        return res.status(200).json({ docs: fullDocs });
+      } else {
+        // Return index only
+        return res.status(200).json({ docs });
+      }
+    }
+
+    return res.status(405).json({ error: 'Method not allowed' });
+  } catch (error) {
+    return res.status(500).json({ error: 'Failed to read docs', message: error.message });
   }
-
-  res.status(405).json({ error: 'Method not allowed' });
 }
