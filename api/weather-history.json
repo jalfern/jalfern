@@ -1,0 +1,21 @@
+export default function handler(req, res) {
+  if (req.method !== 'GET') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  const fs = require('fs');
+  const path = require('path');
+
+  try {
+    const historyPath = path.join(process.cwd(), 'data', 'weather-history.json');
+    
+    if (!fs.existsSync(historyPath)) {
+      return res.status(404).json({ error: 'No history data available' });
+    }
+
+    const data = fs.readFileSync(historyPath, 'utf8');
+    return res.status(200).send(data);
+  } catch (error) {
+    return res.status(500).json({ error: 'Failed to read history', message: error.message });
+  }
+}

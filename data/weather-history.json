@@ -1,0 +1,23 @@
+{
+  "2026-04-13": {
+    "timestamp": 1776098794,
+    "datetime": "2026-04-13T16:46:34.000Z",
+    "air_temperature": 12.6,
+    "feels_like": 12.6,
+    "relative_humidity": 84,
+    "wind_avg": 1,
+    "wind_gust": 2.1,
+    "barometric_pressure": 1011.2,
+    "sea_level_pressure": 1020.1,
+    "precip": 0,
+    "precip_accum_local_day": 0,
+    "precip_accum_last_1hr": 0,
+    "precip_minutes_local_day": 0,
+    "uv": 1.03,
+    "dew_point": 10,
+    "wind_direction": 212,
+    "pressure_trend": "rising",
+    "station_name": "SF Alferness",
+    "logged_at": "2026-04-13T16:47:13.597Z"
+  }
+}
