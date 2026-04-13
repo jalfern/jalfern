@@ -46,7 +46,7 @@ const Weather = () => {
   if (loading && !data) return <div className="p-8 text-white font-mono">Loading weather...</div>;
 
   return (
-    <div className="min-h-screen bg-black text-white font-mono">
+    <div className="h-full bg-black text-white font-mono overflow-y-auto">
       <div className="max-w-4xl mx-auto px-4 py-8">
         <header className="mb-8 border-b border-gray-800 pb-4">
           <h1 className="text-2xl font-bold tracking-tighter">{stationName}</h1>
