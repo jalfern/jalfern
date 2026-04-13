@@ -1,0 +1,12 @@
+{
+  "docs": [
+    {
+      "id": "claude-skills-guide",
+      "title": "The Complete Guide to Building Skills for Claude",
+      "description": "Official Anthropic guide covering fundamentals, planning, testing, and distribution of AI skills. Learn how to create reusable workflows for Claude.",
+      "added": "2026-04-13T19:30:00Z",
+      "tags": ["claude", "skills", "ai", "mcp", "guide"],
+      "source": "https://resources.anthropic.com/hubfs/The-Complete-Guide-to-Building-Skill-for-Claude.pdf"
+    }
+  ]
+}

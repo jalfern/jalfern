@@ -5,6 +5,7 @@ import GamesList from './components/GamesList'
 import NasaArtemisPicture from './components/NasaArtemisPicture'
 import Playground from './components/Playground'
 import Weather from './components/Weather'
+import AiDocs from './pages/AiDocs'
 import { audioController } from './utils/AudioController'
 
 const GameLabelContext = createContext({
@@ -49,6 +50,12 @@ function Home() {
             className="opacity-60 hover:opacity-100 transition-opacity duration-300 tracking-wide"
           >
             RetroGames exploration →
+          </a>
+          <a
+            href="/ai-docs"
+            className="opacity-50 hover:opacity-100 transition-opacity duration-300 tracking-wide"
+          >
+            AI Docs →
           </a>
         </nav>
         <p className="text-xs opacity-30 tracking-widest mt-8">2026</p>
@@ -189,6 +196,8 @@ function App() {
           <Route path="/retrogames" element={<GamesList />} />
           <Route path="/games" element={<GamesList />} />
           <Route path="/random" element={<RandomHome />} />
+          <Route path="/ai-docs" element={<AiDocs />} />
+          <Route path="/ai-docs/:docId" element={<AiDocs />} />
           {GAMES.map(game => (
             <Route
               key={game.path}
