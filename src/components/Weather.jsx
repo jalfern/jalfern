@@ -22,7 +22,7 @@ const Weather = () => {
       
       if (obs) {
         setData(obs);
-        const timestamp = json.timestamp ? new Date(json.timestamp * 1000) : null;
+        const timestamp = obs.time ? new Date(obs.time) : null;
         setLastUpdated(timestamp && !isNaN(timestamp) ? timestamp : null);
       } else {
         setData(null);
