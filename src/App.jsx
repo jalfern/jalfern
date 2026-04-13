@@ -4,6 +4,7 @@ import { GAMES } from './config/games'
 import GamesList from './components/GamesList'
 import NasaArtemisPicture from './components/NasaArtemisPicture'
 import Playground from './components/Playground'
+import Weather from './components/Weather'
 import { audioController } from './utils/AudioController'
 
 const GameLabelContext = createContext({
@@ -184,6 +185,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/artemis-picture" element={<NasaArtemisPicture />} />
           <Route path="/playground" element={<Playground />} />
+          <Route path="/weather" element={<Weather />} />
           <Route path="/retrogames" element={<GamesList />} />
           <Route path="/games" element={<GamesList />} />
           <Route path="/random" element={<RandomHome />} />
