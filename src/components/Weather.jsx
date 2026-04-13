@@ -22,7 +22,8 @@ const Weather = () => {
       
       if (obs) {
         setData(obs);
-        setLastUpdated(new Date(json.timestamp * 1000));
+        const timestamp = json.timestamp ? new Date(json.timestamp * 1000) : null;
+        setLastUpdated(timestamp && !isNaN(timestamp) ? timestamp : null);
       } else {
         setData(null);
         setError("No recent observations available.");
