@@ -196,7 +196,7 @@ const AiDocs = () => {
 
   if (docId && currentDoc) {
     return (
-      <div className="min-h-screen bg-black text-white font-mono">
+      <div className="min-h-screen bg-black text-white font-mono overflow-y-auto">
         <div className="max-w-4xl mx-auto px-4 py-8">
           <div className="mb-6">
             <Link to="/ai-docs" className="text-blue-400 hover:text-blue-300 text-sm">
@@ -222,7 +222,7 @@ const AiDocs = () => {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white font-mono">
+    <div className="min-h-screen bg-black text-white font-mono overflow-y-auto">
       <div className="max-w-4xl mx-auto px-4 py-8">
         <header className="mb-8 border-b border-gray-800 pb-4">
           <h1 className="text-3xl font-bold tracking-tighter">AI Document Repository</h1>
