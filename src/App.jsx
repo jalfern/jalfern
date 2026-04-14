@@ -6,6 +6,7 @@ import NasaArtemisPicture from './components/NasaArtemisPicture'
 import Playground from './components/Playground'
 import Weather from './components/Weather'
 import AiDocs from './pages/AiDocs'
+import Life from './pages/Life'
 import { audioController } from './utils/AudioController'
 
 const GameLabelContext = createContext({
@@ -56,6 +57,12 @@ function Home() {
             className="opacity-50 hover:opacity-100 transition-opacity duration-300 tracking-wide"
           >
             AI Docs →
+          </a>
+          <a
+            href="/life"
+            className="opacity-40 hover:opacity-100 transition-opacity duration-300 tracking-wide"
+          >
+            Life →
           </a>
         </nav>
         <p className="text-xs opacity-30 tracking-widest mt-8">2026</p>
@@ -198,6 +205,7 @@ function App() {
           <Route path="/random" element={<RandomHome />} />
           <Route path="/ai-docs" element={<AiDocs />} />
           <Route path="/ai-docs/:docId" element={<AiDocs />} />
+          <Route path="/life" element={<Life />} />
           {GAMES.map(game => (
             <Route
               key={game.path}
