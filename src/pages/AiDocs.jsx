@@ -170,6 +170,76 @@ description: What it does. Use when user asks to [specific phrases].
 
 *This guide was extracted from Anthropic's official documentation on building Skills for Claude.*`;
 
+const CLAUDE_CAPABILITY_LEVELS_CONTENT = `# CLAUDE.md Best Practices - From Basic to Adaptive
+
+**Source:** https://dev.to/cleverhoods/claudemd-best-practices-from-basic-to-adaptive-9lm  
+**Added:** 2026-04-13
+
+## Overview
+
+This article introduces a framework for measuring the sophistication of AI instruction files (CLAUDE.md, AGENTS.md, etc.) across six capability levels, from L0 (Absent) to L6 (Adaptive).
+
+## The Six Capability Levels
+
+### L0: Absent
+No instruction file. Claude works from training data and code inference alone.
+
+### L1: Basic
+A CLAUDE.md file exists and is tracked in git.
+
+**What changes:** Claude has something project-specific.  
+**What's missing:** Actual rules and constraints.
+
+### L2: Scoped
+Explicit constraints using MUST/MUST NOT language.
+
+**What changes:** Claude follows your rules, not generic best practices.  
+**What's missing:** Scale. Long files lose important details in the noise.
+
+### L3: Structured
+External references and modular content. CLAUDE.md becomes a router pointing to other files.
+
+**What changes:** Separation of concerns. Easier maintenance.  
+**What's missing:** All files load regardless of context, wasting tokens.
+
+### L4: Abstracted
+Path-scoped loading where different rules apply to different codebase regions.
+
+**What changes:** Claude adapts to what you're working on. Context efficiency improves.  
+**What's missing:** Maintenance discipline. Structures rot over time.
+
+### L5: Maintained
+L4 with habits to keep structure current: backbone file mapping, stale tracking, regular reviews.
+
+**What changes:** Reliability over time. Setup doesn't rot.  
+**What's missing:** Dynamic capabilities.
+
+### L6: Adaptive
+Skills that load based on task + MCP servers for external integrations.
+
+**What changes:** Claude extends its abilities based on detected tasks.
+
+## Quick Self-Check
+
+- L1: Do you have any instruction file?
+- L2: Does it have explicit constraints (MUST/MUST NOT)?
+- L3: Do you use @imports or multiple files?
+- L4: Do different paths load different rules?
+- L5: Do you actively maintain the structure?
+- L6: Do you use skills or MCP?
+
+**Observation:** Most setups are L1 or L2. L4+ is rare because patterns aren't widely known.
+
+## Why Bother with Levels?
+
+It's about having words for things. "I'm at L2 wondering if L4 is worth the effort" is a real conversation.
+
+## Links
+
+- [Capability levels docs](https://github.com/reporails/rules/blob/main/docs/capability-levels.md)
+- [Rules repo](https://github.com/reporails/rules)
+`;
+
 const DOCUMENTS = [
   {
     id: "claude-skills-guide",
@@ -178,6 +248,14 @@ const DOCUMENTS = [
     added: "2026-04-13T19:30:00Z",
     tags: ["claude", "skills", "ai", "mcp"],
     content: CLAUDE_SKILLS_CONTENT
+  },
+  {
+    id: "claude-capability-levels",
+    title: "CLAUDE.md Best Practices - From Basic to Adaptive",
+    description: "A six-level framework (L0-L6) for measuring and improving AI instruction file sophistication, from absent to adaptive with skills/MCP.",
+    added: "2026-04-13T21:45:00Z",
+    tags: ["claude", "capability-levels", "best-practices", "agentic-workflows"],
+    content: CLAUDE_CAPABILITY_LEVELS_CONTENT
   }
 ];
 
