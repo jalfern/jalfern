@@ -1,276 +1,73 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
-
-// Embedded document content
-const CLAUDE_SKILLS_CONTENT = `# The Complete Guide to Building Skills for Claude
-
-## Introduction
-
-A **skill** is a set of instructions - packaged as a simple folder - that teaches Claude how to handle specific tasks or workflows. Skills are one of the most powerful ways to customize Claude for your specific needs.
-
-This guide covers:
-* Technical requirements and best practices for skill structure
-* Patterns for standalone skills and MCP-enhanced workflows
-* How to test, iterate, and distribute your skills
-
----
-
-## Chapter 1: Fundamentals
-
-### What is a skill?
-
-A skill is a folder containing:
-* **SKILL.md** (required): Instructions in Markdown with YAML frontmatter
-* **scripts/** (optional): Executable code (Python, Bash, etc.)
-* **references/** (optional): Documentation loaded as needed
-* **assets/** (optional): Templates, fonts, icons used in output
-
-### Core design principles
-
-**Progressive Disclosure**
-Skills use a three-level system:
-1. **First level (YAML frontmatter):** Always loaded in Claude's system prompt
-2. **Second level (SKILL.md body):** Loaded when Claude thinks the skill is relevant
-3. **Third level (Linked files):** Additional files bundled within the skill directory
-
-**Composability**
-Claude can load multiple skills simultaneously.
-
-**Portability**
-Skills work identically across Claude.ai, Claude Code, and API.
-
-### For MCP Builders: Skills + Connectors
-
-**The kitchen analogy:**
-* **MCP provides the professional kitchen:** access to tools, ingredients, and equipment.
-* **Skills provide the recipes:** step-by-step instructions on how to create something valuable.
-
----
-
-## Chapter 2: Planning and design
-
-### Start with use cases
-
-Identify 2-3 concrete use cases your skill should enable.
-
-### Common skill use case categories
-
-**Category 1: Document & Asset Creation**
-* Creating consistent, high-quality output (documents, presentations, apps, designs, code)
-* Example: frontend-design skill
-
-**Category 2: Workflow Automation**
-* Multi-step processes with consistent methodology
-* Example: skill-creator skill
-
-**Category 3: MCP Enhancement**
-* Workflow guidance to enhance MCP server tool access
-* Example: sentry-code-review skill
-
-### Technical requirements
-
-**File structure:**
-
-your-skill-name/
-├── SKILL.md       # Required
-├── scripts/       # Optional
-├── references/    # Optional
-└── assets/        # Optional
-
-**Critical rules:**
-* **SKILL.md naming**: Must be exactly SKILL.md (case-sensitive)
-* **Skill folder naming**: Use kebab-case (e.g., notion-project-setup)
-* **No README.md** inside your skill folder
-
-**YAML frontmatter:**
-
----
-name: your-skill-name
-description: What it does. Use when user asks to [specific phrases].
----
-
-**Description field requirements:**
-* MUST include BOTH: What the skill does AND When to use it
-* Under 1024 characters
-* No XML tags (< or >)
-* Include specific tasks users might say
-
----
-
-## Chapter 3: Testing and iteration
-
-### Testing approaches
-
-* **Manual testing in Claude.ai**: Fast iteration, no setup
-* **Scripted testing in Claude Code**: Automated test cases
-* **Programmatic testing via skills API**: Systematic evaluation
-
-### Common signals
-
-**Undertriggering:**
-* Skill doesn't load when it should
-* **Solution**: Add more detail and nuance to description
-
-**Overtriggering:**
-* Skill loads for irrelevant queries
-* **Solution**: Add negative triggers, be more specific
-
----
-
-## Chapter 4: Distribution and sharing
-
-**Current distribution model:**
-1. Download the skill folder
-2. Zip if needed
-3. Upload to Claude.ai via Settings > Capabilities > Skills
-4. Or place in Claude Code skills directory (~/.claude/skills/)
-
-**Recommended approach:**
-* Host on GitHub with public repo and README
-* Document in your MCP repo with installation guide
-* Link from your MCP documentation
-
----
-
-## Chapter 5: Patterns and troubleshooting
-
-### Common patterns
-
-**Pattern 1: The "Onboarding" skill**
-* Step-by-step checklist with validation
-
-**Pattern 2: The "Quality Gate" skill**
-* Create > Review > Fix > Finalize loop
-
-**Pattern 3: The "MCP Orchestrator" skill**
-* Plan > Execute parallel calls > Aggregate results > Format output
-
-### Troubleshooting
-
-**Issue: Skill doesn't trigger**
-* **Cause**: Description missing trigger phrases
-* **Fix**: Add specific user phrases to description
-
-**Issue: Inconsistent results**
-* **Cause**: Instructions too vague
-* **Fix**: Add more specific steps and error handling
-
----
-
-## Chapter 6: Resources and references
-
-### Official resources
-* Anthropic Skills Documentation: https://docs.anthropic.com/skills
-* MCP Specification: https://modelcontextprotocol.io
-* Claude API Reference: https://docs.anthropic.com/api
-
-### Community examples
-* Search claude-skills on GitHub
-* Join the Anthropic Discord #skills channel
-
-*This guide was extracted from Anthropic's official documentation on building Skills for Claude.*`;
-
-const CLAUDE_CAPABILITY_LEVELS_CONTENT = `# CLAUDE.md Best Practices - From Basic to Adaptive
-
-**Source:** https://dev.to/cleverhoods/claudemd-best-practices-from-basic-to-adaptive-9lm  
-**Added:** 2026-04-13
-
-## Overview
-
-This article introduces a framework for measuring the sophistication of AI instruction files (CLAUDE.md, AGENTS.md, etc.) across six capability levels, from L0 (Absent) to L6 (Adaptive).
-
-## The Six Capability Levels
-
-### L0: Absent
-No instruction file. Claude works from training data and code inference alone.
-
-### L1: Basic
-A CLAUDE.md file exists and is tracked in git.
-
-**What changes:** Claude has something project-specific.  
-**What's missing:** Actual rules and constraints.
-
-### L2: Scoped
-Explicit constraints using MUST/MUST NOT language.
-
-**What changes:** Claude follows your rules, not generic best practices.  
-**What's missing:** Scale. Long files lose important details in the noise.
-
-### L3: Structured
-External references and modular content. CLAUDE.md becomes a router pointing to other files.
-
-**What changes:** Separation of concerns. Easier maintenance.  
-**What's missing:** All files load regardless of context, wasting tokens.
-
-### L4: Abstracted
-Path-scoped loading where different rules apply to different codebase regions.
-
-**What changes:** Claude adapts to what you're working on. Context efficiency improves.  
-**What's missing:** Maintenance discipline. Structures rot over time.
-
-### L5: Maintained
-L4 with habits to keep structure current: backbone file mapping, stale tracking, regular reviews.
-
-**What changes:** Reliability over time. Setup doesn't rot.  
-**What's missing:** Dynamic capabilities.
-
-### L6: Adaptive
-Skills that load based on task + MCP servers for external integrations.
-
-**What changes:** Claude extends its abilities based on detected tasks.
-
-## Quick Self-Check
-
-- L1: Do you have any instruction file?
-- L2: Does it have explicit constraints (MUST/MUST NOT)?
-- L3: Do you use @imports or multiple files?
-- L4: Do different paths load different rules?
-- L5: Do you actively maintain the structure?
-- L6: Do you use skills or MCP?
-
-**Observation:** Most setups are L1 or L2. L4+ is rare because patterns aren't widely known.
-
-## Why Bother with Levels?
-
-It's about having words for things. "I'm at L2 wondering if L4 is worth the effort" is a real conversation.
-
-## Links
-
-- [Capability levels docs](https://github.com/reporails/rules/blob/main/docs/capability-levels.md)
-- [Rules repo](https://github.com/reporails/rules)
-`;
-
-const DOCUMENTS = [
-  {
-    id: "claude-skills-guide",
-    title: "The Complete Guide to Building Skills for Claude",
-    description: "Official Anthropic guide covering fundamentals, planning, testing, and distribution of AI skills.",
-    added: "2026-04-13T19:30:00Z",
-    tags: ["claude", "skills", "ai", "mcp"],
-    content: CLAUDE_SKILLS_CONTENT
-  },
-  {
-    id: "claude-capability-levels",
-    title: "CLAUDE.md Best Practices - From Basic to Adaptive",
-    description: "A six-level framework (L0-L6) for measuring and improving AI instruction file sophistication, from absent to adaptive with skills/MCP.",
-    added: "2026-04-13T21:45:00Z",
-    tags: ["claude", "capability-levels", "best-practices", "agentic-workflows"],
-    content: CLAUDE_CAPABILITY_LEVELS_CONTENT
-  }
-];
 
 const AiDocs = () => {
   const { docId } = useParams();
+  const [docs, setDocs] = useState([]);
   const [currentDoc, setCurrentDoc] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  React.useEffect(() => {
-    if (docId) {
-      const selected = DOCUMENTS.find(d => d.id === docId);
-      setCurrentDoc(selected || null);
-    } else {
+  // Fetch docs index on mount
+  useEffect(() => {
+    async function fetchDocs() {
+      try {
+        const res = await fetch('/api/docs-index.json?full=true');
+        if (!res.ok) throw new Error('Failed to fetch docs index');
+        const data = await res.json();
+        setDocs(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchDocs();
+  }, []);
+
+  // Load selected doc content
+  useEffect(() => {
+    if (docId && docs.length > 0) {
+      const selected = docs.find(d => d.id === docId);
+      setCurrentDoc(selected ? { ...selected } : null);
+    } else if (!docId) {
       setCurrentDoc(null);
     }
-  }, [docId]);
+  }, [docId, docs]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black text-white font-mono">
+        <div className="max-w-4xl mx-auto px-4 py-8">
+          <p className="text-gray-400">Loading documents...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error && !docId) {
+    return (
+      <div className="min-h-screen bg-black text-white font-mono">
+        <div className="max-w-4xl mx-auto px-4 py-8">
+          <p className="text-red-400">Error: {error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Single document view (only if docId is set and we have docs loaded)
+  if (docId && docs.length === 0) {
+    return (
+      <div className="min-h-screen bg-black text-white font-mono">
+        <div className="max-w-4xl mx-auto px-4 py-8">
+          <Link to="/ai-docs" className="text-blue-400 hover:text-blue-300 text-sm mb-6 block">
+            ← Back to all documents
+          </Link>
+          <p className="text-gray-400">Loading document...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (docId && currentDoc) {
     return (
@@ -289,6 +86,7 @@ const AiDocs = () => {
             )}
             <div className="text-xs text-gray-500 mb-8">
               Added: {new Date(currentDoc.added).toLocaleDateString()}
+              {currentDoc.source && <span className="ml-4">Source: {currentDoc.source}</span>}
             </div>
             <pre className="whitespace-pre-wrap font-mono text-sm text-gray-200 bg-zinc-900/50 p-6 rounded-sm border border-zinc-800 overflow-y-auto max-h-[calc(100vh-300px)]">
               {currentDoc.content}
@@ -299,6 +97,21 @@ const AiDocs = () => {
     );
   }
 
+  // Error view for doc detail
+  if (error && docId) {
+    return (
+      <div className="min-h-screen bg-black text-white font-mono">
+        <div className="max-w-4xl mx-auto px-4 py-8">
+          <Link to="/ai-docs" className="text-blue-400 hover:text-blue-300 text-sm mb-6 block">
+            ← Back to all documents
+          </Link>
+          <p className="text-red-400">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Document list view
   return (
     <div className="min-h-screen bg-black text-white font-mono overflow-y-auto">
       <div className="max-w-4xl mx-auto px-4 py-8">
@@ -307,13 +120,13 @@ const AiDocs = () => {
           <p className="text-gray-400 mt-2">Curated guides and resources for AI development</p>
         </header>
 
-        {DOCUMENTS.length === 0 ? (
+        {docs.length === 0 ? (
           <div className="bg-zinc-900/50 border border-zinc-800 p-8 rounded-sm">
             <p className="text-gray-400">No documents yet. Check back soon!</p>
           </div>
         ) : (
           <div className="grid gap-4">
-            {DOCUMENTS.map(doc => (
+            {docs.map(doc => (
               <Link
                 key={doc.id}
                 to={`/ai-docs/${doc.id}`}
