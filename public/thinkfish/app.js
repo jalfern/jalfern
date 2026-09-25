@@ -1,40 +1,73 @@
-// LiveArt in the browser: the 1998 engine (engine/liveart.wasm) renders every frame
-// through its own EPS canvas; this file is only the window around it.
+// LiveArt in the browser. The 1998 engine (engine/liveart.wasm) does all the rendering:
+// the stage replays its primitives with WebGL (gl.js), exactly as its OpenGL canvas
+// drew them, and EPS/SVG export goes through its own EPS writer (eps.js).
 import createEngine from './engine/liveart.mjs';
-import { parseEPS, drawEPS } from './eps.js';
+import { parseEPS } from './eps.js';
+import { createRenderer } from './gl.js';
 
 const $ = (sel) => document.querySelector(sel);
 const stage = $('#stage');
-const ctx = stage.getContext('2d');
 const statusEl = $('#status');
 
-const view = { style: 0, xRot: 0.15, yRot: 0.5, distance: 18, spinning: false };
-let E = null;          // the Emscripten module
-let styleNames = [];
-let lastEPS = null;    // text of the most recent stage frame, for Export EPS
-let hasModel = false;  // the engine has nothing to render until a model loads
+const view = { style: 'original', xRot: 0.15, yRot: 0.5, distance: 18, spinning: false, home: [0.15, 0.5] };
+let E = null;             // the Emscripten module
+let gl = null;            // stage renderer
+let thumbs = null;        // offscreen renderer for palette swatches
+let hasModel = false;     // nothing to render until a model loads
+let hasOriginal = false;  // the loaded model is a scene with its own LiveStyles
+let library = [];
+let currentModel = null;
+
+// The palette: a scene's own styles, the LiveArt98 set, and the editor's default.
+// kind: 'original' | 'file' (a .liv, loaded on first use) | 'preset' (built in C++).
+const styles = new Map();
 
 function setStatus(text) { statusEl.textContent = text; }
-
 function store(key, value) { try { localStorage.setItem(key, value); } catch { /* private mode */ } }
 function recall(key) { try { return localStorage.getItem(key); } catch { return null; } }
+const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
-// --- engine calls ---------------------------------------------------------
+// --- engine calls -----------------------------------------------------------------
 
+async function ensureStyle(id) {
+  const s = styles.get(id);
+  if (!s || s.kind !== 'file' || s.index !== undefined) return s;
+  if (!s.loading) {
+    s.loading = (async () => {
+      const bytes = new Uint8Array(await (await fetch(`styles/${encodeURIComponent(s.file)}`)).arrayBuffer());
+      E.FS.mkdirTree('/styles');
+      const path = `/styles/${s.id}.liv`;
+      E.FS.writeFile(path, bytes);
+      s.index = E.ccall('tf_add_style_file', 'number', ['string'], [path]);
+      if (s.index < 0) s.broken = true;
+    })();
+  }
+  await s.loading;
+  return s;
+}
 
-// Render one frame at (w, h) EPS points and return the EPS text.
-function renderEPS(w, h, style = view.style) {
-  E._tf_set_style(style);
+// Put the engine in `id`'s style (it must already be loaded) and the current view.
+function applyView(id = view.style) {
+  const s = styles.get(id);
+  if (!s || s.broken) E._tf_set_style(0);
+  else if (s.kind === 'original') { if (hasOriginal) E._tf_use_original_styles(); else E._tf_set_style(0); }
+  else if (s.kind === 'file') { if (s.index >= 0) E._tf_set_file_style(s.index); else E._tf_set_style(0); }
+  else E._tf_set_style(s.index);
   E._tf_set_rotation(view.xRot, view.yRot);
   E._tf_set_distance(view.distance);
+}
+
+function renderEPS(w, h, id = view.style) {
+  applyView(id);
   if (!E._tf_render(w, h)) throw new Error('engine render failed');
   return E.FS.readFile('/frame.eps', { encoding: 'utf8' });
 }
 
-// Pull the camera in or out until the model fills about `fill` of the frame.
+// Pull the camera in or out until the model fills about `fill` of the frame. Measured
+// with the untextured default style, since the EPS writer skips textured primitives.
 function fitToFrame(fill = 0.72) {
   for (let i = 0; i < 6; i++) {
-    const eps = parseEPS(renderEPS(400, 400));
+    const eps = parseEPS(renderEPS(400, 400, 'editor-default'));
     let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
     for (const op of eps.ops) for (let j = 0; j < op.path.length; j += 2) {
       const x = op.path[j], y = op.path[j + 1];
@@ -49,18 +82,13 @@ function fitToFrame(fill = 0.72) {
   }
 }
 
-// --- drawing -----------------------------------------------------------------
+// --- drawing -------------------------------------------------------------------------
 
-function sizeCanvas(canvas) {
-  const r = canvas.getBoundingClientRect();
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
-  const w = Math.max(1, Math.round(r.width)), h = Math.max(1, Math.round(r.height));
-  if (canvas.width !== w * dpr || canvas.height !== h * dpr) {
-    canvas.width = w * dpr;
-    canvas.height = h * dpr;
-  }
-  return { w, h, dpr };
+function cssSize(el) {
+  const r = el.getBoundingClientRect();
+  return { w: Math.max(1, Math.round(r.width)), h: Math.max(1, Math.round(r.height)) };
 }
+const dpr = () => Math.min(window.devicePixelRatio || 1, 2);
 
 let pending = false;
 function requestDraw() {
@@ -74,67 +102,88 @@ function requestDraw() {
 }
 
 function drawStage() {
-  const { w, h, dpr } = sizeCanvas(stage);
+  const { w, h } = cssSize(stage);
   const t0 = performance.now();
-  lastEPS = renderEPS(w, h);
-  const eps = parseEPS(lastEPS);
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  drawEPS(ctx, eps, w, h, '#ffffff');
-  const ms = performance.now() - t0;
-  $('#stat-prims').textContent = `${eps.ops.length} prims`;
-  $('#stat-ms').textContent = `${ms.toFixed(0)} ms`;
+  applyView();
+  const tris = gl.draw(E, w, h, dpr());
+  $('#stat-prims').textContent = `${tris} tris`;
+  $('#stat-ms').textContent = `${(performance.now() - t0).toFixed(0)} ms`;
   scheduleSwatches();
 }
 
-// --- LiveStyles palette ---------------------------------------------------------
+// --- LiveStyles palette ----------------------------------------------------------------
 
-let swatchTimer = 0;
+let swatchTimer = 0, swatchRun = 0;
 function scheduleSwatches() {
   clearTimeout(swatchTimer);
-  swatchTimer = setTimeout(drawSwatches, view.spinning ? 1200 : 250);
+  swatchTimer = setTimeout(drawSwatches, view.spinning ? 1500 : 300);
 }
 
-function drawSwatches() {
-  document.querySelectorAll('.swatch canvas').forEach((c, i) => {
-    const { w, h, dpr } = sizeCanvas(c);
-    const g = c.getContext('2d');
-    g.setTransform(dpr, 0, 0, dpr, 0, 0);
-    drawEPS(g, parseEPS(renderEPS(w * 2, h * 2, i)), w, h, '#ffffff');
-  });
+// One swatch per frame, so the palette fills in without stalling the stage.
+async function drawSwatches() {
+  if ($('#swatches').hidden) return;
+  const run = ++swatchRun;
+  for (const b of document.querySelectorAll('#swatches .swatch:not([hidden])')) {
+    if (run !== swatchRun) return; // a newer pass started
+    const s = await ensureStyle(b.dataset.style);
+    if (run !== swatchRun) return;
+    const c = b.querySelector('canvas');
+    const { w, h } = cssSize(c);
+    c.width = w * dpr(); c.height = h * dpr();
+    applyView(s.id);
+    thumbs.draw(E, w * 2, h * 2, 1);
+    c.getContext('2d').drawImage(thumbs.canvas, 0, 0, c.width, c.height);
+    await new Promise(requestAnimationFrame);
+  }
+  applyView(); // leave the engine in the stage's style
 }
 
-function buildStyles() {
-  const count = E._tf_style_count();
-  styleNames = Array.from({ length: count }, (_, i) => E.UTF8ToString(E._tf_style_name(i)));
+async function buildStyles() {
+  const list = (await (await fetch('styles/index.json')).json()).styles;
+  styles.set('original', { id: 'original', name: 'Original', kind: 'original' });
+  for (const s of list) styles.set(s.id, { ...s, kind: 'file' });
+  styles.set('editor-default', { id: 'editor-default', name: 'Editor Default', kind: 'preset', index: 0 });
+
   const swatches = $('#swatches');
   const menu = $('#style-menu');
-  styleNames.forEach((name, i) => {
+  for (const s of styles.values()) {
     const b = document.createElement('button');
     b.className = 'swatch';
+    b.dataset.style = s.id;
     b.setAttribute('role', 'option');
-    b.innerHTML = `<canvas width="56" height="56"></canvas><span>${name}</span>`;
-    b.addEventListener('click', () => selectStyle(i));
+    b.innerHTML = `<canvas></canvas><span>${s.name}</span>`;
+    b.addEventListener('click', () => selectStyle(s.id));
     swatches.append(b);
 
     const m = document.createElement('button');
+    m.dataset.style = s.id;
     m.setAttribute('role', 'menuitemradio');
-    m.innerHTML = `${name}<span>${i + 1}</span>`;
-    m.addEventListener('click', () => { closeMenus(); selectStyle(i); });
+    m.textContent = s.name;
+    m.addEventListener('click', () => { closeMenus(); selectStyle(s.id); });
     menu.append(m);
-  });
+  }
+  showOriginal(false);
 }
 
-function selectStyle(i) {
-  view.style = i;
-  store('liveart.style', String(i));
+function showOriginal(on) {
+  hasOriginal = on;
+  document.querySelectorAll('[data-style="original"]').forEach((el) => { el.hidden = !on; });
+}
+
+async function selectStyle(id) {
+  if (!styles.has(id) || (id === 'original' && !hasOriginal)) id = hasOriginal ? 'original' : 'cartoon';
+  view.style = id;
+  if (id !== 'original') store('liveart.style', id);
   syncURL();
-  document.querySelectorAll('.swatch').forEach((b, j) => b.setAttribute('aria-selected', j === i));
-  document.querySelectorAll('#style-menu button').forEach((b, j) => b.setAttribute('aria-checked', j === i));
-  setStatus(`LiveStyle: ${styleNames[i]}`);
+  document.querySelectorAll('[data-style]').forEach((el) => {
+    el.setAttribute(el.getAttribute('role') === 'option' ? 'aria-selected' : 'aria-checked', el.dataset.style === id);
+  });
+  const s = await ensureStyle(id);
+  setStatus(s.broken ? `LiveStyle ${s.name} could not be loaded` : `LiveStyle: ${s.name}`);
   requestDraw();
 }
 
-// --- stage interaction: DUIPreview's mouse model -----------------------------------
+// --- stage interaction: DUIPreview's mouse model ----------------------------------------
 // left-drag rotates, right-drag (or the wheel) zooms by 0.975 per pixel.
 
 let drag = null;
@@ -162,12 +211,9 @@ stage.addEventListener('wheel', (e) => {
   requestDraw();
 }, { passive: false });
 
-// --- models -----------------------------------------------------------------------
-// .x goes to the engine from memory; .3ds / .dxf loaders read a path, so those are
+// --- models ----------------------------------------------------------------------------
+// .x goes to the engine from memory; .3ds / .dxf / .pcs readers take a path, so those are
 // written into Emscripten's in-memory filesystem first.
-
-let library = [];
-let currentModel = null; // library id, or null for a user's own file
 
 function loadAny(bytes, filename) {
   const ext = (/\.[^.]+$/.exec(filename) || [''])[0].toLowerCase();
@@ -177,7 +223,7 @@ function loadAny(bytes, filename) {
     E.HEAPU8.set(bytes, ptr);
     ok = !!E._tf_load_x(ptr, bytes.length);
     E._free(ptr);
-  } else if (ext === '.3ds' || ext === '.dxf') {
+  } else if (['.3ds', '.dxf', '.pcs'].includes(ext)) {
     const path = `/model${ext}`;
     E.FS.writeFile(path, bytes);
     ok = !!E.ccall('tf_load_file', 'number', ['string'], [path]);
@@ -188,16 +234,21 @@ function loadAny(bytes, filename) {
   return ok;
 }
 
-function openBytes(bytes, filename, name, id = null) {
+async function openBytes(bytes, filename, name, id = null, rot = [0.15, 0.5]) {
   setStatus(`Loading ${name}…`);
   if (!loadAny(bytes, filename)) { setStatus(`Could not load ${name} — the engine rejected it.`); return; }
   currentModel = id;
   $('#doc-name').textContent = name;
   document.title = `LiveArt — ${name}`;
   document.querySelectorAll('#models .swatch').forEach((b) => b.setAttribute('aria-selected', b.dataset.id === id));
-  view.xRot = 0.15; view.yRot = 0.5;
+  view.home = rot;
+  [view.xRot, view.yRot] = rot;
+  const scene = !!E._tf_has_original_styles();
+  showOriginal(scene);
   fitToFrame();
-  setStatus(`Opened ${name}`);
+  if (scene) await selectStyle('original');           // a scene opens in its own LiveStyles
+  else if (view.style === 'original') await selectStyle(recall('liveart.style') || 'cartoon');
+  setStatus(`Opened ${name}${scene ? ' — its original LiveStyles' : ''}`);
   syncURL();
   requestDraw();
 }
@@ -206,7 +257,7 @@ async function openLibraryModel(id) {
   const m = library.find((x) => x.id === id) || library[0];
   const res = await fetch(`models/${m.file}`);
   if (!res.ok) { setStatus(`Could not fetch ${m.name}`); return; }
-  openBytes(new Uint8Array(await res.arrayBuffer()), m.file, m.name, m.id);
+  await openBytes(new Uint8Array(await res.arrayBuffer()), m.file, m.name, m.id, m.rot);
 }
 
 async function buildLibrary() {
@@ -225,7 +276,7 @@ async function buildLibrary() {
 
 async function openUserFile(f) {
   if (!f) return;
-  openBytes(new Uint8Array(await f.arrayBuffer()), f.name, f.name.replace(/\.[^.]+$/, ''));
+  await openBytes(new Uint8Array(await f.arrayBuffer()), f.name, f.name.replace(/\.[^.]+$/, ''));
 }
 
 $('#file').addEventListener('change', async (e) => { await openUserFile(e.target.files[0]); e.target.value = ''; });
@@ -239,7 +290,7 @@ frame.addEventListener('drop', async (e) => {
   await openUserFile(e.dataTransfer.files[0]);
 });
 
-// --- palette tabs and shareable URLs ------------------------------------------------
+// --- palette tabs and shareable URLs -------------------------------------------------------
 
 function showTab(which) {
   const models = which === 'models';
@@ -252,16 +303,14 @@ function showTab(which) {
 $('#tab-styles').addEventListener('click', () => showTab('styles'));
 $('#tab-models').addEventListener('click', () => showTab('models'));
 
-const slug = (name) => name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-
 function syncURL() {
   const q = new URLSearchParams();
   if (currentModel) q.set('model', currentModel);
-  if (styleNames.length) q.set('style', slug(styleNames[view.style]));
+  q.set('style', view.style);
   history.replaceState(null, '', `${location.pathname}?${q}`);
 }
 
-// --- export -----------------------------------------------------------------------
+// --- export ---------------------------------------------------------------------------------
 
 function download(blob, filename) {
   const a = document.createElement('a');
@@ -271,14 +320,17 @@ function download(blob, filename) {
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 
-function baseName() { return `${$('#doc-name').textContent} - ${styleNames[view.style]}`; }
+function baseName() { return `${$('#doc-name').textContent} - ${styles.get(view.style).name}`; }
 
+// EPS and SVG are the engine's vector output, which (as in 1998) leaves out textures.
 function exportEPS() {
-  download(new Blob([lastEPS + '\nshowpage\n'], { type: 'application/postscript' }), `${baseName()}.eps`);
+  const { w, h } = cssSize(stage);
+  download(new Blob([renderEPS(w, h) + '\nshowpage\n'], { type: 'application/postscript' }), `${baseName()}.eps`);
 }
 
 function exportSVG() {
-  const eps = parseEPS(lastEPS);
+  const { w, h } = cssSize(stage);
+  const eps = parseEPS(renderEPS(w, h));
   const parts = eps.ops.map((op) => {
     const p = op.path;
     let d = `M${p[0].toFixed(2)},${p[1].toFixed(2)}`;
@@ -293,16 +345,13 @@ function exportSVG() {
 }
 
 function exportPNG() {
-  const { w, h } = sizeCanvas(stage);
-  const c = document.createElement('canvas');
-  c.width = w * 3; c.height = h * 3;
-  const g = c.getContext('2d');
-  g.scale(3, 3);
-  drawEPS(g, parseEPS(renderEPS(w, h)), w, h, '#ffffff');
-  c.toBlob((b) => download(b, `${baseName()}.png`));
+  const { w, h } = cssSize(stage);
+  applyView();
+  thumbs.draw(E, w, h, 3);
+  thumbs.canvas.toBlob((b) => download(b, `${baseName()}.png`));
 }
 
-// --- menus and keys ------------------------------------------------------------------
+// --- menus and keys ---------------------------------------------------------------------------
 
 function closeMenus() { document.querySelectorAll('.menu.open').forEach((m) => m.classList.remove('open')); }
 document.querySelectorAll('.menu').forEach((menu) => {
@@ -323,35 +372,45 @@ const actions = {
   open: () => $('#file').click(),
   models: () => showTab('models'),
   eps: exportEPS, svg: exportSVG, png: exportPNG,
-  reset: () => { view.xRot = 0.15; view.yRot = 0.5; fitToFrame(); requestDraw(); },
+  reset: () => { [view.xRot, view.yRot] = view.home; fitToFrame(); requestDraw(); },
   spin: () => { view.spinning = !view.spinning; requestDraw(); },
   about: () => $('#about').showModal(),
 };
 document.querySelectorAll('[data-action]').forEach((b) =>
   b.addEventListener('click', () => { closeMenus(); actions[b.dataset.action](); }));
 
+// Arrow keys step through the palette, as a listbox would.
 document.addEventListener('keydown', (e) => {
   if (e.target.closest('dialog')) return;
   if ((e.ctrlKey || e.metaKey) && e.key === 'o') { e.preventDefault(); actions.open(); }
   else if (e.key === 'Home') actions.reset();
   else if (e.key === ' ' && e.target === document.body) { e.preventDefault(); actions.spin(); }
   else if (e.key === 'Escape') closeMenus();
-  else if (/^[1-9]$/.test(e.key) && +e.key <= styleNames.length) selectStyle(+e.key - 1);
+  else if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && e.target === document.body) {
+    e.preventDefault();
+    const ids = [...document.querySelectorAll('#swatches .swatch:not([hidden])')].map((b) => b.dataset.style);
+    const i = ids.indexOf(view.style) + (e.key === 'ArrowDown' ? 1 : -1);
+    if (i >= 0 && i < ids.length) {
+      selectStyle(ids[i]);
+      document.querySelector(`#swatches [data-style="${ids[i]}"]`).scrollIntoView({ block: 'nearest' });
+    }
+  }
 });
 
 new ResizeObserver(() => requestDraw()).observe(stage);
 
-// --- boot -----------------------------------------------------------------------------
+// --- boot ------------------------------------------------------------------------------------
 
 try {
   E = await createEngine({ locateFile: (f) => `engine/${f}` });
-  buildStyles();
-  await buildLibrary();
+  gl = createRenderer(stage);
+  thumbs = createRenderer(document.createElement('canvas'));
+  if (!gl || !thumbs) throw new Error('this browser has no WebGL 2');
+  await Promise.all([buildStyles(), buildLibrary()]);
   const q = new URLSearchParams(location.search);
-  const fromURL = styleNames.findIndex((n) => slug(n) === q.get('style'));
-  const saved = Number(recall('liveart.style'));
-  selectStyle(fromURL >= 0 ? fromURL : Number.isInteger(saved) && saved < styleNames.length ? saved : 0);
-  await openLibraryModel(q.get('model') || 'businessman');
+  await openLibraryModel(q.get('model') || 'girl');
+  const wanted = q.get('style');
+  if (wanted && wanted !== 'original' && styles.has(wanted)) await selectStyle(wanted);
 } catch (err) {
   setStatus(`Engine failed to start: ${err.message}`);
   throw err;
