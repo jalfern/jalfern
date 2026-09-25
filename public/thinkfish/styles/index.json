@@ -1,0 +1,205 @@
+{
+ "source": "LiveArt98 Beta 6 CD (build 0.12, 20 Jan 1998): the shipped LiveStyles, loaded by the engine's own ARELSFile.",
+ "styles": [
+  {
+   "id": "blockprint",
+   "name": "Blockprint",
+   "file": "Blockprint 01.liv"
+  },
+  {
+   "id": "breakfast",
+   "name": "Breakfast",
+   "file": "Breakfast 01.liv"
+  },
+  {
+   "id": "cartoon",
+   "name": "Cartoon",
+   "file": "Cartoon 01.liv"
+  },
+  {
+   "id": "charcoal",
+   "name": "Charcoal",
+   "file": "Charcoal 01.liv"
+  },
+  {
+   "id": "colored-pencil",
+   "name": "Colored Pencil",
+   "file": "colored pencil 01.liv"
+  },
+  {
+   "id": "connect-the-dots",
+   "name": "Connect the Dots",
+   "file": "Connect the Dots 01.liv"
+  },
+  {
+   "id": "crayon-resist",
+   "name": "Crayon Resist",
+   "file": "crayon resist 01.liv"
+  },
+  {
+   "id": "crosshatch",
+   "name": "Crosshatch",
+   "file": "Crosshatch 01a.liv"
+  },
+  {
+   "id": "crosshatch-light",
+   "name": "Crosshatch Light",
+   "file": "Crosshatch Light 02a.liv"
+  },
+  {
+   "id": "crystal",
+   "name": "Crystal",
+   "file": "crystal 01.liv"
+  },
+  {
+   "id": "cut-paper",
+   "name": "Cut Paper",
+   "file": "Cut Paper 01.liv"
+  },
+  {
+   "id": "cut-paper-lit",
+   "name": "Cut Paper Lit",
+   "file": "Cut Paper Lit 01.liv"
+  },
+  {
+   "id": "dice",
+   "name": "Dice",
+   "file": "Dice.liv"
+  },
+  {
+   "id": "faux-licht",
+   "name": "Faux Licht",
+   "file": "Faux Licht 08.liv"
+  },
+  {
+   "id": "fill-color-lit",
+   "name": "Fill Color Lit",
+   "file": "Fill Color Lit.liv"
+  },
+  {
+   "id": "freeze-ray",
+   "name": "Freeze Ray",
+   "file": "Freeze Ray 01.liv"
+  },
+  {
+   "id": "fresco",
+   "name": "Fresco",
+   "file": "Fresco 01.liv"
+  },
+  {
+   "id": "hard-light",
+   "name": "Hard Light",
+   "file": "hard light 02.liv"
+  },
+  {
+   "id": "india-sketch",
+   "name": "India Sketch",
+   "file": "India Sketch 01.liv"
+  },
+  {
+   "id": "ink-blot",
+   "name": "Ink Blot",
+   "file": "Ink Blot.liv"
+  },
+  {
+   "id": "inkwash",
+   "name": "Inkwash",
+   "file": "Inkwash 01.liv"
+  },
+  {
+   "id": "lacquer",
+   "name": "Lacquer",
+   "file": "Laquer.liv"
+  },
+  {
+   "id": "midas",
+   "name": "Midas",
+   "file": "Midas.liv"
+  },
+  {
+   "id": "neon",
+   "name": "Neon",
+   "file": "Neon 01.liv"
+  },
+  {
+   "id": "nonie",
+   "name": "Nonie",
+   "file": "Nonie 05.liv"
+  },
+  {
+   "id": "outline",
+   "name": "Outline",
+   "file": "Outline 01.liv"
+  },
+  {
+   "id": "pen-and-ink",
+   "name": "Pen and Ink",
+   "file": "Pen and Ink 01.liv"
+  },
+  {
+   "id": "ping-pong",
+   "name": "Ping Pong",
+   "file": "ping pong 06.liv"
+  },
+  {
+   "id": "pointy",
+   "name": "Pointy",
+   "file": "Pointy 01.liv"
+  },
+  {
+   "id": "rind",
+   "name": "Rind",
+   "file": "Rind 01.liv"
+  },
+  {
+   "id": "silkscreen-color",
+   "name": "Silkscreen Color",
+   "file": "Silkscreen Color 01.liv"
+  },
+  {
+   "id": "silkscreen",
+   "name": "Silkscreen",
+   "file": "Silkscreen.liv"
+  },
+  {
+   "id": "silver-leaf",
+   "name": "Silver Leaf",
+   "file": "SilVer LeaF 01.liv"
+  },
+  {
+   "id": "sketch",
+   "name": "Sketch",
+   "file": "Sketch 01.liv"
+  },
+  {
+   "id": "sketch-graphite",
+   "name": "Sketch Graphite",
+   "file": "Sketch Graphite 01.liv"
+  },
+  {
+   "id": "slap-jack",
+   "name": "Slap Jack",
+   "file": "Slap Jack 01.liv"
+  },
+  {
+   "id": "structural-b-w",
+   "name": "Structural B+W",
+   "file": "Structual b+w 01.liv"
+  },
+  {
+   "id": "structural",
+   "name": "Structural",
+   "file": "Structural 03.liv"
+  },
+  {
+   "id": "terra-cotta",
+   "name": "Terra Cotta",
+   "file": "Terra Cotta 01.liv"
+  },
+  {
+   "id": "water-wash",
+   "name": "Water Wash",
+   "file": "Water Wash 01.liv"
+  }
+ ]
+}

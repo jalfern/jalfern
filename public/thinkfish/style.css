@@ -144,7 +144,7 @@ body {
 }
 .tab[aria-selected="true"] { top: 0; padding-bottom: 4px; background: var(--face); z-index: 2; }
 .tab:focus-visible { outline: 1px dotted var(--dark); outline-offset: -4px; }
-.swatches[hidden] { display: none; }
+.swatches[hidden], .swatch[hidden], .menu-items [hidden] { display: none; }
 .swatch img { width: 56px; height: 56px; object-fit: contain; background: #fff; border: 1px solid var(--shadow); }
 .swatches {
   flex: 1;
