@@ -145,6 +145,14 @@ body {
 .tab[aria-selected="true"] { top: 0; padding-bottom: 4px; background: var(--face); z-index: 2; }
 .tab:focus-visible { outline: 1px dotted var(--dark); outline-offset: -4px; }
 .swatches[hidden], .swatch[hidden], .menu-items [hidden] { display: none; }
+.palette-group {
+  padding: 6px 3px 2px;
+  font-weight: bold;
+  color: var(--shadow);
+  border-bottom: 1px solid var(--light);
+}
+.palette-group:first-child { padding-top: 0; }
+.menu-items .menu-group { padding: 4px 8px 2px; color: var(--shadow); font-weight: bold; }
 .swatch img { width: 56px; height: 56px; object-fit: contain; background: #fff; border: 1px solid var(--shadow); }
 .swatches {
   flex: 1;
@@ -204,6 +212,8 @@ body {
   .palette { contain: none; }
   .swatches { grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); }
   .swatch { grid-template-columns: 1fr; justify-items: center; text-align: center; }
+  .palette-group { grid-column: 1 / -1; }
   .swatches { max-height: 260px; }
   .status-cell:not(.grow) { display: none; }
 }
+#style-menu { max-height: 70vh; overflow-y: auto; }

@@ -1,115 +1,602 @@
 {
-  "source": "Scenes: LiveArt 1.x .pcs worlds (1997-99) with their own LiveStyles. Business Man: the LiveStyle editor's sample model (1998). The rest: Viewpoint Datalabs DataShop catalog (vp numbers), 3D Studio format.",
-  "models": [
-    {
-      "id": "girl",
-      "name": "Anime Girl",
-      "file": "girl.pcs",
-      "rot": [
-        0.2,
-        3.64
-      ],
-      "scene": true
-    },
-    {
-      "id": "stilllife",
-      "name": "Still Life",
-      "file": "stilllife.pcs",
-      "rot": [
-        0.35,
-        3.64
-      ],
-      "scene": true
-    },
-    {
-      "id": "probe",
-      "name": "Probe",
-      "file": "probe.pcs",
-      "rot": [
-        0.3,
-        0.5
-      ],
-      "scene": true
-    },
-    {
-      "id": "businessman",
-      "name": "Business Man",
-      "file": "businessman.x"
-    },
-    {
-      "id": "vp8710",
-      "name": "Pup Tent",
-      "file": "vp8710.3ds"
-    },
-    {
-      "id": "vp12562",
-      "name": "Dome Tent",
-      "file": "vp12562.3ds"
-    },
-    {
-      "id": "vp41831",
-      "name": "Trail Tent",
-      "file": "vp41831.3ds"
-    },
-    {
-      "id": "vp21973",
-      "name": "Campfire",
-      "file": "vp21973.3ds"
-    },
-    {
-      "id": "vp24246",
-      "name": "Firewood",
-      "file": "vp24246.3ds"
-    },
-    {
-      "id": "vp14254",
-      "name": "Picnic Table",
-      "file": "vp14254.3ds"
-    },
-    {
-      "id": "vp11849",
-      "name": "Pine Tree",
-      "file": "vp11849.3ds"
-    },
-    {
-      "id": "vp11846",
-      "name": "Tall Pine",
-      "file": "vp11846.3ds"
-    },
-    {
-      "id": "vp11818",
-      "name": "Cypress",
-      "file": "vp11818.3ds"
-    },
-    {
-      "id": "vp11827",
-      "name": "Savanna Tree",
-      "file": "vp11827.3ds"
-    },
-    {
-      "id": "vp11850",
-      "name": "Umbrella Tree",
-      "file": "vp11850.3ds"
-    },
-    {
-      "id": "vp13698",
-      "name": "Dead Tree",
-      "file": "vp13698.3ds"
-    },
-    {
-      "id": "vp11653",
-      "name": "Red Rock",
-      "file": "vp11653.3ds"
-    },
-    {
-      "id": "vp11654",
-      "name": "Boulder",
-      "file": "vp11654.3ds"
-    },
-    {
-      "id": "vp11650",
-      "name": "Slate Rock",
-      "file": "vp11650.3ds"
-    }
-  ]
+ "source": "Scenes: LiveArt 1.x .pcs worlds (1997-99). Halloween: the LiveArt 98 v1.2 Halloween pack (Viewpoint .vpe, names from its HALLPACK.VDB catalog). Campsite: Viewpoint DataShop 3D Studio files. Business Man: the LiveStyle editor's sample.",
+ "models": [
+  {
+   "id": "girl",
+   "name": "Anime Girl",
+   "file": "girl.pcs",
+   "rot": [
+    0.2,
+    3.64
+   ],
+   "scene": true,
+   "group": "Scenes"
+  },
+  {
+   "id": "stilllife",
+   "name": "Still Life",
+   "file": "stilllife.pcs",
+   "rot": [
+    0.35,
+    3.64
+   ],
+   "scene": true,
+   "group": "Scenes"
+  },
+  {
+   "id": "probe",
+   "name": "Probe",
+   "file": "probe.pcs",
+   "rot": [
+    0.3,
+    0.5
+   ],
+   "scene": true,
+   "group": "Scenes"
+  },
+  {
+   "id": "dv21904",
+   "name": "Alien",
+   "file": "halloween/dv21904.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21907",
+   "name": "All Hallows Eve! In Text",
+   "file": "halloween/dv21907.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21889",
+   "name": "Bat 1",
+   "file": "halloween/dv21889.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21890",
+   "name": "Bat 2",
+   "file": "halloween/dv21890.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21645",
+   "name": "Big Devil",
+   "file": "halloween/dv21645.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21915",
+   "name": "Black Cat 1",
+   "file": "halloween/dv21915.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21916",
+   "name": "Black Cat 2",
+   "file": "halloween/dv21916.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21917",
+   "name": "Black Cat 3",
+   "file": "halloween/dv21917.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21905",
+   "name": "Boooo! In Text",
+   "file": "halloween/dv21905.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21891",
+   "name": "Brain",
+   "file": "halloween/dv21891.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21892",
+   "name": "Caldron",
+   "file": "halloween/dv21892.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21926",
+   "name": "Candy Corn",
+   "file": "halloween/dv21926.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21925",
+   "name": "Carmel Apple",
+   "file": "halloween/dv21925.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21886",
+   "name": "Cat Woman",
+   "file": "halloween/dv21886.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21893",
+   "name": "Cemetary On A Hill",
+   "file": "halloween/dv21893.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21882",
+   "name": "Children Trick Or Treating",
+   "file": "halloween/dv21882.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21869",
+   "name": "Clawed Hand",
+   "file": "halloween/dv21869.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21930",
+   "name": "Cloud With Moon",
+   "file": "halloween/dv21930.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21920",
+   "name": "Coffin 1",
+   "file": "halloween/dv21920.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21863",
+   "name": "Coffin 2",
+   "file": "halloween/dv21863.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21866",
+   "name": "Coffin 3",
+   "file": "halloween/dv21866.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21861",
+   "name": "Coffin 4",
+   "file": "halloween/dv21861.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21900",
+   "name": "Corner Spider Web",
+   "file": "halloween/dv21900.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21902",
+   "name": "Dracula",
+   "file": "halloween/dv21902.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21865",
+   "name": "Dripping Fangs",
+   "file": "halloween/dv21865.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21859",
+   "name": "Eyeball",
+   "file": "halloween/dv21859.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21903",
+   "name": "Frankenstein",
+   "file": "halloween/dv21903.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21906",
+   "name": "Frankenstein On Table",
+   "file": "halloween/dv21906.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21870",
+   "name": "Genie",
+   "file": "halloween/dv21870.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21898",
+   "name": "Ghost",
+   "file": "halloween/dv21898.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv18508",
+   "name": "Ghost In A Tree",
+   "file": "halloween/dv18508.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21921",
+   "name": "Grim Reaper",
+   "file": "halloween/dv21921.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21909",
+   "name": "Halloween In Text",
+   "file": "halloween/dv21909.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21908",
+   "name": "Halloween Party In Text",
+   "file": "halloween/dv21908.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21912",
+   "name": "Halloween\u0092s Coming In Text",
+   "file": "halloween/dv21912.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21864",
+   "name": "Hand Rising From Grave",
+   "file": "halloween/dv21864.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv13923",
+   "name": "Happy Ghost",
+   "file": "halloween/dv13923.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21911",
+   "name": "Happy Halloween In Text",
+   "file": "halloween/dv21911.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21871",
+   "name": "Haunted House",
+   "file": "halloween/dv21871.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21910",
+   "name": "Haunted House In Text",
+   "file": "halloween/dv21910.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21934",
+   "name": "Heart",
+   "file": "halloween/dv21934.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21874",
+   "name": "Jack-O-Lantern 1",
+   "file": "halloween/dv21874.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21875",
+   "name": "Jack-O-Lantern 2",
+   "file": "halloween/dv21875.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21876",
+   "name": "Jack-O-Lantern 3",
+   "file": "halloween/dv21876.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21877",
+   "name": "Jack-O-Lantern 4",
+   "file": "halloween/dv21877.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21878",
+   "name": "Jack-O-Lantern 5",
+   "file": "halloween/dv21878.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21879",
+   "name": "Jack-O-Lantern 6",
+   "file": "halloween/dv21879.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21862",
+   "name": "Jolly Roger",
+   "file": "halloween/dv21862.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21927",
+   "name": "Loose Candies",
+   "file": "halloween/dv21927.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21666",
+   "name": "Mischievous Devil",
+   "file": "halloween/dv21666.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21872",
+   "name": "Pirate",
+   "file": "halloween/dv21872.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21873",
+   "name": "Pitchfork",
+   "file": "halloween/dv21873.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21913",
+   "name": "Scary In Text",
+   "file": "halloween/dv21913.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21867",
+   "name": "Severed Finger",
+   "file": "halloween/dv21867.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21931",
+   "name": "Severed Hand",
+   "file": "halloween/dv21931.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21868",
+   "name": "Skeleton",
+   "file": "halloween/dv21868.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21924",
+   "name": "Skull 1",
+   "file": "halloween/dv21924.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21880",
+   "name": "Skull 2",
+   "file": "halloween/dv21880.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21932",
+   "name": "Skull 3",
+   "file": "halloween/dv21932.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21929",
+   "name": "Skull 4",
+   "file": "halloween/dv21929.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21928",
+   "name": "Spaceman",
+   "file": "halloween/dv21928.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21894",
+   "name": "Spider 1",
+   "file": "halloween/dv21894.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21899",
+   "name": "Spider 2",
+   "file": "halloween/dv21899.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21901",
+   "name": "Spider Web",
+   "file": "halloween/dv21901.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21933",
+   "name": "Spooky Doorway",
+   "file": "halloween/dv21933.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21914",
+   "name": "Spooky In Text",
+   "file": "halloween/dv21914.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21670",
+   "name": "Strong Devil",
+   "file": "halloween/dv21670.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21883",
+   "name": "Tombstone 1",
+   "file": "halloween/dv21883.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21895",
+   "name": "Tombstone 2",
+   "file": "halloween/dv21895.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21897",
+   "name": "Tombstone 3",
+   "file": "halloween/dv21897.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21888",
+   "name": "Trick Or Treat Bag Of Candy",
+   "file": "halloween/dv21888.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21887",
+   "name": "Vampire Female",
+   "file": "halloween/dv21887.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21923",
+   "name": "Vampire Male",
+   "file": "halloween/dv21923.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21486",
+   "name": "Winged Gargoyle",
+   "file": "halloween/dv21486.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21884",
+   "name": "Witch",
+   "file": "halloween/dv21884.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21885",
+   "name": "Witch Flying On Broom",
+   "file": "halloween/dv21885.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21896",
+   "name": "Witch's Hat",
+   "file": "halloween/dv21896.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "dv21881",
+   "name": "Wolfman",
+   "file": "halloween/dv21881.vpe",
+   "group": "Halloween"
+  },
+  {
+   "id": "businessman",
+   "name": "Business Man",
+   "file": "businessman.x",
+   "group": "Samples"
+  },
+  {
+   "id": "vp8710",
+   "name": "Pup Tent",
+   "file": "vp8710.3ds",
+   "group": "Campsite"
+  },
+  {
+   "id": "vp12562",
+   "name": "Dome Tent",
+   "file": "vp12562.3ds",
+   "group": "Campsite"
+  },
+  {
+   "id": "vp41831",
+   "name": "Trail Tent",
+   "file": "vp41831.3ds",
+   "group": "Campsite"
+  },
+  {
+   "id": "vp21973",
+   "name": "Campfire",
+   "file": "vp21973.3ds",
+   "group": "Campsite"
+  },
+  {
+   "id": "vp24246",
+   "name": "Firewood",
+   "file": "vp24246.3ds",
+   "group": "Campsite"
+  },
+  {
+   "id": "vp14254",
+   "name": "Picnic Table",
+   "file": "vp14254.3ds",
+   "group": "Campsite"
+  },
+  {
+   "id": "vp11849",
+   "name": "Pine Tree",
+   "file": "vp11849.3ds",
+   "group": "Campsite"
+  },
+  {
+   "id": "vp11846",
+   "name": "Tall Pine",
+   "file": "vp11846.3ds",
+   "group": "Campsite"
+  },
+  {
+   "id": "vp11818",
+   "name": "Cypress",
+   "file": "vp11818.3ds",
+   "group": "Campsite"
+  },
+  {
+   "id": "vp11827",
+   "name": "Savanna Tree",
+   "file": "vp11827.3ds",
+   "group": "Campsite"
+  },
+  {
+   "id": "vp11850",
+   "name": "Umbrella Tree",
+   "file": "vp11850.3ds",
+   "group": "Campsite"
+  },
+  {
+   "id": "vp13698",
+   "name": "Dead Tree",
+   "file": "vp13698.3ds",
+   "group": "Campsite"
+  },
+  {
+   "id": "vp11653",
+   "name": "Red Rock",
+   "file": "vp11653.3ds",
+   "group": "Campsite"
+  },
+  {
+   "id": "vp11654",
+   "name": "Boulder",
+   "file": "vp11654.3ds",
+   "group": "Campsite"
+  },
+  {
+   "id": "vp11650",
+   "name": "Slate Rock",
+   "file": "vp11650.3ds",
+   "group": "Campsite"
+  }
+ ]
 }

@@ -49,7 +49,7 @@
     <div class="workspace">
       <div class="stage-frame sunken">
         <canvas id="stage" aria-label="LiveArt stage — drag to rotate, right-drag or scroll to zoom"></canvas>
-        <div class="drop-hint" id="drop-hint">Drop a .x, .3ds or .dxf model</div>
+        <div class="drop-hint" id="drop-hint">Drop a .x, .3ds, .dxf, .vpe or .pcs file</div>
       </div>
       <aside class="palette">
         <div class="tabs" role="tablist">
@@ -77,12 +77,13 @@
       C++ written then — compiled to WebAssembly. Every frame is drawn by the
       engine's own EPS writer.</p>
     <p class="fine">Drag to rotate · right-drag or scroll to zoom · pick a LiveStyle on the right.</p>
-    <p class="fine">Models: the editor's 1998 sample, and 3D Studio files from Viewpoint Datalabs' DataShop catalog.</p>
+    <p class="fine">Scenes from LiveArt 1.x; the Halloween pack and LiveStyles from LiveArt 98 v1.2 (Aug 1998);
+      the LiveArt98 Beta 6 styles (Jan 1998); campsite models from Viewpoint's DataShop.</p>
     <form method="dialog"><button class="btn">OK</button></form>
   </div>
 </dialog>
 
-<input type="file" id="file" accept=".x,.3ds,.dxf" hidden>
+<input type="file" id="file" accept=".x,.3ds,.dxf,.pcs,.vpe" hidden>
 <script type="module" src="app.js"></script>
 </body>
 </html>
