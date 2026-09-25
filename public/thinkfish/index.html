@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LiveArt — ThinkFish</title>
+<meta name="description" content="LiveArt, the ThinkFish non-photorealistic 3D renderer (1997–99), running its original engine in your browser.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="desktop">
+  <div class="window" id="app">
+    <div class="titlebar">
+      <span class="title-icon" aria-hidden="true">🐟</span>
+      <span class="title">LiveArt — <span id="doc-name">Business Man</span></span>
+      <span class="title-buttons" aria-hidden="true"><b>_</b><b>□</b><b>×</b></span>
+    </div>
+    <nav class="menubar" aria-label="Menu">
+      <div class="menu">
+        <button class="menu-title" aria-haspopup="true"><u>F</u>ile</button>
+        <div class="menu-items" role="menu">
+          <button role="menuitem" data-action="open">Open Model…<span>Ctrl+O</span></button>
+          <button role="menuitem" data-action="models">Model Library…</button>
+          <hr>
+          <button role="menuitem" data-action="eps">Export EPS…</button>
+          <button role="menuitem" data-action="svg">Export SVG…</button>
+          <button role="menuitem" data-action="png">Export PNG…</button>
+        </div>
+      </div>
+      <div class="menu">
+        <button class="menu-title" aria-haspopup="true"><u>V</u>iew</button>
+        <div class="menu-items" role="menu">
+          <button role="menuitem" data-action="reset">Reset View<span>Home</span></button>
+          <button role="menuitem" data-action="spin">Turntable<span>Space</span></button>
+        </div>
+      </div>
+      <div class="menu">
+        <button class="menu-title" aria-haspopup="true"><u>S</u>tyle</button>
+        <div class="menu-items" role="menu" id="style-menu"></div>
+      </div>
+      <div class="menu">
+        <button class="menu-title" aria-haspopup="true"><u>H</u>elp</button>
+        <div class="menu-items" role="menu">
+          <button role="menuitem" data-action="about">About LiveArt…</button>
+        </div>
+      </div>
+    </nav>
+
+    <div class="workspace">
+      <div class="stage-frame sunken">
+        <canvas id="stage" aria-label="LiveArt stage — drag to rotate, right-drag or scroll to zoom"></canvas>
+        <div class="drop-hint" id="drop-hint">Drop a .x, .3ds or .dxf model</div>
+      </div>
+      <aside class="palette">
+        <div class="tabs" role="tablist">
+          <button class="tab" role="tab" id="tab-styles" aria-controls="swatches" aria-selected="true">LiveStyles</button>
+          <button class="tab" role="tab" id="tab-models" aria-controls="models" aria-selected="false">Models</button>
+        </div>
+        <div class="swatches sunken" id="swatches" role="listbox" aria-label="LiveStyles"></div>
+        <div class="swatches sunken" id="models" role="listbox" aria-label="Models" hidden></div>
+      </aside>
+    </div>
+
+    <div class="statusbar">
+      <span class="status-cell grow" id="status">Loading engine…</span>
+      <span class="status-cell" id="stat-prims"></span>
+      <span class="status-cell" id="stat-ms"></span>
+    </div>
+  </div>
+</div>
+
+<dialog id="about" class="window dialog">
+  <div class="titlebar"><span class="title">About LiveArt</span></div>
+  <div class="dialog-body">
+    <p class="about-logo">🐟 <b>LiveArt</b></p>
+    <p>ThinkFish, 1997–1999. This is the original LiveArt rendering engine — the
+      C++ written then — compiled to WebAssembly. Every frame is drawn by the
+      engine's own EPS writer.</p>
+    <p class="fine">Drag to rotate · right-drag or scroll to zoom · pick a LiveStyle on the right.</p>
+    <p class="fine">Models: the editor's 1998 sample, and 3D Studio files from Viewpoint Datalabs' DataShop catalog.</p>
+    <form method="dialog"><button class="btn">OK</button></form>
+  </div>
+</dialog>
+
+<input type="file" id="file" accept=".x,.3ds,.dxf" hidden>
+<script type="module" src="app.js"></script>
+</body>
+</html>
