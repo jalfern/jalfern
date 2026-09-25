@@ -1,205 +1,323 @@
 {
- "source": "LiveArt98 Beta 6 CD (build 0.12, 20 Jan 1998): the shipped LiveStyles, loaded by the engine's own ARELSFile.",
+ "source": "LiveArt 98 v1.2.0.59 (28 Aug 1998) with the Halloween pack, and the LiveArt98 Beta 6 CD (build 0.12, 20 Jan 1998). Loaded by the engine's own ARELSFile.",
  "styles": [
   {
-   "id": "blockprint",
-   "name": "Blockprint",
-   "file": "Blockprint 01.liv"
+   "id": "emanate",
+   "name": "Emanate",
+   "file": "halloween/Emanate.liv",
+   "group": "Halloween"
   },
   {
-   "id": "breakfast",
-   "name": "Breakfast",
-   "file": "Breakfast 01.liv"
+   "id": "grotto",
+   "name": "Grotto",
+   "file": "halloween/Grotto.liv",
+   "group": "Halloween"
   },
   {
-   "id": "cartoon",
-   "name": "Cartoon",
-   "file": "Cartoon 01.liv"
+   "id": "vapour",
+   "name": "Vapour",
+   "file": "halloween/Vapour.liv",
+   "group": "Halloween"
   },
   {
-   "id": "charcoal",
-   "name": "Charcoal",
-   "file": "Charcoal 01.liv"
+   "id": "blokprint",
+   "name": "Blokprint",
+   "file": "1.2/Blokprint.liv",
+   "group": "LiveArt 98"
   },
   {
-   "id": "colored-pencil",
-   "name": "Colored Pencil",
-   "file": "colored pencil 01.liv"
-  },
-  {
-   "id": "connect-the-dots",
-   "name": "Connect the Dots",
-   "file": "Connect the Dots 01.liv"
-  },
-  {
-   "id": "crayon-resist",
-   "name": "Crayon Resist",
-   "file": "crayon resist 01.liv"
-  },
-  {
-   "id": "crosshatch",
-   "name": "Crosshatch",
-   "file": "Crosshatch 01a.liv"
-  },
-  {
-   "id": "crosshatch-light",
-   "name": "Crosshatch Light",
-   "file": "Crosshatch Light 02a.liv"
+   "id": "cill",
+   "name": "Cill",
+   "file": "1.2/Cill.liv",
+   "group": "LiveArt 98"
   },
   {
    "id": "crystal",
    "name": "Crystal",
-   "file": "crystal 01.liv"
+   "file": "1.2/Crystal.liv",
+   "group": "LiveArt 98"
   },
   {
-   "id": "cut-paper",
-   "name": "Cut Paper",
-   "file": "Cut Paper 01.liv"
-  },
-  {
-   "id": "cut-paper-lit",
-   "name": "Cut Paper Lit",
-   "file": "Cut Paper Lit 01.liv"
-  },
-  {
-   "id": "dice",
-   "name": "Dice",
-   "file": "Dice.liv"
-  },
-  {
-   "id": "faux-licht",
-   "name": "Faux Licht",
-   "file": "Faux Licht 08.liv"
-  },
-  {
-   "id": "fill-color-lit",
-   "name": "Fill Color Lit",
-   "file": "Fill Color Lit.liv"
-  },
-  {
-   "id": "freeze-ray",
-   "name": "Freeze Ray",
-   "file": "Freeze Ray 01.liv"
-  },
-  {
-   "id": "fresco",
-   "name": "Fresco",
-   "file": "Fresco 01.liv"
-  },
-  {
-   "id": "hard-light",
-   "name": "Hard Light",
-   "file": "hard light 02.liv"
-  },
-  {
-   "id": "india-sketch",
-   "name": "India Sketch",
-   "file": "India Sketch 01.liv"
-  },
-  {
-   "id": "ink-blot",
-   "name": "Ink Blot",
-   "file": "Ink Blot.liv"
-  },
-  {
-   "id": "inkwash",
-   "name": "Inkwash",
-   "file": "Inkwash 01.liv"
-  },
-  {
-   "id": "lacquer",
-   "name": "Lacquer",
-   "file": "Laquer.liv"
+   "id": "lina",
+   "name": "Lina",
+   "file": "1.2/Lina.liv",
+   "group": "LiveArt 98"
   },
   {
    "id": "midas",
    "name": "Midas",
-   "file": "Midas.liv"
+   "file": "1.2/Midas.liv",
+   "group": "LiveArt 98"
   },
   {
    "id": "neon",
    "name": "Neon",
-   "file": "Neon 01.liv"
+   "file": "1.2/Neon.liv",
+   "group": "LiveArt 98"
   },
   {
-   "id": "nonie",
+   "id": "newsie",
+   "name": "Newsie",
+   "file": "1.2/Newsie.liv",
+   "group": "LiveArt 98"
+  },
+  {
+   "id": "pointist",
+   "name": "Pointist",
+   "file": "1.2/Pointist.liv",
+   "group": "LiveArt 98"
+  },
+  {
+   "id": "structo-b-w",
+   "name": "Structo B&W",
+   "file": "1.2/Structo B&W.liv",
+   "group": "LiveArt 98"
+  },
+  {
+   "id": "toon",
+   "name": "Toon",
+   "file": "1.2/Toon.liv",
+   "group": "LiveArt 98"
+  },
+  {
+   "id": "beta-blockprint",
+   "name": "Blockprint",
+   "file": "beta/Blockprint 01.liv",
+   "group": "Beta, Jan 1998"
+  },
+  {
+   "id": "beta-breakfast",
+   "name": "Breakfast",
+   "file": "beta/Breakfast 01.liv",
+   "group": "Beta, Jan 1998"
+  },
+  {
+   "id": "beta-cartoon",
+   "name": "Cartoon",
+   "file": "beta/Cartoon 01.liv",
+   "group": "Beta, Jan 1998"
+  },
+  {
+   "id": "beta-charcoal",
+   "name": "Charcoal",
+   "file": "beta/Charcoal 01.liv",
+   "group": "Beta, Jan 1998"
+  },
+  {
+   "id": "beta-colored-pencil",
+   "name": "Colored Pencil",
+   "file": "beta/colored pencil 01.liv",
+   "group": "Beta, Jan 1998"
+  },
+  {
+   "id": "beta-connect-the-dots",
+   "name": "Connect the Dots",
+   "file": "beta/Connect the Dots 01.liv",
+   "group": "Beta, Jan 1998"
+  },
+  {
+   "id": "beta-crayon-resist",
+   "name": "Crayon Resist",
+   "file": "beta/crayon resist 01.liv",
+   "group": "Beta, Jan 1998"
+  },
+  {
+   "id": "beta-crosshatch",
+   "name": "Crosshatch",
+   "file": "beta/Crosshatch 01a.liv",
+   "group": "Beta, Jan 1998"
+  },
+  {
+   "id": "beta-crosshatch-light",
+   "name": "Crosshatch Light",
+   "file": "beta/Crosshatch Light 02a.liv",
+   "group": "Beta, Jan 1998"
+  },
+  {
+   "id": "beta-crystal",
+   "name": "Crystal",
+   "file": "beta/crystal 01.liv",
+   "group": "Beta, Jan 1998"
+  },
+  {
+   "id": "beta-cut-paper",
+   "name": "Cut Paper",
+   "file": "beta/Cut Paper 01.liv",
+   "group": "Beta, Jan 1998"
+  },
+  {
+   "id": "beta-cut-paper-lit",
+   "name": "Cut Paper Lit",
+   "file": "beta/Cut Paper Lit 01.liv",
+   "group": "Beta, Jan 1998"
+  },
+  {
+   "id": "beta-dice",
+   "name": "Dice",
+   "file": "beta/Dice.liv",
+   "group": "Beta, Jan 1998"
+  },
+  {
+   "id": "beta-faux-licht",
+   "name": "Faux Licht",
+   "file": "beta/Faux Licht 08.liv",
+   "group": "Beta, Jan 1998"
+  },
+  {
+   "id": "beta-fill-color-lit",
+   "name": "Fill Color Lit",
+   "file": "beta/Fill Color Lit.liv",
+   "group": "Beta, Jan 1998"
+  },
+  {
+   "id": "beta-freeze-ray",
+   "name": "Freeze Ray",
+   "file": "beta/Freeze Ray 01.liv",
+   "group": "Beta, Jan 1998"
+  },
+  {
+   "id": "beta-fresco",
+   "name": "Fresco",
+   "file": "beta/Fresco 01.liv",
+   "group": "Beta, Jan 1998"
+  },
+  {
+   "id": "beta-hard-light",
+   "name": "Hard Light",
+   "file": "beta/hard light 02.liv",
+   "group": "Beta, Jan 1998"
+  },
+  {
+   "id": "beta-india-sketch",
+   "name": "India Sketch",
+   "file": "beta/India Sketch 01.liv",
+   "group": "Beta, Jan 1998"
+  },
+  {
+   "id": "beta-ink-blot",
+   "name": "Ink Blot",
+   "file": "beta/Ink Blot.liv",
+   "group": "Beta, Jan 1998"
+  },
+  {
+   "id": "beta-inkwash",
+   "name": "Inkwash",
+   "file": "beta/Inkwash 01.liv",
+   "group": "Beta, Jan 1998"
+  },
+  {
+   "id": "beta-lacquer",
+   "name": "Lacquer",
+   "file": "beta/Laquer.liv",
+   "group": "Beta, Jan 1998"
+  },
+  {
+   "id": "beta-midas",
+   "name": "Midas",
+   "file": "beta/Midas.liv",
+   "group": "Beta, Jan 1998"
+  },
+  {
+   "id": "beta-neon",
+   "name": "Neon",
+   "file": "beta/Neon 01.liv",
+   "group": "Beta, Jan 1998"
+  },
+  {
+   "id": "beta-nonie",
    "name": "Nonie",
-   "file": "Nonie 05.liv"
+   "file": "beta/Nonie 05.liv",
+   "group": "Beta, Jan 1998"
   },
   {
-   "id": "outline",
+   "id": "beta-outline",
    "name": "Outline",
-   "file": "Outline 01.liv"
+   "file": "beta/Outline 01.liv",
+   "group": "Beta, Jan 1998"
   },
   {
-   "id": "pen-and-ink",
+   "id": "beta-pen-and-ink",
    "name": "Pen and Ink",
-   "file": "Pen and Ink 01.liv"
+   "file": "beta/Pen and Ink 01.liv",
+   "group": "Beta, Jan 1998"
   },
   {
-   "id": "ping-pong",
+   "id": "beta-ping-pong",
    "name": "Ping Pong",
-   "file": "ping pong 06.liv"
+   "file": "beta/ping pong 06.liv",
+   "group": "Beta, Jan 1998"
   },
   {
-   "id": "pointy",
+   "id": "beta-pointy",
    "name": "Pointy",
-   "file": "Pointy 01.liv"
+   "file": "beta/Pointy 01.liv",
+   "group": "Beta, Jan 1998"
   },
   {
-   "id": "rind",
+   "id": "beta-rind",
    "name": "Rind",
-   "file": "Rind 01.liv"
+   "file": "beta/Rind 01.liv",
+   "group": "Beta, Jan 1998"
   },
   {
-   "id": "silkscreen-color",
+   "id": "beta-silkscreen-color",
    "name": "Silkscreen Color",
-   "file": "Silkscreen Color 01.liv"
+   "file": "beta/Silkscreen Color 01.liv",
+   "group": "Beta, Jan 1998"
   },
   {
-   "id": "silkscreen",
+   "id": "beta-silkscreen",
    "name": "Silkscreen",
-   "file": "Silkscreen.liv"
+   "file": "beta/Silkscreen.liv",
+   "group": "Beta, Jan 1998"
   },
   {
-   "id": "silver-leaf",
+   "id": "beta-silver-leaf",
    "name": "Silver Leaf",
-   "file": "SilVer LeaF 01.liv"
+   "file": "beta/SilVer LeaF 01.liv",
+   "group": "Beta, Jan 1998"
   },
   {
-   "id": "sketch",
+   "id": "beta-sketch",
    "name": "Sketch",
-   "file": "Sketch 01.liv"
+   "file": "beta/Sketch 01.liv",
+   "group": "Beta, Jan 1998"
   },
   {
-   "id": "sketch-graphite",
+   "id": "beta-sketch-graphite",
    "name": "Sketch Graphite",
-   "file": "Sketch Graphite 01.liv"
+   "file": "beta/Sketch Graphite 01.liv",
+   "group": "Beta, Jan 1998"
   },
   {
-   "id": "slap-jack",
+   "id": "beta-slap-jack",
    "name": "Slap Jack",
-   "file": "Slap Jack 01.liv"
+   "file": "beta/Slap Jack 01.liv",
+   "group": "Beta, Jan 1998"
   },
   {
-   "id": "structural-b-w",
+   "id": "beta-structural-b-w",
    "name": "Structural B+W",
-   "file": "Structual b+w 01.liv"
+   "file": "beta/Structual b+w 01.liv",
+   "group": "Beta, Jan 1998"
   },
   {
-   "id": "structural",
+   "id": "beta-structural",
    "name": "Structural",
-   "file": "Structural 03.liv"
+   "file": "beta/Structural 03.liv",
+   "group": "Beta, Jan 1998"
   },
   {
-   "id": "terra-cotta",
+   "id": "beta-terra-cotta",
    "name": "Terra Cotta",
-   "file": "Terra Cotta 01.liv"
+   "file": "beta/Terra Cotta 01.liv",
+   "group": "Beta, Jan 1998"
   },
   {
-   "id": "water-wash",
+   "id": "beta-water-wash",
    "name": "Water Wash",
-   "file": "Water Wash 01.liv"
+   "file": "beta/Water Wash 01.liv",
+   "group": "Beta, Jan 1998"
   }
  ]
 }

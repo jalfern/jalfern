@@ -16,6 +16,7 @@ let thumbs = null;        // offscreen renderer for palette swatches
 let hasModel = false;     // nothing to render until a model loads
 let hasOriginal = false;  // the loaded model is a scene with its own LiveStyles
 let library = [];
+let linkedStyle = null;   // a ?style= from the address, honoured over the remembered style
 let currentModel = null;
 
 // The palette: a scene's own styles, the LiveArt98 set, and the editor's default.
@@ -34,7 +35,7 @@ async function ensureStyle(id) {
   if (!s || s.kind !== 'file' || s.index !== undefined) return s;
   if (!s.loading) {
     s.loading = (async () => {
-      const bytes = new Uint8Array(await (await fetch(`styles/${encodeURIComponent(s.file)}`)).arrayBuffer());
+      const bytes = new Uint8Array(await (await fetch(`styles/${s.file.split('/').map(encodeURIComponent).join('/')}`)).arrayBuffer());
       E.FS.mkdirTree('/styles');
       const path = `/styles/${s.id}.liv`;
       E.FS.writeFile(path, bytes);
@@ -146,7 +147,16 @@ async function buildStyles() {
 
   const swatches = $('#swatches');
   const menu = $('#style-menu');
+  let group = null;
   for (const s of styles.values()) {
+    if (s.group && s.group !== group) {
+      group = s.group;
+      swatches.append(groupHeader(group));
+      const h = document.createElement('div');
+      h.className = 'menu-group';
+      h.textContent = group;
+      menu.append(h);
+    }
     const b = document.createElement('button');
     b.className = 'swatch';
     b.dataset.style = s.id;
@@ -165,13 +175,21 @@ async function buildStyles() {
   showOriginal(false);
 }
 
+function groupHeader(text) {
+  const h = document.createElement('div');
+  h.className = 'palette-group';
+  h.textContent = text;
+  return h;
+}
+
 function showOriginal(on) {
   hasOriginal = on;
   document.querySelectorAll('[data-style="original"]').forEach((el) => { el.hidden = !on; });
 }
 
 async function selectStyle(id) {
-  if (!styles.has(id) || (id === 'original' && !hasOriginal)) id = hasOriginal ? 'original' : 'cartoon';
+  if (!styles.has(id) && styles.has(`beta-${id}`)) id = `beta-${id}`; // links from before the 1.2 set
+  if (!styles.has(id) || (id === 'original' && !hasOriginal)) id = hasOriginal ? 'original' : 'toon';
   view.style = id;
   if (id !== 'original') store('liveart.style', id);
   syncURL();
@@ -223,8 +241,9 @@ function loadAny(bytes, filename) {
     E.HEAPU8.set(bytes, ptr);
     ok = !!E._tf_load_x(ptr, bytes.length);
     E._free(ptr);
-  } else if (['.3ds', '.dxf', '.pcs'].includes(ext)) {
-    const path = `/model${ext}`;
+  } else if (['.3ds', '.dxf', '.pcs', '.vpe'].includes(ext)) {
+    // A .vpe's decryption key is derived from the number in its name, so keep the name.
+    const path = ext === '.vpe' ? `/${filename.split('/').pop()}` : `/model${ext}`;
     E.FS.writeFile(path, bytes);
     ok = !!E.ccall('tf_load_file', 'number', ['string'], [path]);
   } else {
@@ -246,8 +265,10 @@ async function openBytes(bytes, filename, name, id = null, rot = [0.15, 0.5]) {
   const scene = !!E._tf_has_original_styles();
   showOriginal(scene);
   fitToFrame();
-  if (scene) await selectStyle('original');           // a scene opens in its own LiveStyles
-  else if (view.style === 'original') await selectStyle(recall('liveart.style') || 'cartoon');
+  if (scene && !linkedStyle) await selectStyle('original'); // a scene opens in its own LiveStyles
+  else if (linkedStyle) await selectStyle(linkedStyle);
+  else if (view.style === 'original') await selectStyle(recall('liveart.style') || 'toon');
+  linkedStyle = null;
   setStatus(`Opened ${name}${scene ? ' — its original LiveStyles' : ''}`);
   syncURL();
   requestDraw();
@@ -263,7 +284,9 @@ async function openLibraryModel(id) {
 async function buildLibrary() {
   library = (await (await fetch('models/index.json')).json()).models;
   const list = $('#models');
+  let group = null;
   for (const m of library) {
+    if (m.group && m.group !== group) { group = m.group; list.append(groupHeader(group)); }
     const b = document.createElement('button');
     b.className = 'swatch';
     b.dataset.id = m.id;
@@ -408,9 +431,8 @@ try {
   if (!gl || !thumbs) throw new Error('this browser has no WebGL 2');
   await Promise.all([buildStyles(), buildLibrary()]);
   const q = new URLSearchParams(location.search);
+  if (q.get('style') && q.get('style') !== 'original') linkedStyle = q.get('style');
   await openLibraryModel(q.get('model') || 'girl');
-  const wanted = q.get('style');
-  if (wanted && wanted !== 'original' && styles.has(wanted)) await selectStyle(wanted);
 } catch (err) {
   setStatus(`Engine failed to start: ${err.message}`);
   throw err;
