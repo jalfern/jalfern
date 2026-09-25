@@ -1,0 +1,21 @@
+{
+  "source": "Business Man: the LiveStyle editor's sample model (1998). Everything else: Viewpoint Datalabs DataShop catalog (vp numbers), 3D Studio format.",
+  "models": [
+    { "id": "businessman", "name": "Business Man",   "file": "businessman.x" },
+    { "id": "vp8710",      "name": "Pup Tent",       "file": "vp8710.3ds" },
+    { "id": "vp12562",     "name": "Dome Tent",      "file": "vp12562.3ds" },
+    { "id": "vp41831",     "name": "Trail Tent",     "file": "vp41831.3ds" },
+    { "id": "vp21973",     "name": "Campfire",       "file": "vp21973.3ds" },
+    { "id": "vp24246",     "name": "Firewood",       "file": "vp24246.3ds" },
+    { "id": "vp14254",     "name": "Picnic Table",   "file": "vp14254.3ds" },
+    { "id": "vp11849",     "name": "Pine Tree",      "file": "vp11849.3ds" },
+    { "id": "vp11846",     "name": "Tall Pine",      "file": "vp11846.3ds" },
+    { "id": "vp11818",     "name": "Cypress",        "file": "vp11818.3ds" },
+    { "id": "vp11827",     "name": "Savanna Tree",   "file": "vp11827.3ds" },
+    { "id": "vp11850",     "name": "Umbrella Tree",  "file": "vp11850.3ds" },
+    { "id": "vp13698",     "name": "Dead Tree",      "file": "vp13698.3ds" },
+    { "id": "vp11653",     "name": "Red Rock",       "file": "vp11653.3ds" },
+    { "id": "vp11654",     "name": "Boulder",        "file": "vp11654.3ds" },
+    { "id": "vp11650",     "name": "Slate Rock",     "file": "vp11650.3ds" }
+  ]
+}

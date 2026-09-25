@@ -1,9 +1,31 @@
 {
   "rewrites": [
-    { "source": "/api/:path*", "destination": "/api/:path*" },
-    { "source": "/retrogames", "destination": "https://retrogames-psi.vercel.app/retrogames" },
-    { "source": "/retrogames/", "destination": "https://retrogames-psi.vercel.app/retrogames/" },
-    { "source": "/retrogames/:path*", "destination": "https://retrogames-psi.vercel.app/retrogames/:path*" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    {
+      "source": "/api/:path*",
+      "destination": "/api/:path*"
+    },
+    {
+      "source": "/retrogames",
+      "destination": "https://retrogames-psi.vercel.app/retrogames"
+    },
+    {
+      "source": "/retrogames/",
+      "destination": "https://retrogames-psi.vercel.app/retrogames/"
+    },
+    {
+      "source": "/retrogames/:path*",
+      "destination": "https://retrogames-psi.vercel.app/retrogames/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/thinkfish",
+      "destination": "/thinkfish/",
+      "permanent": false
+    }
   ]
 }
