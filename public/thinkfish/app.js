@@ -28,7 +28,10 @@ const page = {
   light: null, lightOn: true, catalog: false,
   orient: null, pose: { x: 0, y: 0, size: 1 },
   xRot: 0.15, yRot: 0.5, distance: 18, home: [0.15, 0.5], spinning: false,
+  // A .x animation (the catalog's Motion models), played at the file's 30 ticks a second.
+  anim: { length: 0, time: 0, playing: false, loop: true, last: 0 },
 };
+const ANIM_FPS = 30;
 
 // LiveArt.dll FUN_10045fc0 (the Reset Model menu): SetOrientation(0, b, c), degrees.
 const HOME_98 = [0, 30, 0];
@@ -96,6 +99,7 @@ function applyPage() {
   E._tf_set_surface_color(...rgb(page.fillColor));
   E._tf_set_background(...rgb(page.background));
   E._tf_set_light(...(page.light ? [1, ...page.light] : [0, 0, 0, 0]));
+  if (page.anim.length) E._tf_anim_set_time(page.anim.time);
   if (page.catalog) {
     E._tf_use_catalog_view(0, 0, 0);
     E._tf_set_catalog_orient(...page.orient);
@@ -115,8 +119,12 @@ function requestDraw() {
   pending = true;
   requestAnimationFrame(() => {
     pending = false;
+    const now = performance.now();
+    if (page.anim.playing) advanceAnimation((now - page.anim.last) / 1000);
+    page.anim.last = now;
     drawPage();
     if (page.spinning) { spinStep(); requestDraw(); }
+    else if (page.anim.playing) requestDraw();
   });
 }
 function drawPage() {
@@ -206,6 +214,7 @@ async function openOnPage(bytes, filename, name, { id = null, rot = [0.15, 0.5],
   page.spinning = false;
   resetPose();
   page.hasOriginal = !!E._tf_has_original_styles();
+  page.anim = { length: E._tf_anim_length(), time: 0, playing: false, loop: true, last: performance.now() };
   if (!page.catalog) fitToFrame();
   $('#doc-name').textContent = name;
   $('#tb-model').textContent = name;
@@ -240,6 +249,7 @@ async function openUserFile(f) {
 
 function newDocument() {
   page.hasModel = false;
+  page.anim = { length: 0, time: 0, playing: false, loop: true, last: 0 };
   page.name = 'Untitled'; page.id = null;
   $('#doc-name').textContent = 'Untitled';
   $('#tb-model').textContent = 'Untitled';
@@ -304,6 +314,7 @@ function syncTools() {
   set('fill-color', caps & 4);
   for (const t of ['background', 'orientation', 'lighting', 'reset']) set(t, page.hasModel);
   set('orientations', page.hasModel && page.catalog);
+  set('animation', page.hasModel && page.anim.length > 0);
   for (const b of $$('[data-repeat]')) b.disabled = !page.hasModel || (!page.catalog && /nudge|cw|ccw/.test(b.dataset.repeat));
   $('#style-select').disabled = !page.hasModel;
 }
@@ -351,6 +362,7 @@ const TOOLS = {
   background: (b) => popup(b, colorPicker('Background', page.background, (c) => { page.background = c; })),
   orientation: (b) => b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') !== 'true'),
   lighting: (b) => popup(b, lightPad()),
+  animation: (b) => popup(b, animationPad()),
   help: () => $('#help').showModal(),
   reset: () => { resetPose(); if (!page.catalog) fitToFrame(); requestDraw(); },
   orientations: (b) => popup(b, orientationMenu()),
@@ -458,13 +470,15 @@ function colorPicker(what, current, set) {
 }
 
 // Lighting: eight lamps round a cube that shows where the light comes from, and a switch.
-// Directions are in the engine's view space (x right, y down, z into the screen); the editor's
-// default, (-1, -1, -1), is the top-left lamp.
+// The lamps shine across the screen (the centre one from the eye); SketchPad's default is the
+// right-hand lamp. The engine takes the direction light travels, in view space (x right, y up,
+// z toward the viewer), so a lamp at screen offset (sx, sy) (sy down) sends (-sx, sy, 0).
 const LAMPS = [['nw', -1, -1], ['n', 0, -1], ['ne', 1, -1], ['w', -1, 0], ['front', 0, 0], ['e', 1, 0], ['sw', -1, 1], ['s', 0, 1], ['se', 1, 1]];
+const lampVector = (x, y) => (x || y ? [-x / Math.hypot(x, y), y / Math.hypot(x, y), 0] : [0, 0, -1]);
 function currentLamp() {
-  if (!page.light) return 'nw';
-  const hit = LAMPS.find(([, x, y]) => x === page.light[0] && y === page.light[1]);
-  return hit ? hit[0] : 'nw';
+  if (!page.light) return page.catalog ? 'e' : null;
+  const hit = LAMPS.find(([, x, y]) => lampVector(x, y).every((v, i) => Math.abs(v - page.light[i]) < 1e-6));
+  return hit ? hit[0] : null;
 }
 function lightPad() {
   const wrap = document.createElement('div');
@@ -473,7 +487,7 @@ function lightPad() {
   for (const [dir, x, y] of LAMPS) {
     const b = document.createElement('button');
     if (dir === 'front') {
-      b.innerHTML = `<img class="cube" src="ui/cube-${page.lightOn ? currentLamp() : 'dark'}.png" alt="">`;
+      b.innerHTML = `<img class="cube" src="ui/cube-${page.lightOn ? (currentLamp() ?? 'front') : 'dark'}.png" alt="">`;
       b.title = 'Light from the front';
     } else {
       b.innerHTML = `<img src="ui/lamp-${dir}.png" alt="">`;
@@ -481,7 +495,7 @@ function lightPad() {
     }
     b.setAttribute('aria-pressed', page.lightOn && currentLamp() === dir);
     b.addEventListener('click', () => {
-      page.light = [x, y, -1];
+      page.light = lampVector(x, y);
       page.lightOn = true;
       closePopup();
       requestDraw();
@@ -500,6 +514,67 @@ function lightPad() {
   });
   wrap.append(grid, sw);
   return wrap;
+}
+
+// Animation Playback (LiveArt.dll DIALOG 255, strings 4401-4406): Play / Pause, First, Previous
+// and Next Frame, Last Frame, Single / Loop Playback, and the frame number.
+function advanceAnimation(dt) {
+  const a = page.anim;
+  a.time += dt;
+  if (a.time > a.length) {
+    if (a.loop) a.time %= a.length;
+    else { a.time = a.length; a.playing = false; }
+  }
+  refreshAnimationPad();
+}
+const frameCount = () => Math.max(1, Math.round(page.anim.length * ANIM_FPS));
+const currentFrame = () => Math.min(frameCount(), Math.round(page.anim.time * ANIM_FPS));
+function setFrame(f) {
+  page.anim.time = Math.max(0, Math.min(frameCount(), f)) / ANIM_FPS;
+  refreshAnimationPad();
+  requestDraw();
+}
+let animPad = null;
+function refreshAnimationPad() {
+  if (!animPad?.isConnected) return;
+  $('.anim-play img', animPad).src = `ui/anim-${page.anim.playing ? 'pause' : 'play'}.png`;
+  $('.anim-loop img', animPad).src = `ui/anim-${page.anim.loop ? 'loop' : 'once'}.png`;
+  $('.anim-frame', animPad).value = currentFrame();
+}
+function animationPad() {
+  const pad = document.createElement('div');
+  pad.className = 'animpad';
+  const btn = (cls, img, title, fn) => {
+    const b = document.createElement('button');
+    b.className = `anim-btn ${cls}`;
+    b.title = title;
+    b.innerHTML = `<img src="ui/${img}.png" alt="">`;
+    b.addEventListener('click', () => { fn(); refreshAnimationPad(); requestDraw(); });
+    return b;
+  };
+  const row1 = document.createElement('div');
+  row1.append(
+    btn('anim-play', 'anim-play', 'Play / Pause', () => {
+      const a = page.anim;
+      if (!a.playing && a.time >= a.length) a.time = 0;
+      a.playing = !a.playing;
+      a.last = performance.now();
+    }),
+    btn('anim-loop', 'anim-loop', 'Single / Loop Playback', () => { page.anim.loop = !page.anim.loop; }));
+  const row2 = document.createElement('div');
+  row2.append(
+    btn('', 'anim-first', 'First Frame', () => { page.anim.playing = false; setFrame(0); }),
+    btn('', 'anim-prev', 'Previous Frame', () => { page.anim.playing = false; setFrame(currentFrame() - 1); }),
+    btn('', 'anim-next', 'Next Frame', () => { page.anim.playing = false; setFrame(currentFrame() + 1); }),
+    btn('', 'anim-last', 'Last Frame', () => { page.anim.playing = false; setFrame(frameCount()); }));
+  const row3 = document.createElement('label');
+  row3.className = 'anim-count';
+  row3.innerHTML = `Frame <input class="anim-frame" type="number" min="0" max="${frameCount()}"> of ${frameCount()}`;
+  $('input', row3).addEventListener('change', (e) => { page.anim.playing = false; setFrame(+e.target.value); });
+  pad.append(row1, row2, row3);
+  animPad = pad;
+  queueMicrotask(refreshAnimationPad);
+  return pad;
 }
 
 function orientationMenu() {
