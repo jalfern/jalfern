@@ -3,91 +3,247 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>LiveArt — ThinkFish</title>
-<meta name="description" content="LiveArt, the ThinkFish non-photorealistic 3D renderer (1997–99), running its original engine in your browser.">
+<title>LiveArt Sketchpad — ThinkFish</title>
+<meta name="description" content="LiveArt 98 SketchPad, the ThinkFish / Viewpoint non-photorealistic 3D renderer, running its original engine in your browser.">
+<link rel="icon" href="ui/logo-viewpoint.png">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<!-- LiveArt 98 SketchPad (LiveArt SketchPad.exe, v1.2, 1998): menus from its MENU 128, the
+     LiveArt Toolbar from LiveArt.dll's DIALOG 173 and strings 4201-4224, every bitmap from
+     the two binaries (tools/extract-ui.py). Additions of ours are marked "extra". -->
 <div class="desktop">
   <div class="window" id="app">
     <div class="titlebar">
-      <span class="title-icon" aria-hidden="true">🐟</span>
-      <span class="title">LiveArt — <span id="doc-name">Business Man</span></span>
+      <img class="title-icon" src="ui/logo-viewpoint.png" alt="">
+      <span class="title"><span id="doc-name">Untitled</span> - LiveArt Sketchpad</span>
       <span class="title-buttons" aria-hidden="true"><b>_</b><b>□</b><b>×</b></span>
     </div>
+
     <nav class="menubar" aria-label="Menu">
       <div class="menu">
         <button class="menu-title" aria-haspopup="true"><u>F</u>ile</button>
         <div class="menu-items" role="menu">
-          <button role="menuitem" data-action="open">Open Model…<span>Ctrl+O</span></button>
-          <button role="menuitem" data-action="models">Model Library…</button>
+          <button role="menuitem" data-action="new" data-prompt="Create a new document"><u>N</u>ew<span>Ctrl+N</span></button>
+          <button role="menuitem" data-action="open" data-prompt="Open a model file (.x, .3ds, .dxf, .vpe) or a LiveArt 1.x scene (.pcs)"><u>O</u>pen…<span>Ctrl+O</span></button>
+          <button role="menuitem" data-action="samples" data-prompt="Open one of the sample scenes and models" class="extra">Open Sample…</button>
           <hr>
-          <button role="menuitem" data-action="eps">Export EPS…</button>
-          <button role="menuitem" data-action="svg">Export SVG…</button>
-          <button role="menuitem" data-action="png">Export PNG…</button>
+          <button role="menuitem" disabled data-prompt="Save the active document"><u>S</u>ave<span>Ctrl+S</span></button>
+          <button role="menuitem" disabled data-prompt="Save the active document with a new name">Save <u>A</u>s…</button>
+          <hr>
+          <button role="menuitem" data-action="export" data-prompt="Export LiveArt as an Image"><u>E</u>xport…</button>
+          <button role="menuitem" data-action="print" data-prompt="Print the active document"><u>P</u>rint…<span>Ctrl+P</span></button>
+          <button role="menuitem" disabled data-prompt="Display full pages">Print Pre<u>v</u>iew</button>
+          <button role="menuitem" disabled data-prompt="Change the printer and printing options">P<u>r</u>int Setup…</button>
+          <hr>
+          <button role="menuitem" disabled>Recent File</button>
+          <hr>
+          <button role="menuitem" data-action="exit" data-prompt="Quit the application; prompts to save documents">E<u>x</u>it</button>
+        </div>
+      </div>
+      <div class="menu">
+        <button class="menu-title" aria-haspopup="true"><u>E</u>dit</button>
+        <div class="menu-items" role="menu">
+          <button role="menuitem" disabled data-prompt="Cut the selection and put it on the Clipboard">Cu<u>t</u><span>Ctrl+X</span></button>
+          <button role="menuitem" data-action="copy" data-prompt="Copy the selected image and put it on the Clipboard"><u>C</u>opy Image<span>Ctrl+C</span></button>
+          <button role="menuitem" disabled data-prompt="Insert Clipboard contents"><u>P</u>aste<span>Ctrl+V</span></button>
         </div>
       </div>
       <div class="menu">
         <button class="menu-title" aria-haspopup="true"><u>V</u>iew</button>
         <div class="menu-items" role="menu">
-          <button role="menuitem" data-action="reset">Reset Model<span>Home</span></button>
+          <button role="menuitem" data-action="canvas" data-prompt="Resize LiveArt Canvas">Canvas Size</button>
           <hr>
-          <button role="menuitem" data-action="front">to Front</button>
-          <button role="menuitem" data-action="back">to Back</button>
-          <button role="menuitem" data-action="right">to Right Side</button>
-          <button role="menuitem" data-action="left">to Left Side</button>
-          <button role="menuitem" data-action="top">to Top</button>
-          <button role="menuitem" data-action="bottom">to Bottom</button>
-          <hr>
-          <button role="menuitem" data-action="spin">Turntable<span>Space</span></button>
+          <button role="menuitemcheckbox" aria-checked="true" data-action="toggle-doc-toolbar" data-prompt="Show or hide the document toolbar">Document <u>T</u>oolbar</button>
+          <button role="menuitemcheckbox" aria-checked="true" data-action="toggle-status" data-prompt="Show or hide the status bar"><u>S</u>tatus Bar</button>
+          <button role="menuitemcheckbox" aria-checked="true" data-action="toggle-la-toolbar" data-prompt="Show or hide the liveart toolbar">LiveArt Toolbar</button>
+          <button role="menuitem" data-action="catalog" data-prompt="Show Model Catalog">LiveArt <u>M</u>odel Catalog</button>
+          <hr class="extra">
+          <button role="menuitemcheckbox" aria-checked="false" data-action="spin" class="extra" data-prompt="Turn the model like a turntable">Turntable<span>Space</span></button>
         </div>
-      </div>
-      <div class="menu">
-        <button class="menu-title" aria-haspopup="true"><u>S</u>tyle</button>
-        <div class="menu-items" role="menu" id="style-menu"></div>
       </div>
       <div class="menu">
         <button class="menu-title" aria-haspopup="true"><u>H</u>elp</button>
         <div class="menu-items" role="menu">
-          <button role="menuitem" data-action="about">About LiveArt…</button>
+          <button role="menuitem" data-action="about" data-prompt="Display program information, version number and copyright">About LiveArt Sketchpad…</button>
+          <button role="menuitem" data-action="help" data-prompt="Peruse the LiveArt Documentation">Help Using LiveArt</button>
+          <button role="menuitem" data-action="web" data-prompt="Check out LiveArt's Web-page, download free upgrades">LiveArt on the Web</button>
         </div>
       </div>
     </nav>
 
-    <div class="workspace">
-      <div class="stage-frame sunken">
-        <canvas id="stage" aria-label="LiveArt stage — drag to rotate, right-drag or scroll to zoom"></canvas>
-        <div class="drop-hint" id="drop-hint">Drop a .x, .3ds, .dxf, .vpe or .pcs file</div>
-      </div>
-      <aside class="palette">
-        <div class="tabs" role="tablist">
-          <button class="tab" role="tab" id="tab-styles" aria-controls="swatches" aria-selected="true">LiveStyles</button>
-          <button class="tab" role="tab" id="tab-models" aria-controls="models" aria-selected="false">Models</button>
-        </div>
-        <div class="swatches sunken" id="swatches" role="listbox" aria-label="LiveStyles"></div>
-        <div class="swatches sunken" id="models" role="listbox" aria-label="Models" hidden></div>
-      </aside>
+    <div class="doc-toolbar" id="doc-toolbar" role="toolbar" aria-label="Document">
+      <button class="tb" data-action="new" style="--i:0" title="New" data-prompt="Create a new document"></button>
+      <button class="tb" data-action="open" style="--i:1" title="Open" data-prompt="Open an existing document"></button>
+      <button class="tb" disabled style="--i:2" title="Save" data-prompt="Save the active document"></button>
+      <span class="tb-sep"></span>
+      <button class="tb" data-action="catalog" style="--i:3" title="Model Catalog" data-prompt="Show Model Catalog"></button>
+      <button class="tb" data-action="print" style="--i:4" title="Print" data-prompt="Print the active document"></button>
+      <button class="tb" disabled style="--i:5" title="Print Preview" data-prompt="Display full pages"></button>
+      <span class="tb-sep"></span>
+      <button class="tb" data-action="copy" style="--i:6" title="Copy" data-prompt="Copy the selected image and put it on the Clipboard"></button>
+      <span class="tb-sep"></span>
+      <button class="tb" data-action="canvas" style="--i:7" title="Canvas" data-prompt="Resize the canvas"></button>
     </div>
 
-    <div class="statusbar">
-      <span class="status-cell grow" id="status">Loading engine…</span>
-      <span class="status-cell" id="stat-prims"></span>
-      <span class="status-cell" id="stat-ms"></span>
+    <div class="desk" id="desk">
+      <div class="page" id="page">
+        <canvas id="stage" aria-label="The LiveArt canvas — drag to turn the model, right-drag or scroll to size it"></canvas>
+        <div class="drop-hint">Drop a .x, .3ds, .dxf, .vpe or .pcs file</div>
+        <img class="pin pin-left" src="ui/pin-left.png" alt="">
+        <img class="pin pin-right" src="ui/pin-right.png" alt="">
+      </div>
+
+      <div class="toolwin" id="la-toolbar" role="toolbar" aria-label="LiveArt Toolbar">
+        <div class="toolwin-title"><span>LiveArt Toolbar: <span id="tb-model">Untitled</span></span><b class="toolwin-close" data-action="toggle-la-toolbar" aria-label="Close">×</b></div>
+        <div class="la-row">
+          <button class="la" data-tool="replace" data-prompt="Replace LiveArt"><img src="ui/replace.png" alt="Replace LiveArt"></button>
+          <select id="style-select" aria-label="Select a new LiveStyle" data-prompt="Select a new LiveStyle"></select>
+          <span class="la-sep"></span>
+          <button class="la" data-tool="line-thickness" data-prompt="Line Thickness"><img src="ui/line-thickness.png" alt="Line Thickness"></button>
+          <button class="la" data-tool="line-color" data-prompt="Line Color"><img src="ui/line-color.png" alt="Line Color"></button>
+          <button class="la" data-tool="fill-color" data-prompt="Fill Color"><img src="ui/fill-color.png" alt="Fill Color"></button>
+          <button class="la" data-tool="background" data-prompt="Background Options"><img src="ui/background.png" alt="Background Options"></button>
+          <span class="la-sep"></span>
+          <button class="la" data-tool="orientation" data-prompt="Model Orientation" aria-pressed="true"><img src="ui/orientation.png" alt="Model Orientation"></button>
+          <button class="la" data-tool="lighting" data-prompt="Lighting"><img src="ui/lighting.png" alt="Lighting"></button>
+          <button class="la" data-tool="animation" data-prompt="Animation Playback" disabled><img src="ui/animation.png" alt="Animation Playback"></button>
+          <button class="la" data-tool="help" data-prompt="LiveArt Help"><img src="ui/help.png" alt="LiveArt Help"></button>
+        </div>
+        <div class="la-row">
+          <button class="la" data-tool="reset" data-prompt="Reset Model"><img src="ui/reset.png" alt="Reset Model"></button>
+          <button class="la la-narrow" data-tool="orientations" data-prompt="More Orientations"><img src="ui/more-orientations.png" alt="More Orientations"></button>
+          <span class="la-sep"></span>
+          <button class="la" data-repeat="nudge-up" data-prompt="Nudge Up"><img src="ui/nudge-up.png" alt="Nudge Up"></button>
+          <button class="la" data-repeat="nudge-down" data-prompt="Nudge Down"><img src="ui/nudge-down.png" alt="Nudge Down"></button>
+          <button class="la" data-repeat="nudge-left" data-prompt="Nudge Left"><img src="ui/nudge-left.png" alt="Nudge Left"></button>
+          <button class="la" data-repeat="nudge-right" data-prompt="Nudge Right"><img src="ui/nudge-right.png" alt="Nudge Right"></button>
+          <span class="la-sep"></span>
+          <button class="la" data-repeat="tilt-up" data-prompt="Tilt Up"><img src="ui/tilt-up.png" alt="Tilt Up"></button>
+          <button class="la" data-repeat="tilt-down" data-prompt="Tilt Down"><img src="ui/tilt-down.png" alt="Tilt Down"></button>
+          <button class="la" data-repeat="tilt-left" data-prompt="Tilt Left"><img src="ui/tilt-left.png" alt="Tilt Left"></button>
+          <button class="la" data-repeat="tilt-right" data-prompt="Tilt Right"><img src="ui/tilt-right.png" alt="Tilt Right"></button>
+          <button class="la" data-repeat="tilt-cw" data-prompt="Tilt Clockwise"><img src="ui/tilt-cw.png" alt="Tilt Clockwise"></button>
+          <button class="la" data-repeat="tilt-ccw" data-prompt="Tilt Counter-Clockwise"><img src="ui/tilt-ccw.png" alt="Tilt Counter-Clockwise"></button>
+          <span class="la-sep"></span>
+          <button class="la" data-repeat="smaller" data-prompt="Decrease Model Size"><img src="ui/smaller.png" alt="Decrease Model Size"></button>
+          <button class="la" data-repeat="bigger" data-prompt="Increase Model Size"><img src="ui/bigger.png" alt="Increase Model Size"></button>
+        </div>
+      </div>
+
+      <div class="popup" id="popup" hidden></div>
+    </div>
+
+    <div class="statusbar" id="statusbar">
+      <span class="status-cell" id="canvas-size">Canvas size 400 x 400</span>
+      <span class="status-cell grow" id="status">Loading…</span>
     </div>
   </div>
 </div>
 
-<dialog id="about" class="window dialog">
-  <div class="titlebar"><span class="title">About LiveArt</span></div>
+<!-- The Model Catalog (LiveArt.dll DIALOG 172, 302x166 dialog units, laid out in pixels). -->
+<div class="window floating" id="catalog" hidden role="dialog" aria-label="LiveArt Catalog">
+  <div class="titlebar" data-drag="catalog">
+    <span class="title">LiveArt Catalog</span>
+    <span class="title-buttons"><b data-action="catalog-close" aria-label="Close">×</b></span>
+  </div>
+  <nav class="menubar">
+    <div class="menu">
+      <button class="menu-title" aria-haspopup="true">File</button>
+      <div class="menu-items" role="menu">
+        <button role="menuitem" data-action="catalog-insert">Insert<span>Alt+I</span></button>
+        <button role="menuitem" data-action="catalog-insert-model">Insert Model Only<span>Alt+M</span></button>
+        <hr>
+        <button role="menuitem" data-action="catalog-close">Exit<span>Esc</span></button>
+      </div>
+    </div>
+    <div class="menu">
+      <button class="menu-title" aria-haspopup="true">Help</button>
+      <div class="menu-items" role="menu">
+        <button role="menuitem" data-action="help">Help Using LiveArt</button>
+        <button role="menuitem" data-action="about">About LiveArt…</button>
+      </div>
+    </div>
+  </nav>
+  <div class="catalog-body">
+    <form id="catalog-search" class="cat-search">
+      <input id="catalog-query" list="catalog-categories" autocomplete="off" title="Enter Keyword(s) for Model Search" aria-label="Keywords">
+      <datalist id="catalog-categories"></datalist>
+      <button class="btn" type="submit" title="Search"><u>S</u>earch</button>
+    </form>
+    <div class="cat-label cat-results-label">Search Results (<span id="catalog-count">0</span>)</div>
+    <div class="cat-results sunken" id="catalog-results" role="listbox" tabindex="0" aria-label="Search Results"></div>
+    <div class="cat-label cat-model-label">Model</div>
+    <div class="cat-preview sunken"><canvas id="catalog-preview"></canvas></div>
+    <div class="cat-label cat-style-label">LiveStyle</div>
+    <select id="catalog-style" class="cat-style" aria-label="LiveStyle"></select>
+    <div class="cat-buttons">
+      <button class="btn" data-action="catalog-insert" title="Insert LiveArt" disabled><u>I</u>nsert</button>
+      <button class="btn" data-action="catalog-insert-model" title="Insert LiveArt" disabled>Insert <u>M</u>odel Only</button>
+      <button class="btn" data-action="catalog-close" title="Close Catalog"><u>C</u>ancel</button>
+      <button class="btn" data-action="help" title="Click Here for Help"><u>H</u>elp</button>
+      <button class="logo-btn viewpoint" data-action="web" title="LiveArt Web Site"><img src="ui/button-viewpoint.png" alt="Viewpoint"></button>
+      <button class="logo-btn liveart" data-action="about" title="About LiveArt"><img src="ui/button-liveart.png" alt="LiveArt 98"></button>
+    </div>
+  </div>
+</div>
+
+<dialog id="about" class="window dialog splash">
+  <img src="ui/splash.png" alt="LiveArt 98 Sketchpad — Viewpoint">
+  <form method="dialog"><button class="btn">OK</button></form>
+</dialog>
+
+<dialog id="help" class="window dialog">
+  <div class="titlebar"><span class="title">LiveArt Help</span></div>
   <div class="dialog-body">
-    <p class="about-logo">🐟 <b>LiveArt</b></p>
-    <p>ThinkFish, 1997–1999. This is the original LiveArt rendering engine — the
-      C++ written then — compiled to WebAssembly. Every frame is drawn by the
-      engine's own EPS writer.</p>
-    <p class="fine">Drag to rotate · right-drag or scroll to zoom · pick a LiveStyle on the right.</p>
-    <p class="fine">Scenes from LiveArt 1.x; the Halloween pack and LiveStyles from LiveArt 98 v1.2 (Aug 1998);
-      the LiveArt98 Beta 6 styles (Jan 1998); campsite models from Viewpoint's DataShop.</p>
+    <p><b>LiveArt 98</b> turned 3D models into illustrations: pick a model from the
+      <b>Model Catalog</b>, pick a <b>LiveStyle</b>, and it draws itself — lines, fills and
+      shading as an illustrator would.</p>
+    <p>This is the original engine (ThinkFish, 1997–99), compiled to WebAssembly, in a
+      reconstruction of LiveArt 98 SketchPad. The catalog is the 1998 one: 3,788 Viewpoint
+      models plus the Halloween pack.</p>
+    <ul>
+      <li>Drag on the canvas to turn the model; right-drag or scroll to size it.</li>
+      <li>The LiveArt Toolbar nudges, tilts and sizes it; hold a button to keep going.</li>
+      <li>Line Thickness, Line Color and Fill Color are enabled when the LiveStyle allows them.</li>
+      <li>Drop a .x, .3ds, .dxf, .vpe or .pcs file on the canvas to open it.</li>
+    </ul>
     <form method="dialog"><button class="btn">OK</button></form>
+  </div>
+</dialog>
+
+<dialog id="canvas-dialog" class="window dialog">
+  <div class="titlebar"><span class="title">Canvas Size</span></div>
+  <form method="dialog" class="dialog-body canvas-form">
+    <label><u>W</u>idth: <input type="number" id="canvas-w" min="50" max="2000" required> pixels</label>
+    <label><u>H</u>eight: <input type="number" id="canvas-h" min="50" max="2000" required> pixels</label>
+    <label class="check"><input type="checkbox" id="canvas-lock" checked> Lock <u>a</u>spect ratio</label>
+    <hr>
+    <div class="buttons"><button class="btn" value="ok">OK</button> <button class="btn" value="cancel" formnovalidate>Cancel</button></div>
+  </form>
+</dialog>
+
+<dialog id="export-dialog" class="window dialog">
+  <div class="titlebar"><span class="title">Export</span></div>
+  <form method="dialog" class="dialog-body export-form">
+    <fieldset><legend>Format</legend>
+      <label><input type="radio" name="fmt" value="png" checked> PNG image</label>
+      <label><input type="radio" name="fmt" value="svg"> SVG drawing <span class="extra-tag">extra</span></label>
+      <label><input type="radio" name="fmt" value="eps"> EPS (the engine's own PostScript) <span class="extra-tag">extra</span></label>
+    </fieldset>
+    <fieldset><legend>Export Size</legend>
+      <label><u>W</u>idth: <input type="number" id="export-w" min="16" max="4000"> pixels</label>
+      <label><u>H</u>eight: <input type="number" id="export-h" min="16" max="4000"> pixels</label>
+    </fieldset>
+    <div class="buttons"><button class="btn" value="ok">OK</button> <button class="btn" value="cancel" formnovalidate>Cancel</button></div>
+  </form>
+</dialog>
+
+<dialog id="samples-dialog" class="window dialog wide">
+  <div class="titlebar"><span class="title">Open Sample</span></div>
+  <div class="dialog-body">
+    <div class="samples sunken" id="samples"></div>
+    <form method="dialog"><button class="btn">Cancel</button></form>
   </div>
 </dialog>
 
