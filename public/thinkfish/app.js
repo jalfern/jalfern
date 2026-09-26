@@ -9,7 +9,12 @@ const $ = (sel) => document.querySelector(sel);
 const stage = $('#stage');
 const statusEl = $('#status');
 
-const view = { style: 'original', xRot: 0.15, yRot: 0.5, distance: 18, spinning: false, home: [0.15, 0.5] };
+const view = { style: 'original', xRot: 0.15, yRot: 0.5, distance: 18, spinning: false, home: [0.15, 0.5],
+  catalog: null }; // a catalog model's LiveArt 98 orientation [a, b, c] in degrees, or null
+
+// LiveArt.dll's Reset Model menu (FUN_10045fc0): SetOrientation(0, b, c) in degrees.
+const HOME_98 = [0, 30, 0];
+const PRESETS_98 = { front: [0, 0, 0], back: [0, 180, 0], right: [0, 90, 0], left: [0, 270, 0], top: [0, 0, 270], bottom: [0, 0, 90] };
 let E = null;             // the Emscripten module
 let gl = null;            // stage renderer
 let thumbs = null;        // offscreen renderer for palette swatches
@@ -54,6 +59,7 @@ function applyView(id = view.style) {
   else if (s.kind === 'original') { if (hasOriginal) E._tf_use_original_styles(); else E._tf_set_style(0); }
   else if (s.kind === 'file') { if (s.index >= 0) E._tf_set_file_style(s.index); else E._tf_set_style(0); }
   else E._tf_set_style(s.index);
+  if (view.catalog) E._tf_use_catalog_view(...view.catalog);
   E._tf_set_rotation(view.xRot, view.yRot);
   E._tf_set_distance(view.distance);
 }
@@ -260,11 +266,14 @@ async function openBytes(bytes, filename, name, id = null, rot = [0.15, 0.5]) {
   $('#doc-name').textContent = name;
   document.title = `LiveArt — ${name}`;
   document.querySelectorAll('#models .swatch').forEach((b) => b.setAttribute('aria-selected', b.dataset.id === id));
-  view.home = rot;
-  [view.xRot, view.yRot] = rot;
+  // A catalog (.vpe) model opens as LiveArt 98 placed it: sized to 7 units, 20 away, turned
+  // 30 degrees (Reset Model). Anything else keeps the editor's auto-framed view.
+  view.catalog = /\.vpe$/i.test(filename) ? [...HOME_98] : null;
+  view.home = view.catalog ? [0, 0] : rot;
+  [view.xRot, view.yRot] = view.home;
   const scene = !!E._tf_has_original_styles();
   showOriginal(scene);
-  fitToFrame();
+  if (!view.catalog) fitToFrame();
   if (scene && !linkedStyle) await selectStyle('original'); // a scene opens in its own LiveStyles
   else if (linkedStyle) await selectStyle(linkedStyle);
   else if (view.style === 'original') await selectStyle(recall('liveart.style') || 'toon');
@@ -272,6 +281,14 @@ async function openBytes(bytes, filename, name, id = null, rot = [0.15, 0.5]) {
   setStatus(`Opened ${name}${scene ? ' — its original LiveStyles' : ''}`);
   syncURL();
   requestDraw();
+}
+
+// A LiveArt 98 catalog model by its ID (catalog/dv<id>.vpe, the DLL's \dv%d.vpe).
+async function openCatalogModel(id, name = `Model ${id}`) {
+  const file = `dv${id}.vpe`;
+  const res = await fetch(`catalog/${file}`);
+  if (!res.ok) { setStatus(`Could not fetch catalog model ${id}`); return; }
+  await openBytes(new Uint8Array(await res.arrayBuffer()), file, name, `catalog-${id}`);
 }
 
 async function openLibraryModel(id) {
@@ -395,7 +412,17 @@ const actions = {
   open: () => $('#file').click(),
   models: () => showTab('models'),
   eps: exportEPS, svg: exportSVG, png: exportPNG,
-  reset: () => { [view.xRot, view.yRot] = view.home; fitToFrame(); requestDraw(); },
+  reset: () => {
+    [view.xRot, view.yRot] = view.home;
+    if (view.catalog) view.catalog = [...HOME_98]; else fitToFrame();
+    requestDraw();
+  },
+  ...Object.fromEntries(Object.entries(PRESETS_98).map(([k, o]) => [k, () => {
+    if (!view.catalog) return; // the presets belong to catalog models
+    view.catalog = [...o];
+    [view.xRot, view.yRot] = [0, 0];
+    requestDraw();
+  }])),
   spin: () => { view.spinning = !view.spinning; requestDraw(); },
   about: () => $('#about').showModal(),
 };
@@ -432,7 +459,9 @@ try {
   await Promise.all([buildStyles(), buildLibrary()]);
   const q = new URLSearchParams(location.search);
   if (q.get('style') && q.get('style') !== 'original') linkedStyle = q.get('style');
-  await openLibraryModel(q.get('model') || 'girl');
+  const m = q.get('model') || 'girl';
+  if (/^catalog-\d+$/.test(m)) await openCatalogModel(m.slice(8));
+  else await openLibraryModel(m);
 } catch (err) {
   setStatus(`Engine failed to start: ${err.message}`);
   throw err;
