@@ -126,5 +126,11 @@ export function createRenderer(canvas) {
     return tris;
   }
 
-  return { draw, canvas };
+  // An empty page (File > New, or a catalog preview with nothing chosen).
+  function clear(r, g, b) {
+    gl.clearColor(r, g, b, 1);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+  }
+
+  return { draw, clear, canvas };
 }
