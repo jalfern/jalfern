@@ -1,16 +1,22 @@
 // Draw an ARECanvasPrims frame (app/canvas_prims.cpp) with WebGL 2.
 //
-// This replays what engine/ARECanvasOGL.cpp did with OpenGL 1.1 in 1998: identity
-// matrices, clip-space vertices with per-vertex colour, a depth clear between passes,
-// alpha blending, and textures in DECAL or MODULATE mode (linear, repeating).
+// This replays what engine/ARECanvasOGL.cpp did with OpenGL 1.1: identity matrices,
+// clip-space vertices with per-vertex colour, alpha blending, and textures in DECAL or
+// MODULATE mode (linear, repeating) -- with one deliberate difference. That canvas
+// cleared depth between LiveStyle passes, which is fine for one object in one style but
+// lets a whole later-pass part paint over nearer parts in a multi-style .pcs scene (the
+// anime girl's hair, pass 1, covered her face, pass 0). Here depth is kept for the
+// frame and each later pass is pulled slightly toward the eye instead, so it still wins
+// over the same surface (halos, outlines) but not over geometry in front of it.
 
 const VS = `#version 300 es
 in vec4 a_pos;
 in vec4 a_col;
 in vec2 a_uv;
+uniform float u_bias; // pulls later passes a hair toward the eye (see draw)
 out vec4 v_col;
 out vec2 v_uv;
-void main() { gl_Position = a_pos; v_col = a_col; v_uv = a_uv; }`;
+void main() { gl_Position = a_pos; gl_Position.z -= u_bias * a_pos.w; v_col = a_col; v_uv = a_uv; }`;
 
 const FS = `#version 300 es
 precision mediump float;
@@ -48,6 +54,7 @@ export function createRenderer(canvas) {
     uv: gl.getAttribLocation(prog, 'a_uv'),
     mode: gl.getUniformLocation(prog, 'u_mode'),
     tex: gl.getUniformLocation(prog, 'u_tex'),
+    bias: gl.getUniformLocation(prog, 'u_bias'),
   };
   const buf = gl.createBuffer();
   const textures = new Map(); // engine bitmap id -> WebGLTexture
@@ -100,7 +107,7 @@ export function createRenderer(canvas) {
     for (let b = 0; b < f[4]; b++) {
       const [bp, tex, modulate, n] = [f[p], f[p + 1], f[p + 2], f[p + 3]];
       p += 4;
-      if (bp !== pass) { if (pass >= 0) gl.clear(gl.DEPTH_BUFFER_BIT); pass = bp; }
+      if (bp !== pass) { pass = bp; gl.uniform1f(loc.bias, bp * 2e-5); }
       gl.bufferData(gl.ARRAY_BUFFER, f.subarray(p, p + n * 10), gl.STREAM_DRAW);
       gl.vertexAttribPointer(loc.pos, 4, gl.FLOAT, false, stride, 0);
       gl.vertexAttribPointer(loc.col, 4, gl.FLOAT, false, stride, 16);
