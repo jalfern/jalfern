@@ -7,6 +7,7 @@ import Playground from './components/Playground'
 import Weather from './components/Weather'
 import AiDocs from './pages/AiDocs'
 import Life from './pages/Life'
+import Pelicans from './pages/Pelicans'
 import { audioController } from './utils/AudioController'
 
 const GameLabelContext = createContext({
@@ -51,6 +52,12 @@ function Home() {
             className="opacity-60 hover:opacity-100 transition-opacity duration-300 tracking-wide"
           >
             RetroGames exploration →
+          </a>
+          <a
+            href="/pelicans"
+            className="opacity-60 hover:opacity-100 transition-opacity duration-300 tracking-wide"
+          >
+            Pelicans on bicycles →
           </a>
           <a
             href="/ai-docs"
@@ -206,6 +213,7 @@ function App() {
           <Route path="/ai-docs" element={<AiDocs />} />
           <Route path="/ai-docs/:docId" element={<AiDocs />} />
           <Route path="/life" element={<Life />} />
+          <Route path="/pelicans" element={<Pelicans />} />
           {GAMES.map(game => (
             <Route
               key={game.path}
