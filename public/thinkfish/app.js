@@ -99,7 +99,8 @@ function applyPage() {
   E._tf_set_surface_color(...rgb(page.fillColor));
   E._tf_set_background(...rgb(page.background));
   E._tf_set_light(...(page.light ? [1, ...page.light] : [0, 0, 0, 0]));
-  if (page.anim.length) E._tf_anim_set_time(page.anim.time);
+  // A scene shows the pose it was saved in until playback starts, as LiveArt 98 did.
+  if (page.anim.length && page.anim.started) E._tf_anim_set_time(page.anim.time);
   if (page.catalog) {
     E._tf_use_catalog_view(0, 0, 0);
     E._tf_set_catalog_orient(...page.orient);
@@ -214,7 +215,7 @@ async function openOnPage(bytes, filename, name, { id = null, rot = [0.15, 0.5],
   page.spinning = false;
   resetPose();
   page.hasOriginal = !!E._tf_has_original_styles();
-  page.anim = { length: E._tf_anim_length(), time: 0, playing: false, loop: true, last: performance.now() };
+  page.anim = { length: E._tf_anim_length(), time: 0, playing: false, loop: true, started: false, last: performance.now() };
   if (!page.catalog) fitToFrame();
   $('#doc-name').textContent = name;
   $('#tb-model').textContent = name;
@@ -530,6 +531,7 @@ function advanceAnimation(dt) {
 const frameCount = () => Math.max(1, Math.round(page.anim.length * ANIM_FPS));
 const currentFrame = () => Math.min(frameCount(), Math.round(page.anim.time * ANIM_FPS));
 function setFrame(f) {
+  page.anim.started = true;
   page.anim.time = Math.max(0, Math.min(frameCount(), f)) / ANIM_FPS;
   refreshAnimationPad();
   requestDraw();
@@ -558,6 +560,7 @@ function animationPad() {
       const a = page.anim;
       if (!a.playing && a.time >= a.length) a.time = 0;
       a.playing = !a.playing;
+      a.started = true;
       a.last = performance.now();
     }),
     btn('anim-loop', 'anim-loop', 'Single / Loop Playback', () => { page.anim.loop = !page.anim.loop; }));
