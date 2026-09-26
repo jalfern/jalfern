@@ -121,7 +121,8 @@ function requestDraw() {
   requestAnimationFrame(() => {
     pending = false;
     const now = performance.now();
-    if (page.anim.playing) advanceAnimation((now - page.anim.last) / 1000);
+    // Capped, as FUN_10009570 capped a step (at 1 s): a tab in the background resumes, not jumps.
+    if (page.anim.playing) advanceAnimation(Math.min((now - page.anim.last) / 1000, 0.1));
     page.anim.last = now;
     drawPage();
     if (page.spinning) { spinStep(); requestDraw(); }
@@ -216,6 +217,8 @@ async function openOnPage(bytes, filename, name, { id = null, rot = [0.15, 0.5],
   resetPose();
   page.hasOriginal = !!E._tf_has_original_styles();
   page.anim = { length: E._tf_anim_length(), time: 0, playing: false, loop: true, started: false, last: performance.now() };
+  // A scene that carries its own animation starts playing, so the anime girl wakes up.
+  if (page.hasOriginal && page.anim.length) Object.assign(page.anim, { playing: true, started: true });
   if (!page.catalog) fitToFrame();
   $('#doc-name').textContent = name;
   $('#tb-model').textContent = name;
@@ -381,7 +384,7 @@ function popup(button, content) {
   box.hidden = false;
   const desk = $('#desk').getBoundingClientRect(), r = button.getBoundingClientRect();
   box.style.left = `${r.left - desk.left + $('#desk').scrollLeft}px`;
-  box.style.top = `${r.bottom - desk.top + $('#desk').scrollTop + 1}px`;
+  box.style.top = `${Math.max(0, r.bottom - desk.top) + $('#desk').scrollTop + 1}px`;
   popupOwner = button;
   button.setAttribute('aria-expanded', 'true');
 }
@@ -654,6 +657,19 @@ function draggable(win, handle, within) {
   });
 }
 draggable($('#la-toolbar'), $('#la-toolbar .toolwin-title'), $('#desk'));
+
+// Dock the LiveArt Toolbar in the band under the document toolbar (the default, and what
+// fits a phone), or float it over the desk; double-click the grip or the title to switch.
+function dockToolbar(docked) {
+  const tb = $('#la-toolbar');
+  if (docked) $('#dockbar').append(tb);
+  else { $('#desk').append(tb); tb.style.left = '150px'; tb.style.top = '8px'; }
+  store('liveart.toolbar', docked ? 'docked' : 'floating');
+  requestDraw();
+}
+$('#la-toolbar .grip').addEventListener('dblclick', () => dockToolbar(false));
+$('#la-toolbar .toolwin-title').addEventListener('dblclick', () => dockToolbar(true));
+dockToolbar(recall('liveart.toolbar') !== 'floating');
 draggable($('#catalog'), $('#catalog .titlebar'));
 
 // --- the Model Catalog (LiveArt.dll DIALOG 172) ----------------------------------------------------------
@@ -976,7 +992,10 @@ reopen.addEventListener('click', (e) => { if (e.detail === 0) { $('#app').hidden
 $('.desktop').append(reopen);
 
 try {
-  setCanvasSize(400, 400);
+  // SketchPad's canvas is 400 x 400; on a phone, start with one that fits the screen.
+  const room = Math.floor($('#desk').clientWidth - 60);
+  const side = Math.max(200, Math.min(400, room));
+  setCanvasSize(side, side);
   E = await createEngine({ locateFile: (f) => `engine/${f}` });
   pageGL = createRenderer(stage);
   previewGL = createRenderer($('#catalog-preview'));

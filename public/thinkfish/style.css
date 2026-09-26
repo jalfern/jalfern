@@ -111,15 +111,15 @@ img { image-rendering: pixelated; }
   border: 2px solid; border-color: var(--shadow) var(--hilite) var(--hilite) var(--shadow);
 }
 .page {
-  position: absolute; left: 60px; top: 70px;
+  position: absolute; left: 48px; top: 50px;
   background: #fff;
   box-shadow: 5px 5px 0 #000;
 }
 .page::after { content: ""; position: absolute; left: 0; top: 0; width: 1px; height: 1px; } /* keep scroll extent */
 #stage { display: block; width: 100%; height: 100%; cursor: move; touch-action: none; }
 .pin { position: absolute; pointer-events: none; z-index: 2; }
-.pin-left { left: -26px; top: -30px; }
-.pin-right { right: -17px; top: -33px; }
+.pin-left { left: -21px; top: -31px; }   /* needle tip (23, 33) on the corner */
+.pin-right { right: -7px; top: -41px; }   /* needle tip (22, 43) on the corner */
 .drop-hint {
   position: absolute; inset: 8px; display: none; place-items: center;
   border: 2px dashed var(--select); color: var(--select); font-weight: bold;
@@ -143,6 +143,14 @@ img { image-rendering: pixelated; }
   cursor: move;
 }
 .toolwin-close { font: bold 10px/1 var(--font); width: 13px; height: 11px; display: grid; place-items: center; color: #000; background: var(--face); border: 1px solid; border-color: var(--hilite) var(--dark) var(--dark) var(--hilite); cursor: default; }
+/* Docked (the default): a band under the document toolbar, as MFC docked its toolbars. */
+.dockbar { display: flex; flex-wrap: wrap; align-items: center; gap: 0 6px; padding: 1px 3px 2px; border-bottom: 1px solid var(--shadow); box-shadow: inset 0 1px var(--hilite), 0 1px var(--hilite); }
+.dockbar:empty, .dockbar:has(> .toolwin[hidden]) { display: none; }
+.dockbar .toolwin { position: static; display: flex; flex-wrap: wrap; align-items: center; padding: 0; border: 0; box-shadow: none; background: none; }
+.dockbar .toolwin-title { display: none; }
+.dockbar .la-row { border: 0 !important; box-shadow: none !important; }
+.grip { display: none; width: 6px; height: 22px; margin-right: 2px; border-left: 1px solid var(--hilite); border-right: 1px solid var(--shadow); box-shadow: 3px 0 0 -1px var(--hilite), 3px 0 0 0 var(--shadow); cursor: move; }
+.dockbar .grip { display: block; }
 .la-row { display: flex; align-items: center; height: 26px; padding: 0 1px; }
 .la-row + .la-row { border-top: 1px solid var(--shadow); box-shadow: inset 0 1px var(--hilite); }
 .la {
@@ -284,7 +292,8 @@ fieldset { margin: 0 0 10px; border: 1px solid var(--shadow); box-shadow: 1px 1p
 @media (max-width: 720px) {
   .desktop { padding: 0; }
   #app { width: 100%; height: 100%; }
-  .page { left: 34px; top: 118px; }
+  .page { left: 30px; top: 48px; }
+  .dockbar .grip { display: none; }
   .toolwin { left: 4px; top: 4px; }
   .floating { top: 0; left: 0; transform: none; }
   .catalog-body { transform-origin: 0 0; }
