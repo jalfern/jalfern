@@ -146,7 +146,7 @@ export default function Pelicans() {
               className="w-full rounded-sm bg-neutral-900 aspect-video"
             />
             <figcaption className="text-xs opacity-50">
-              15 seconds, 1920×1080, 24 fps. Rendered in Blender on the same Mac Studio.
+              15 seconds, 1920×1080, 24 fps. Sound on. Rendered in Blender on the same Mac Studio.
             </figcaption>
           </figure>
 
@@ -154,7 +154,7 @@ export default function Pelicans() {
             <Stat k="Model" v="Claude (Anthropic)" />
             <Stat k="Scene code" v="~1,500 lines of bpy" />
             <Stat k="Frames" v="360, EEVEE" />
-            <Stat k="Final render" v="~8 minutes" />
+            <Stat k="Audio" v="Synthesized, no samples" />
           </div>
 
           <div className="space-y-4 text-sm leading-relaxed opacity-80 max-w-2xl">
@@ -169,6 +169,13 @@ export default function Pelicans() {
               flame and embers, and a sequence of camera shots. Like Qwen, it checked its work visually:
               side and front turnarounds to catch feet missing the pedals, lighting experiments, and contact
               sheets of each preview pass before committing to the final render.
+            </p>
+            <p>
+              The soundtrack is generated too. The scene script exports an event list (every footfall, every
+              look back over the shoulder, every camera cut) and a second script synthesizes the audio from it
+              in numpy: wind, a tension drone, a torch roar that swells as the flame nears the camera, bony
+              footfalls that land on the frames where the skeleton's feet hit the dirt, tyre noise and freewheel
+              ticks, pelican honks, and a jaw-chattering laugh at the end. No recorded samples.
             </p>
             <p>
               It wasn't frictionless. Midway through, the session lost its context and had to pick the work
