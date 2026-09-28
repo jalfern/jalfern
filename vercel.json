@@ -26,6 +26,11 @@
       "source": "/thinkfish",
       "destination": "/thinkfish/",
       "permanent": false
+    },
+    {
+      "source": "/plaicraft",
+      "destination": "/plaicraft/",
+      "permanent": false
     }
   ]
 }
