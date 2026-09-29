@@ -31,6 +31,16 @@
       "source": "/plaicraft",
       "destination": "/plaicraft/",
       "permanent": false
+    },
+    {
+      "source": "/plaicraft/map",
+      "destination": "/plaicraft/map/",
+      "permanent": false
+    },
+    {
+      "source": "/plaicraft/deck",
+      "destination": "/plaicraft/deck/",
+      "permanent": false
     }
   ]
 }

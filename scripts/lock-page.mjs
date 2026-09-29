@@ -1,13 +1,14 @@
 // Encrypts an HTML page behind a password so only ciphertext is committed.
-// Usage: node scripts/lock-page.mjs <plain.html> <out/index.html> <password> [title]
+// Usage: node scripts/lock-page.mjs <plain.html> <out/index.html> <password> [title] [unlock-group]
+// Pages sharing an unlock-group open together once one of them is unlocked (per browser tab).
 // The plaintext page never goes in the repo. AES-GCM, key from PBKDF2-SHA256.
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { webcrypto as crypto } from 'node:crypto';
 
-const [src, out, password, title = 'Private page'] = process.argv.slice(2);
+const [src, out, password, title = 'Private page', group = ''] = process.argv.slice(2);
 if (!src || !out || !password) {
-  console.error('Usage: node scripts/lock-page.mjs <plain.html> <out/index.html> <password> [title]');
+  console.error('Usage: node scripts/lock-page.mjs <plain.html> <out/index.html> <password> [title] [unlock-group]');
   process.exit(1);
 }
 
@@ -60,7 +61,7 @@ input:focus-visible, button:focus-visible { outline: 2px solid var(--accent); ou
 (function () {
   var D = { salt: "${b64(salt)}", iv: "${b64(iv)}", ct: "${b64(ct)}", iter: ${ITER} };
   var u8 = function (s) { return Uint8Array.from(atob(s), function (c) { return c.charCodeAt(0); }); };
-  var KEY = "lock:" + location.pathname;
+  var KEY = ${group ? JSON.stringify("lock:" + group) : '"lock:" + location.pathname'};
   async function open(pw) {
     var enc = new TextEncoder();
     var base = await crypto.subtle.importKey("raw", enc.encode(pw), "PBKDF2", false, ["deriveKey"]);
