@@ -41,6 +41,11 @@
       "source": "/plaicraft/deck",
       "destination": "/plaicraft/deck/",
       "permanent": false
+    },
+    {
+      "source": "/plaicraft/pitch",
+      "destination": "/plaicraft/pitch/",
+      "permanent": false
     }
   ]
 }
