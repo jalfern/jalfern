@@ -23,7 +23,7 @@ const ENTRIES = [
     location: 'San Francisco Bay Area',
     body: `Advising founders, CEOs and boards on product strategy, AI and growth.
 
-Clients include Beast Industries (MrBeast), where I worked on new businesses beyond content, including financial services and mobile, plus Humanitas, Jingo, [[fourth pick]] and several other early-stage teams.
+Clients include Beast Industries (MrBeast), where I worked on new businesses beyond content, including financial services and mobile, plus Humanitas, Jingo, Advisror and several other early-stage teams.
 
 On the side I run a small lab at jalfern.com, testing how far open models running on one desk can go. So far: a GPU ray tracer, a shelf of retro arcade games and 3D pelicans on bicycles, each built mostly by a local Qwen model with light supervision. Write-ups at jalfern.com.`,
   },
@@ -44,8 +44,8 @@ const NOTES = [
     v: `Three entries plus Walmart. Woolworths is a board seat, so it stands alone. Beast sits inside advising as the anchor client. BaseBase stays separate because it was an operating role, and a wound-down company still reads as "built something".`,
   },
   {
-    k: 'Pick a fourth name',
-    v: `From Roar, Cart Happy, CTGT, Fabricus and Zach Cart, pick whichever is most recognizable or closest to product and AI. Check each named company is happy to be listed. Guyver stays off until you can place it.`,
+    k: 'Check the names',
+    v: `Make sure Humanitas, Jingo and Advisror are all happy to be listed publicly. Guyver stays off until you can place it.`,
   },
   {
     k: 'Left off on purpose',

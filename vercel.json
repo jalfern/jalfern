@@ -51,6 +51,11 @@
       "source": "/oliven",
       "destination": "/oliven/",
       "permanent": false
+    },
+    {
+      "source": "/oliven/3d",
+      "destination": "/oliven/3d/",
+      "permanent": false
     }
   ]
 }
