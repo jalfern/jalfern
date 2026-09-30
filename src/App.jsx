@@ -8,6 +8,7 @@ import Weather from './components/Weather'
 import AiDocs from './pages/AiDocs'
 import Life from './pages/Life'
 import Pelicans from './pages/Pelicans'
+import LinkedInDraft from './pages/LinkedInDraft'
 import { audioController } from './utils/AudioController'
 
 const GameLabelContext = createContext({
@@ -214,6 +215,7 @@ function App() {
           <Route path="/ai-docs/:docId" element={<AiDocs />} />
           <Route path="/life" element={<Life />} />
           <Route path="/pelicans" element={<Pelicans />} />
+          <Route path="/linkedin-draft" element={<LinkedInDraft />} />
           {GAMES.map(game => (
             <Route
               key={game.path}
