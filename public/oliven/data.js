@@ -3,11 +3,11 @@
 // Anything in [[double brackets]] is still a guess or a gap for Jon to fill.
 
 window.OLIVEN = {
-  // Harvest yields per block, oldest first. e.g. { year: 2023, tons: 4.2 }
+  // Net harvest per block, in pounds. Add a line per year.
   yields: {
-    'block-1': [],
-    'block-2': [],
-    'block-3': [],
+    'block-1': [{ year: 2026, lbs: 6072 }],
+    'block-2': [{ year: 2026, lbs: 4065 }],
+    'block-3': [{ year: 2026, lbs: 5527 }],
   },
 
   // Fruit and nut trees. e.g. { x: 1200, y: 1300, kind: 'fig', note: 'planted 2021' }

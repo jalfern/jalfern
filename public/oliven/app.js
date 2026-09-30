@@ -442,14 +442,22 @@
       if (!rows.length) return '<div class="chart"><div class="t">High water by season</div><div class="empty">No river readings yet</div></div>'
       return '<div class="chart"><div class="t">High water by season</div>' + rows.map(r => `<div>${esc(r.season)}: <b>${esc(r.level)}</b> ${esc(r.note || '')}</div>`).join('') + '</div>'
     }
-    const ys = (D.yields || {})[f.chart] || []
-    let body
-    if (!ys.length) body = '<div class="empty">No yield numbers yet. Tons by year will chart here.</div>'
-    else {
-      const max = Math.max(...ys.map(y => y.tons))
-      body = '<div class="bars" style="margin:18px 0 22px">' + ys.map(y => `<div class="bar" style="height:${(y.tons / max) * 100}%"><em>${y.tons}</em><span>${String(y.year).slice(2)}</span></div>`).join('') + '</div>'
+    const Y = D.yields || {}
+    const ys = (Y[f.chart] || []).slice().sort((a, b) => a.year - b.year)
+    if (!ys.length) return '<div class="chart"><div class="t">Harvest, net lbs</div><div class="empty">No yield numbers yet.</div></div>'
+    const fmt = n => n.toLocaleString('en-US')
+    const last = ys[ys.length - 1]
+    const peers = Object.keys(Y).map(k => [k, ((Y[k] || []).find(y => y.year === last.year) || {}).lbs || 0])
+    const total = peers.reduce((s, p) => s + p[1], 0), top = Math.max(...peers.map(p => p[1]))
+    let html = `<div class="chart"><div class="t">${last.year} harvest, net</div>
+      <div class="big">${fmt(last.lbs)} lbs<small>${(last.lbs / 2000).toFixed(1)} tons · ${Math.round(last.lbs / total * 100)}% of the vineyard</small></div>
+      <div class="cmp">` + peers.map(([k, v]) => `<div class="row${k === f.chart ? ' me' : ''}"><span>${esc((FEAT[k] || {}).name || k)}</span><i style="width:${v / top * 100}%"></i><b>${fmt(v)}</b></div>`).join('') + `</div>
+      <p class="note" style="margin-top:10px">Whole vineyard, ${last.year}: ${fmt(total)} lbs (${(total / 2000).toFixed(1)} tons)</p>`
+    if (ys.length > 1) {
+      const max = Math.max(...ys.map(y => y.lbs))
+      html += '<div class="t" style="margin-top:14px">By year</div><div class="bars" style="margin:18px 0 22px">' + ys.map(y => `<div class="bar" style="height:${(y.lbs / max) * 100}%"><em>${(y.lbs / 1000).toFixed(1)}k</em><span>'${String(y.year).slice(2)}</span></div>`).join('') + '</div>'
     }
-    return `<div class="chart"><div class="t">Harvest, tons per year</div>${body}</div>`
+    return html + '</div>'
   }
   function showCard(id) {
     const f = FEAT[id]
