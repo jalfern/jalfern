@@ -23,18 +23,9 @@ const ENTRIES = [
     location: 'San Francisco Bay Area',
     body: `Advising founders, CEOs and boards on product strategy, AI and growth.
 
-Clients and advisees: [[Company A]], [[Company B]], [[Company C]]
+Clients include Beast Industries (MrBeast), where I worked on new businesses beyond content, including financial services and mobile, plus Humanitas, Jingo, [[fourth pick]] and several other early-stage teams.
 
 On the side I run a small lab at jalfern.com, testing how far open models running on one desk can go. So far: a GPU ray tracer, a shelf of retro arcade games and 3D pelicans on bicycles, each built mostly by a local Qwen model with light supervision. Write-ups at jalfern.com.`,
-  },
-  {
-    id: 'beast',
-    status: 'done',
-    title: 'Strategic Advisor',
-    company: 'Beast Industries (MrBeast)',
-    dates: '[[2025]] – [[2026]]',
-    location: 'Remote',
-    body: `Advised MrBeast's company on building new businesses beyond content, including financial services and mobile (MVNO). The work covered strategy, acquisition evaluation and product plans for new verticals.`,
   },
   {
     id: 'basebase',
@@ -43,30 +34,26 @@ On the side I run a small lab at jalfern.com, testing how far open models runnin
     company: 'BaseBase',
     dates: '[[2025]] – [[2026]]',
     location: 'San Francisco Bay Area',
-    body: `Co-founded BaseBase with former colleagues to build a multiplayer, multi-agent platform that lives inside Slack. Its agents follow what is happening across a team and act on it, starting with revenue operations teams at mid-market companies. I stepped aside from the CEO role in 2026 and remain an investor and advisor.`,
+    body: `Co-founded BaseBase with former colleagues and led it as CEO. We built a multiplayer, multi-agent platform that lives inside Slack. Its agents follow what is happening across a team and act on it, starting with revenue operations teams at mid-market companies. We wound the company down in 2026.`,
   },
 ]
 
 const NOTES = [
   {
-    k: 'Why four entries, not one',
-    v: `Each company gets its own entry so Woolworths, Beast Industries and BaseBase show their logos and link to their pages. The advising entry holds everything else. Current roles first, finished ones below, then Walmart.`,
+    k: 'Shape',
+    v: `Three entries plus Walmart. Woolworths is a board seat, so it stands alone. Beast sits inside advising as the anchor client. BaseBase stays separate because it was an operating role, and a wound-down company still reads as "built something".`,
   },
   {
-    k: 'The physical-AI startup: my vote is leave it off for now',
-    v: `You haven't said yes to being CEO, the investor meetings are the week of Oct 13, and you told Frank you want market signal first. A "founding" line now tells the PayPal, Chime and Postman folks you have one foot out the door, and it gets ahead of Frank's own announcement. Add it the day you commit. If you want a hint anyway, the safest version is one line inside the advising entry: "Also working with a team on an early-stage physical-AI company."`,
+    k: 'Pick a fourth name',
+    v: `From Roar, Cart Happy, CTGT, Fabricus and Zach Cart, pick whichever is most recognizable or closest to product and AI. Check each named company is happy to be listed. Guyver stays off until you can place it.`,
   },
   {
-    k: 'Alferness Advising only works with names in it',
-    v: `A named consultancy with no clients reads as "between jobs". With Beast pulled out into its own entry, the list needs two or three real names you're allowed to share, even small ones. If there aren't enough, drop "Alferness Advising" and just call the entry "Independent Advisor".`,
-  },
-  {
-    k: 'Beast specifics',
-    v: `"Financial services and mobile (MVNO)" is more specific than most advisors would write. Worth a quick check that none of it is still under NDA or unannounced.`,
+    k: 'Left off on purpose',
+    v: `The physical-AI startup, until you commit. Investor status at Humanitas.`,
   },
   {
     k: 'Before LinkedIn points here',
-    v: `The home page still says "Jon's placeholder for fun stuff" and links out to LinkedIn. If LinkedIn starts sending people to jalfern.com, the landing page needs one sentence on who you are, plus the ray tracer and retro games write-ups next to the pelicans. That's the next task after this one.`,
+    v: `The home page still says "Jon's placeholder for fun stuff". It needs one sentence on who you are, plus ray tracer and retro games write-ups next to the pelicans.`,
   },
 ]
 
