@@ -46,6 +46,11 @@
       "source": "/plaicraft/pitch",
       "destination": "/plaicraft/pitch/",
       "permanent": false
+    },
+    {
+      "source": "/oliven",
+      "destination": "/oliven/",
+      "permanent": false
     }
   ]
 }
