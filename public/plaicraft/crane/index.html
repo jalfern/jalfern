@@ -1,0 +1,277 @@
+<!doctype html><html><head><meta name="robots" content="noindex, nofollow"><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Crane Operator Simulator</title>
+<style>
+  :root {
+    --bg: #0c0f13;
+    --panel: rgba(16, 20, 26, 0.82);
+    --panel-solid: #12161c;
+    --line: rgba(255, 255, 255, 0.08);
+    --accent: #4fd1ff;
+    --amber: #ffb14f;
+    --green: #4fd18a;
+    --red: #ff5252;
+    --text: #e7ecf1;
+    --muted: #8b98a6;
+    color-scheme: dark;
+    font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); color: var(--text); }
+  canvas { display: block; position: fixed; top: 0; left: 0; z-index: 0; }
+  button { font-family: inherit; cursor: pointer; }
+  .hidden { display: none !important; }
+  .ok { color: var(--green); }
+  .fail { color: var(--red); }
+  .warn { color: var(--amber); }
+  .danger { color: var(--red); font-weight: 700; }
+  .muted { color: var(--muted); }
+
+  /* ---------------- Menu ---------------- */
+  #menu, #briefing, #result {
+    position: fixed; inset: 0; z-index: 50;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: radial-gradient(1200px 700px at 50% -10%, #1a2634, #070a0e 70%);
+    padding: 4vh 6vw; overflow: auto;
+  }
+  .title-lg { font-size: clamp(28px, 5vw, 54px); font-weight: 800; letter-spacing: -0.5px; margin: 0; }
+  .title-lg span { color: var(--accent); }
+  .subtitle { color: var(--muted); margin: 8px 0 26px; font-size: 15px; max-width: 640px; text-align: center; }
+  #scenarioGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); gap: 18px; width: 100%; max-width: 1100px; }
+  .card {
+    text-align: left; background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+    padding: 18px; color: var(--text); transition: transform .12s, border-color .12s, background .12s; position: relative;
+  }
+  .card:hover { transform: translateY(-3px); border-color: var(--accent); background: rgba(30,40,52,.9); }
+  .card h3 { margin: 10px 0 2px; font-size: 19px; }
+  .card-loc { color: var(--muted); font-size: 13px; }
+  .card-crane { color: var(--accent); font-size: 12.5px; margin: 6px 0 8px; font-weight: 600; }
+  .card p { color: #c3ccd5; font-size: 13px; line-height: 1.5; margin: 6px 0 0; }
+  .card-diff { position: absolute; top: 16px; right: 16px; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 20px; text-transform: uppercase; letter-spacing: .5px; }
+  .diff-Moderate { background: #274; color: #bffcd8; }
+  .diff-Hard { background: #964; color: #ffe0b0; }
+  .diff-VeryHard { background: #833; color: #ffc2c2; }
+  .menu-foot { margin-top: 26px; color: var(--muted); font-size: 12.5px; text-align: center; }
+  #radioSetup { margin-top: 24px; max-width: 720px; width: 100%; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px 20px; }
+  #radioSetup h4 { margin: 0 0 6px; font-size: 14px; }
+  #radioSetup p { margin: 0 0 12px; font-size: 12.5px; color: #b7c0c9; line-height: 1.5; }
+  .radio-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .radio-row input, .radio-row select { background: #0b0e12; border: 1px solid var(--line); color: var(--text); border-radius: 8px; padding: 9px 12px; font-size: 13px; font-family: inherit; }
+  .radio-row input { flex: 1; min-width: 0; }
+  .radio-status { margin-top: 8px; font-size: 12px; color: var(--muted); }
+  .radio-status.ok { color: var(--green); }
+
+  #radio { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 10px; pointer-events: auto; }
+  #radioInput { width: min(320px, 70vw); background: rgba(6,10,14,.82); border: 1px solid var(--line); color: var(--text); border-radius: 18px; padding: 7px 14px; font-size: 13px; font-family: inherit; backdrop-filter: blur(6px); }
+  #radioInput:focus { outline: none; border-color: var(--accent); }
+  #pttHint { font-size: 11.5px; color: var(--muted); background: rgba(6,10,14,.6); padding: 4px 10px; border-radius: 12px; }
+  #listening { font-size: 12px; color: var(--red); font-weight: 700; animation: pulse 1s infinite; }
+  @keyframes pulse { 50% { opacity: .35; } }
+
+  /* ---------------- Briefing ---------------- */
+  .brief-box { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 30px; max-width: 720px; width: 100%; }
+  .brief-box h2 { margin: 0 0 4px; font-size: 26px; }
+  .brief-box .loc { color: var(--accent); font-size: 14px; margin-bottom: 18px; }
+  .brief-obj { font-size: 15px; line-height: 1.6; color: #d5dde4; background: rgba(0,0,0,.25); border-left: 3px solid var(--accent); padding: 12px 16px; border-radius: 6px; }
+  .brief-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin: 22px 0; }
+  .brief-cols h4 { margin: 0 0 8px; font-size: 13px; text-transform: uppercase; letter-spacing: .8px; color: var(--muted); }
+  .brief-cols ul { margin: 0; padding-left: 18px; font-size: 14px; line-height: 1.7; }
+  .btn-primary { background: var(--accent); color: #06222e; border: none; padding: 13px 30px; border-radius: 10px; font-size: 16px; font-weight: 700; }
+  .btn-primary:hover { filter: brightness(1.08); }
+  .btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--line); padding: 13px 24px; border-radius: 10px; font-size: 15px; }
+  .btn-ghost:hover { border-color: var(--accent); }
+  .brief-note { color: var(--muted); font-size: 12.5px; margin-top: 14px; }
+
+  /* ---------------- In-game HUD ---------------- */
+  #hud { position: fixed; inset: 0; z-index: 20; pointer-events: none; }
+  #hud .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; backdrop-filter: blur(6px); }
+
+  #topbar { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; align-items: center; }
+  #swl { font-size: 14px; font-weight: 700; letter-spacing: .3px; }
+  #camMode { font-size: 12px; color: var(--accent); font-weight: 700; }
+
+  #objPanel { position: absolute; top: 56px; left: 50%; transform: translateX(-50%); max-width: 460px; text-align: center; }
+  #phaseHint { font-size: 13px; line-height: 1.4; color: var(--accent); font-weight: 600; background: rgba(6,10,14,.6); padding: 5px 14px; border-radius: 12px; display: inline-block; }
+  #phaseHint:empty { display: none; }
+
+  #telemPanel { position: absolute; top: 14px; right: 14px; min-width: 190px; }
+  #telem div { display: flex; justify-content: space-between; font-size: 13px; padding: 2px 0; }
+  #telem span { color: var(--muted); }
+  #telem b { font-variant-numeric: tabular-nums; }
+
+  #leverPanel { position: absolute; bottom: 16px; left: 14px; width: 300px; }
+  .lever { display: grid; grid-template-columns: 78px 1fr 52px; align-items: center; gap: 8px; margin: 7px 0; }
+  .lever-name { font-size: 11.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+  .lever-track { position: relative; height: 12px; background: rgba(255,255,255,.07); border-radius: 6px; overflow: hidden; }
+  .lever-fill { position: absolute; top: 0; height: 100%; border-radius: 6px; transition: none; }
+  .lever-center { position: absolute; left: 50%; top: 0; width: 1px; height: 100%; background: rgba(255,255,255,.25); }
+  .lever-val { font-size: 12px; text-align: right; font-variant-numeric: tabular-nums; color: #cdd6de; }
+
+  #rightStack { position: absolute; bottom: 16px; right: 14px; width: 220px; display: flex; flex-direction: column; gap: 10px; }
+  #windPanel { display: flex; align-items: center; gap: 12px; }
+  #windDial { position: relative; width: 48px; height: 48px; border-radius: 50%; border: 1px solid var(--line); flex: none; }
+  #windArrow { position: absolute; inset: 0; display: flex; align-items: flex-start; justify-content: center; }
+  #windArrow::before { content: "➤"; transform: rotate(90deg); font-size: 18px; color: var(--accent); }
+  #windGust { position: absolute; inset: 0; border-radius: 50%; box-shadow: 0 0 12px 2px var(--amber) inset; }
+  #windInfo b { font-size: 16px; }
+  #windInfo span { display: block; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+
+  .meter-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; display: flex; justify-content: space-between; }
+  .meter-track { height: 10px; background: rgba(255,255,255,.07); border-radius: 5px; overflow: hidden; margin-top: 4px; }
+  .meter-fill { height: 100%; width: 0; border-radius: 5px; }
+  #rigged { font-size: 12px; font-weight: 700; }
+
+  #caption { position: absolute; bottom: 92px; left: 50%; transform: translateX(-50%) translateY(10px); max-width: 620px; text-align: center;
+    background: rgba(6,10,14,.82); border: 1px solid var(--line); border-left: 3px solid var(--amber);
+    padding: 10px 18px; border-radius: 10px; font-size: 16px; color: #ffe9cf; opacity: 0; transition: opacity .25s, transform .25s; }
+  #caption.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  #caption::before { content: "📻 Banksman"; display: block; font-size: 10px; letter-spacing: 1px; color: var(--amber); margin-bottom: 3px; text-transform: uppercase; }
+
+  #toast { position: absolute; top: 64px; left: 50%; transform: translateX(-50%) translateY(-8px); padding: 9px 18px; border-radius: 8px;
+    background: rgba(6,10,14,.9); border: 1px solid var(--line); font-size: 14px; font-weight: 600; opacity: 0; transition: opacity .2s, transform .2s; }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  #toast.bad { border-color: var(--red); color: #ffc2c2; }
+  #toast.good { border-color: var(--green); color: #bffcd8; }
+
+  #hint { position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); font-size: 11.5px; color: var(--muted); }
+  kbd { background: rgba(255,255,255,.1); border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px; font-size: 11px; font-family: inherit; }
+
+  /* ---------------- Result ---------------- */
+  .result-box { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 34px 40px; text-align: center; max-width: 520px; width: 100%; }
+  #resultTitle { font-size: 30px; font-weight: 800; margin: 0; }
+  #resultGrade { font-size: 68px; font-weight: 800; margin: 6px 0; }
+  #resultReason { color: #d5dde4; font-size: 15px; margin-bottom: 20px; line-height: 1.5; }
+  #resultStats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px; margin-bottom: 26px; text-align: left; }
+  #resultStats div { display: flex; justify-content: space-between; border-bottom: 1px solid var(--line); padding: 5px 0; font-size: 14px; }
+  #resultStats span { color: var(--muted); }
+  .result-btns { display: flex; gap: 12px; justify-content: center; }
+
+  /* ---------------- Help ---------------- */
+  #help { position: fixed; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center; background: rgba(4,6,9,.8); }
+  .help-box { background: var(--panel-solid); border: 1px solid var(--line); border-radius: 14px; padding: 28px 34px; max-width: 560px; }
+  .help-box h3 { margin-top: 0; }
+  .help-grid { display: grid; grid-template-columns: auto 1fr; gap: 6px 18px; font-size: 14px; }
+  .help-grid b { color: var(--accent); }
+
+  #loading { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; background: var(--bg); color: var(--muted); font-size: 15px; }
+  #errsink:empty { display: none; }
+  #errsink { position: fixed; top: 0; left: 0; right: 0; z-index: 300; background: #5a1414; color: #ffd7d7;
+    font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; padding: 8px 14px; white-space: pre-wrap;
+    border-bottom: 1px solid #ff6b6b; max-height: 40vh; overflow: auto; }
+</style>
+
+<div id="loading">Loading simulator…</div>
+<div id="errsink"></div>
+
+<!-- MENU -->
+<div id="menu" class="hidden">
+  <h1 class="title-lg">CRANE OPERATOR <span>· Lift Simulator</span></h1>
+  <p class="subtitle">Pick a job. Real controls, real load physics, and a banksman on the radio walking you in. Turn your sound on.</p>
+  <div id="scenarioGrid"></div>
+  <div id="radioSetup">
+    <h4>📻 Banksman radio</h4>
+    <p>The banksman talks you through every lift. Type to him in the radio box at the bottom of the screen — try <i>"hook us on"</i>, <i>"am I over the mark?"</i> or <i>"all stop"</i>.</p>
+  </div>
+  <div class="menu-foot">Needs a keyboard — play on a computer · Chrome or Edge recommended · <kbd>H</kbd> in-game for help</div>
+</div>
+
+<!-- BRIEFING -->
+<div id="briefing" class="hidden">
+  <div class="brief-box">
+    <h2 id="briefTitle"></h2>
+    <div class="loc" id="briefLoc"></div>
+    <div class="brief-obj" id="briefObjective"></div>
+    <div class="brief-cols">
+      <div><h4>Watch out for</h4><ul id="briefTips"></ul></div>
+      <div><h4>Controls</h4><ul id="briefControls"></ul></div>
+    </div>
+    <div style="display:flex; gap:12px; align-items:center;">
+      <button id="startBtn" class="btn-primary">Take the sticks ▸</button>
+      <span class="brief-note">The banksman will brief you over the radio.</span>
+    </div>
+  </div>
+</div>
+
+<!-- IN-GAME HUD -->
+<div id="hud" class="hidden">
+  <div id="topbar" class="panel"><span id="swl">—</span><span style="color:var(--line)">|</span><span id="camMode">CAB</span></div>
+
+  <div id="objPanel"><div id="phaseHint"></div></div>
+
+  <div id="telemPanel" class="panel"><div id="telem"></div></div>
+
+  <div id="leverPanel" class="panel"><div id="levers"></div></div>
+
+  <div id="rightStack">
+    <div id="windPanel" class="panel">
+      <div id="windDial"><div id="windArrow"></div><div id="windGust"></div></div>
+      <div id="windInfo"><b id="windSpeed">0 m/s</b><span>Wind</span></div>
+    </div>
+    <div class="panel">
+      <div class="meter-label"><span>Load swing</span><span id="swingVal">0°</span></div>
+      <div class="meter-track"><div class="meter-fill" id="swingBar"></div></div>
+      <div class="meter-label" style="margin-top:8px;"><span>Placement</span><span id="rigged" class="ok">HOOKED</span></div>
+      <div class="meter-track"><div class="meter-fill" id="placeFill" style="background:var(--green)"></div></div>
+    </div>
+  </div>
+
+  <div id="caption"></div>
+  <div id="toast"></div>
+  <div id="radio">
+    <span id="listening" class="hidden">● listening…</span>
+    <span id="pttHint">Radio</span>
+    <input id="radioInput" autocomplete="off" placeholder="Type to the banksman, press Enter" />
+  </div>
+  <div id="hint">scroll to zoom · <kbd>Space</kbd> call for hooks · <kbd>R</kbd> restart · <kbd>M</kbd> mute · <kbd>H</kbd> help</div>
+</div>
+
+<!-- RESULT -->
+<div id="result" class="hidden">
+  <div class="result-box">
+    <p id="resultTitle"></p>
+    <div id="resultGrade"></div>
+    <div id="resultReason"></div>
+    <div id="resultStats"></div>
+    <div class="result-btns">
+      <button id="retryBtn" class="btn-primary">Retry lift</button>
+      <button id="menuBtn" class="btn-ghost">Back to jobs</button>
+    </div>
+  </div>
+</div>
+
+<!-- HELP -->
+<div id="help" class="hidden">
+  <div class="help-box">
+    <h3>Controls & how to lift</h3>
+    <div class="help-grid">
+      <b>A / D</b><span>Slew / swing / gantry travel (left · right)</span>
+      <b>W / S</b><span>Trolley radius / boom luff / cross-travel</span>
+      <b>Q / E</b><span>Telescope extend / retract (mobile crane)</span>
+      <b>↑ / ↓</b><span>Hoist up / down</span>
+      <b>Shift</b><span>Micro-speed — hold for fine, precise moves</span>
+      <b>Space</b><span>Call the rigger in to unhook (only when landed & steady)</span>
+      <b>Radio box</b><span>Type to the banksman, press Enter</span>
+      <b>Scroll</b><span>Zoom the operator's view in/out (down onto the load)</span>
+      <b>C</b><span>Glance around (chase/free) — only before you start actuating</span>
+      <b>R</b><span>Restart the lift</span>
+      <b>M</b><span>Mute / unmute the banksman</span>
+      <b>H / Esc</b><span>Toggle this help · back to menu</span>
+    </div>
+    <p style="color:var(--muted); font-size:13px; margin-top:18px;">
+      Golden rule: hoist to clearance first, move over the mark, <b>kill the swing</b>, square the load, then lower slow and set it down gently. Listen to the banksman.
+    </p>
+    <div style="text-align:center; margin-top:8px;"><button class="btn-ghost" onclick="document.getElementById('help').classList.add('hidden')">Close</button></div>
+  </div>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
+    "cannon-es": "https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js"
+  }
+}
+</script>
+<script type="module" src="./src/main.js"></script>
+
+</body></html>
