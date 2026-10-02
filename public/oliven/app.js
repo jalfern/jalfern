@@ -47,13 +47,15 @@
   const VINEYARD = [[745,485],[800,478],[880,475],[960,470],[1030,478],[1070,505],[1085,560],[1080,640],[1068,730],[1052,820],[1040,900],[1035,980],[1040,1060],[1050,1140],[1048,1210],[1030,1265],[1000,1285],[600,1330],[300,1370],[175,1392],[158,1372],[175,1300],[210,1220],[270,1140],[350,1060],[440,990],[520,915],[590,840],[650,760],[695,670],[720,590],[730,530]]
   const ROAD = [[95,1458],[140,1400],[150,1330],[188,1232],[250,1142],[335,1046],[425,975],[505,900],[575,826],[630,752],[675,662],[700,582],[714,512],[740,468],[800,457],[900,454],[1000,452],[1062,468],[1097,512],[1106,582],[1100,662],[1088,762],[1070,862],[1056,952],[1056,1042],[1068,1140],[1068,1212],[1056,1268],[1040,1300]]
   const SPUR = [[735,470],[726,420],[734,380],[742,340]]
-  const DRIVE = [[1060,1262],[1150,1300],[1240,1330],[1290,1390],[1300,1458]]
+  const DRIVE = [[1062,1225],[1100,1240],[1160,1258],[1240,1300],[1290,1390],[1300,1458]]
   const YARD = [[680,382],[760,356],[852,358],[862,456],[728,462]]
   const MEADOW = [[1040,395],[1150,345],[1190,372],[1300,352],[1374,420],[1374,700],[1100,702],[1095,600],[1090,520],[1075,470]]
   const PATIO = [1205, 930, 1345, 1090]
   const ORCHARD = [1100, 722, 1212, 846]
   const ROSES = [1214, 722, 1342, 848]
-  const LAWN = [812, 1305, 1018, 1352]
+  const LAWN = [812, 1320, 1018, 1356]
+  const CITRUS = [1040, 1250, 1124, 1334]
+  const LOW = new Set(['shrub', 'rose', 'grape-red', 'grape-green'])
   const NEIGHBOR = [[0,0],[560,0],[540,60],[470,120],[480,260],[460,380],[430,470],[380,560],[300,600],[200,570],[120,680],[130,800],[160,880],[120,960],[60,1010],[0,1060]]
   const CORRIDOR = [[470,120],[560,70],[640,60],[705,110],[722,175],[700,300],[652,342],[640,420],[688,470],[690,560],[660,640],[620,720],[560,800],[480,880],[400,950],[300,1030],[230,1110],[182,1200],[150,1300],[118,1380],[60,1405],[0,1385],[0,1060],[60,1010],[120,960],[160,880],[130,800],[120,680],[200,570],[300,600],[380,560],[430,470],[460,380],[480,260]]
   const RIVER = [[610,20],[590,140],[565,255],[512,378],[442,500],[362,640],[282,760],[200,862],[120,962],[40,1060],[-10,1110]]
@@ -86,7 +88,7 @@
     water: '#2F6474', waterHi: '#4B8797', liner: '#2B3431', berm: '#B9AE86', river: '#5D93A3', bank: '#9C9467',
     wall: '#F2ECDD', wallSide: '#D8CFBC', slate: '#5D6A78', slateSide: '#48535F',
     metal: '#BCC8CE', metalSide: '#98A7AF', brown: '#7B5A44', brownSide: '#634736',
-    pool: '#79C0CF', patio: '#E6DAC0', garden: '#E4D8BA', orchard: '#BFC983', rose: '#C9567A', bed: '#86AE5E', lawn: '#9CBF67', meadow: '#D3BE7E',
+    pool: '#79C0CF', patio: '#E6DAC0', garden: '#E4D8BA', mulch: '#CDB88E', orchard: '#BFC983', rose: '#C9567A', bed: '#86AE5E', lawn: '#9CBF67', meadow: '#D3BE7E',
     path: '#EADFC4', solar: '#26406A', solarLine: '#6F8DB8', frame: '#C9D2DC', outline: '#2B2620',
   }
 
@@ -140,14 +142,14 @@
     el('polyline', Object.assign({ points: planPts([[1120, 420], [1200, 470], [1255, 470]]) }, pathStyle), mg)
     el('circle', Object.assign({ cx: 1255, cy: 498, r: 26 }, pathStyle), mg)
     // Lawn strip south of vineyard
-    el('rect', { x: LAWN[0], y: LAWN[1], width: LAWN[2] - LAWN[0], height: LAWN[3] - LAWN[1], rx: 6, fill: C.lawn }, g)
+    el('rect', { x: LAWN[0], y: LAWN[1], width: LAWN[2] - LAWN[0], height: LAWN[3] - LAWN[1], rx: 6, fill: C.lawn }, el('g', { 'data-f': 'leach' }, g))
+    el('rect', { x: CITRUS[0], y: CITRUS[1], width: CITRUS[2] - CITRUS[0], height: CITRUS[3] - CITRUS[1], rx: 8, fill: C.mulch }, el('g', { 'data-f': 'citrus' }, g))
     // Barn yard gravel
     el('polygon', { points: planPts(YARD), fill: C.road }, el('g', { 'data-f': 'barn' }, g))
     // Orchard: grass with a cross of gravel paths (trees are objects)
     const og = el('g', { 'data-f': 'orchard' }, g)
     el('rect', { x: ORCHARD[0], y: ORCHARD[1], width: ORCHARD[2] - ORCHARD[0], height: ORCHARD[3] - ORCHARD[1], rx: 6, fill: C.orchard }, og)
-    el('line', { x1: 1180, y1: 722, x2: 1180, y2: 846, stroke: C.path, 'stroke-width': 6 }, og)
-    el('line', { x1: 1100, y1: 771, x2: 1212, y2: 771, stroke: C.path, 'stroke-width': 6 }, og)
+    el('line', { x1: 1171, y1: 722, x2: 1171, y2: 846, stroke: C.path, 'stroke-width': 7 }, og)
     // Rose garden: beds around a parterre
     const rg = el('g', { 'data-f': 'roses' }, g)
     el('rect', { x: ROSES[0], y: ROSES[1], width: ROSES[2] - ROSES[0], height: ROSES[3] - ROSES[1], rx: 6, fill: C.garden }, rg)
@@ -251,8 +253,9 @@
   // ---------- Objects: trees, buildings, panels (depth-sorted) ----------
   const objects = []
   const tree = (x, y, r, f, kind = 'oak') => objects.push({ d: x + y, f, draw: g => drawTree(g, x, y, r, kind) })
-  function drawTree(g, x, y, r, kind) {
-    const low = kind === 'shrub' || kind === 'rose'
+  const DOTS = { rose: C.rose, 'grape-red': '#6E2343', 'grape-green': '#C4DA6E' }
+  function drawTree(g, x, y, r, kind, dot) {
+    const low = LOW.has(kind)
     const h = low ? r * .7 : r * 1.25
     const [bx, by] = P(x, y)
     const [sx, sy] = P(x + r * .45, y + r * .45)
@@ -269,8 +272,9 @@
     el('circle', { cx: bx, cy, r: rs, fill: pal[0], stroke: C.outline, 'stroke-width': low ? 1 : 1.6 }, g)
     el('circle', { cx: bx - rs * .18, cy: cy - rs * .2, r: rs * .78, fill: pal[1] }, g)
     el('circle', { cx: bx - rs * .32, cy: cy - rs * .38, r: rs * .42, fill: pal[2] }, g)
-    if (kind === 'rose') for (const [dx, dy] of [[-.3, -.4], [.35, -.1], [-.05, .25]]) el('circle', { cx: bx + rs * dx, cy: cy + rs * dy, r: rs * .28, fill: C.rose }, g)
-    else if (!low) el('circle', { cx: bx - rs * .42, cy: cy - rs * .5, r: rs * .16, fill: C.oakTop }, g)
+    const dc = dot || DOTS[kind]
+    if (dc) for (const [dx, dy] of [[-.3, -.4], [.35, -.1], [-.05, .25]]) el('circle', { cx: bx + rs * dx, cy: cy + rs * dy, r: rs * (dot ? .22 : .28), fill: dc, stroke: dot ? '#fff' : 'none', 'stroke-width': .8 }, g)
+    if (!dc && !low) el('circle', { cx: bx - rs * .42, cy: cy - rs * .5, r: rs * .16, fill: C.oakTop }, g)
   }
 
   function box(x0, y0, x1, y1, h, o) {
@@ -337,6 +341,7 @@
   box(1290, 876, 1324, 914, 18, { f: 'gym', flat: true, wall: C.wall, wallSide: C.wallSide, roof: '#D9D4C6' })
   box(1197, 1068, 1270, 1196, 24, { f: 'cottage', ridge: 'y', wall: C.wall, wallSide: C.wallSide, roof: C.brown, roofSide: C.brownSide, windows: true })
   box(1346, 758, 1372, 824, 3, { f: 'poolheat', flat: true, wall: '#2A3540', wallSide: '#1F2830', roof: '#26323D' })
+  box(1158, 1202, 1186, 1224, 7, { f: 'bunnies', flat: true, wall: '#D9CBA8', wallSide: '#BFAF88', roof: '#E9DFC4' })
   box(1268, 1043, 1330, 1080, 12, { f: 'kitchen', flat: true, wall: '#E8E0CE', wallSide: '#CFC5AF', roof: '#BDB5A3' })
   box(1058, 972, 1090, 1004, 4, { f: 'house', flat: true, wall: '#CDBB98', wallSide: '#B7A580', roof: '#D8C7A2' })
 
@@ -373,7 +378,7 @@
   // Roadside row (hedgerow)
   for (let x = 110; x < 1130; x += 26) tree(x + (x % 3) * 2, 1412 + ((x / 26) % 2) * 6, 13, 'hedgerow', 'cypress')
   // Big trees around the house and cottage
-  for (const [x, y, r] of [[1112, 1112, 38], [1152, 1160, 44], [1292, 1118, 38], [1302, 1232, 40], [1262, 1292, 30], [1112, 880, 28], [1150, 905, 22], [1058, 1100, 22], [1345, 1060, 30], [1110, 1235, 26]]) tree(x, y, r, null)
+  for (const [x, y, r] of [[1292, 1118, 38], [1302, 1232, 40], [1262, 1292, 30]]) tree(x, y, r, null)
   // Pond-side trees and shrubs
   for (const [x, y, r] of [[1062, 375, 16], [1098, 347, 14], [1162, 148, 14], [1148, 300, 12], [1130, 100, 22]]) tree(x, y, r, null)
   seed = 31
@@ -384,17 +389,15 @@
   }
   // Garden shrubs and lawn hedge
   // Orchard trees and rose bushes
-  for (const y of [744, 796, 824]) for (const x of [1118, 1144, 1166, 1196]) tree(x, y, 9, 'orchard', 'fruit')
   for (let y = 736; y < 842; y += 14) tree(1225, y, 5, 'roses', 'rose')
   for (let x = 1297; x < 1338; x += 13) for (const y of [740, 760, 800, 822]) tree(x, y, 5, 'roses', 'rose')
-  for (let x = 822; x < 1010; x += 18) tree(x, 1332, 7, null, 'shrub')
+  for (let x = 822, i = 0; x < 1012; x += 13, i++) tree(x, 1311, 6, 'tablegrapes', i % 2 ? 'grape-green' : 'grape-red')
   // User-added fruit & nut trees
-  const treeColors = { fig: '#7A4E8C', apple: '#C0392B', pear: '#B8A23A', lemon: '#E3B92E', orange: '#E07A1F', olive: '#7D8C4A', walnut: '#8A6B45', almond: '#D9A9A0', persimmon: '#E06C2A' }
-  ;(D.trees || []).forEach((t, i) => objects.push({ d: t.x + t.y, f: 'tree-' + i, draw: g => {
-    drawTree(g, t.x, t.y, 12, 'oak')
-    const [bx, by] = P(t.x, t.y, 22)
-    el('circle', { cx: bx, cy: by - 8, r: 6, fill: treeColors[t.kind] || '#C0392B', stroke: '#fff', 'stroke-width': 2 }, g)
-  } }))
+  const KINDS = D.kinds || {}
+  ;(D.trees || []).forEach((t, i) => {
+    const K = KINDS[t.kind] || { type: 'fruit', r: 9 }
+    objects.push({ d: t.x + t.y, f: 'tree-' + i, draw: g => drawTree(g, t.x, t.y, t.r || K.r, K.type, K.dot) })
+  })
 
   objects.sort((a, b) => a.d - b.d)
   for (const o of objects) {
@@ -407,13 +410,13 @@
     const [x, y] = P(s.x, s.y, 4)
     const g = el('g', { 'data-f': 'sighting-' + i }, L.marks)
     el('circle', { cx: x, cy: y, r: 10, fill: '#fff', stroke: C.outline, 'stroke-width': 2 }, g)
-    el('text', { x, y: y + 4, 'text-anchor': 'middle', 'font-size': 12 }, g).textContent = '🦦'
+    el('text', { x, y: y + 4, 'text-anchor': 'middle', 'font-size': 12 }, g).textContent = ({ otters: '🦦', salmon: '🐟', herons: '🐦', frogs: '🐸', coyote: '🐺', bobcat: '🐈', hares: '🐇' })[s.what] || '•'
   })
 
   // ---------- Features, footprints, labels, card ----------
   const FEAT = {}
   D.features.forEach(f => { FEAT[f.id] = f })
-  ;(D.trees || []).forEach((t, i) => { FEAT['tree-' + i] = { id: 'tree-' + i, name: cap(t.kind || 'Tree'), kicker: 'Fruit & nut trees', text: t.note || '', label: [t.x, t.y, 34], minor: true } })
+  ;(D.trees || []).forEach((t, i) => { FEAT['tree-' + i] = { id: 'tree-' + i, name: ((D.kinds || {})[t.kind] || {}).label || cap(t.kind || 'Tree'), kicker: t.group || 'Trees', text: t.note || '' } })
   ;(D.sightings || []).forEach((s, i) => { FEAT['sighting-' + i] = { id: 'sighting-' + i, name: cap(s.what), kicker: 'Wildlife' + (s.when ? ' · ' + s.when : ''), text: s.note || '', label: [s.x, s.y, 20], minor: true } })
   function cap(s) { return (s || '').charAt(0).toUpperCase() + (s || '').slice(1) }
 
@@ -424,6 +427,7 @@
     barn: { poly: [[660, 325], [852, 356], [862, 458], [728, 462], [680, 382]] }, river: { poly: CORRIDOR },
     house: { rect: [1056, 948, 1150, 1054] }, cottage: { rect: [1191, 1062, 1276, 1202] },
     solar: { poly: [[1235, 105], [1305, 160], [1250, 340], [1180, 300]] }, hedgerow: { rect: [95, 1398, 1140, 1428] },
+    citrus: { rect: CITRUS }, leach: { rect: LAWN }, tablegrapes: { rect: [814, 1303, 1016, 1319] }, bunnies: { rect: [1152, 1196, 1192, 1230] },
   }
   function outline(id) {
     L.outline.innerHTML = ''
@@ -543,7 +547,7 @@
       const [sx, sy] = P(...f.label)
       e.style.left = (sx - vb.x) * k + 'px'
       e.style.top = (sy - vb.y) * k + 'px'
-      const tooSmall = (k < .45 && (f.minor || ['hedgerow', 'meadow', 'pool', 'roses'].includes(id))) || (k < .7 && ['gym', 'kitchen', 'poolheat'].includes(id)) || (k < .2 && id === 'solar')
+      const tooSmall = (k < .45 && (f.minor || ['hedgerow', 'meadow', 'pool', 'roses', 'leach', 'tablegrapes'].includes(id))) || (k < .7 && ['gym', 'kitchen', 'poolheat', 'bunnies'].includes(id)) || (k < .2 && id === 'solar')
       e.classList.toggle('hide', !show || tooSmall)
     })
   }
