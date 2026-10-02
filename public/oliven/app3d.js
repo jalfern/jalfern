@@ -521,17 +521,22 @@ function chartHTML(f) {
   const ys = (Y[f.chart] || []).slice().sort((a, b) => a.year - b.year)
   if (!ys.length) return '<div class="chart"><div class="t">Harvest, net lbs</div><div class="empty">No yield numbers yet.</div></div>'
   const fmt = n => n.toLocaleString('en-US')
+  const allYears = [...new Set(Object.values(Y).flat().map(y => y.year))].sort()
   const last = ys[ys.length - 1]
-  const peers = Object.keys(Y).map(k => [k, ((Y[k] || []).find(y => y.year === last.year) || {}).lbs || 0])
-  const total = peers.reduce((s, p) => s + p[1], 0), top = Math.max(...peers.map(p => p[1]))
-  let html = `<div class="chart"><div class="t">${last.year} harvest, net</div>
-    <div class="big">${fmt(last.lbs)} lbs<small>${(last.lbs / 2000).toFixed(1)} tons · ${Math.round(last.lbs / total * 100)}% of the vineyard</small></div>
-    <div class="cmp">` + peers.map(([k, v]) => `<div class="row${k === f.chart ? ' me' : ''}"><span>${esc((FEAT[k] || {}).name || k)}</span><i style="width:${v / top * 100}%"></i><b>${fmt(v)}</b></div>`).join('') + `</div>
-    <p class="note" style="margin-top:10px">Whole vineyard, ${last.year}: ${fmt(total)} lbs (${(total / 2000).toFixed(1)} tons)</p>`
-  if (ys.length > 1) {
-    const max = Math.max(...ys.map(y => y.lbs))
-    html += '<div class="t" style="margin-top:14px">By year</div><div class="bars" style="margin:18px 0 22px">' + ys.map(y => `<div class="bar" style="height:${(y.lbs / max) * 100}%"><em>${(y.lbs / 1000).toFixed(1)}k</em><span>'${String(y.year).slice(2)}</span></div>`).join('') + '</div>'
-  }
+  const best = ys.reduce((a, b) => (b.lbs > a.lbs ? b : a))
+  const peers = Object.keys(Y).map(k => [k, (Y[k] || []).find(y => y.year === last.year)])
+  const total = peers.reduce((s, p) => s + (p[1] ? p[1].lbs : 0), 0), top = Math.max(...peers.map(p => (p[1] ? p[1].lbs : 0)))
+  const max = Math.max(...ys.map(y => y.lbs))
+  let html = `<div class="chart"><div class="t">Net harvest by year</div>
+    <div class="bars" style="margin:18px 0 22px">` + allYears.map(yr => {
+      const y = ys.find(v => v.year === yr)
+      if (!y) return `<div class="bar none" title="No weigh tag for ${yr}"><em>?</em><span>'${String(yr).slice(2)}</span></div>`
+      return `<div class="bar${y === best ? ' best' : ''}" style="height:${(y.lbs / max) * 100}%" title="${fmt(y.lbs)} lbs · ${y.bins} bins · ${y.date}"><em>${(y.lbs / 1000).toFixed(1)}k</em><span>'${String(yr).slice(2)}</span></div>`
+    }).join('') + `</div>
+    <div class="big">${fmt(last.lbs)} lbs<small>${last.year} · ${(last.lbs / 2000).toFixed(1)} tons · ${last.bins} bins · best year ${best.year} (${fmt(best.lbs)} lbs)</small></div>
+    <div class="t" style="margin-top:14px">${last.year} across the vineyard</div>
+    <div class="cmp">` + peers.map(([k, y]) => `<div class="row${k === f.chart ? ' me' : ''}"><span>${esc((FEAT[k] || {}).name || k)}</span><i style="width:${y ? (y.lbs / top) * 100 : 0}%"></i><b>${y ? fmt(y.lbs) : '—'}</b></div>`).join('') + `</div>
+    <p class="note" style="margin-top:10px">Whole vineyard, ${last.year}: ${fmt(total)} lbs (${(total / 2000).toFixed(1)} tons). From Schramsberg weigh tags.</p>`
   return html + '</div>'
 }
 function showCard(id) {
