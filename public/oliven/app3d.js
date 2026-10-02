@@ -37,8 +37,9 @@ const SPUR = [[735,470],[726,420],[734,380],[742,340]]
 const DRIVE = [[1060,1262],[1150,1300],[1240,1330],[1290,1390],[1300,1458]]
 const YARD = [[680,382],[760,356],[852,358],[862,456],[728,462]]
 const MEADOW = [[1040,395],[1150,345],[1190,372],[1300,352],[1374,420],[1374,700],[1100,702],[1095,600],[1090,520],[1075,470]]
-const GARDEN = [1086, 710, 1346, 855]
-const PATIO = [1205, 948, 1345, 1050]
+const PATIO = [1205, 930, 1345, 1090]
+const ORCHARD = [1100, 722, 1212, 846]
+const ROSES = [1214, 722, 1342, 848]
 const LAWN = [812, 1305, 1018, 1352]
 const NEIGHBOR = [[0,0],[560,0],[540,60],[470,120],[480,260],[460,380],[430,470],[380,560],[300,600],[200,570],[120,680],[130,800],[160,880],[120,960],[60,1010],[0,1060]]
 const CORRIDOR = [[470,120],[560,70],[640,60],[705,110],[722,175],[700,300],[652,342],[640,420],[688,470],[690,560],[660,640],[620,720],[560,800],[480,880],[400,950],[300,1030],[230,1110],[182,1200],[150,1300],[118,1380],[60,1405],[0,1385],[0,1060],[60,1010],[120,960],[160,880],[130,800],[120,680],[200,570],[300,600],[380,560],[430,470],[460,380],[480,260]]
@@ -72,7 +73,7 @@ const C = {
   water: '#2F6474', waterHi: '#4B8797', liner: '#2B3431', berm: '#B9AE86', river: '#5D93A3', bank: '#9C9467',
   wall: '#F2ECDD', wallSide: '#D8CFBC', slate: '#5D6A78', slateSide: '#48535F',
   metal: '#BCC8CE', metalSide: '#98A7AF', brown: '#7B5A44', brownSide: '#634736',
-  pool: '#79C0CF', patio: '#E6DAC0', garden: '#E4D8BA', bed: '#86AE5E', lawn: '#9CBF67', meadow: '#D3BE7E',
+  pool: '#79C0CF', patio: '#E6DAC0', garden: '#E4D8BA', orchard: '#BFC983', rose: '#C9567A', bed: '#86AE5E', lawn: '#9CBF67', meadow: '#D3BE7E',
   path: '#EADFC4', solar: '#26406A', solarLine: '#6F8DB8', frame: '#C9D2DC', outline: '#2B2620',
 }
 const HOUSE = { wall: C.wall, wallSide: C.wallSide, roof: C.slate, roofSide: C.slateSide, windows: true }
@@ -87,10 +88,11 @@ const panel = (cx, cy, len, wid, ang, f) => PANELS.push({ cx, cy, len, wid, ang,
 box(770, 365, 838, 452, 34, { f: 'barn', ridge: 'y', wall: '#E7E2D6', wallSide: '#C9C2B1', roof: C.metal, roofSide: C.metalSide })
 box(668, 332, 706, 372, 18, { f: 'barn', ridge: 'x', wall: '#EFEBE2', wallSide: '#D2CBBB', roof: '#C9C9C2', roofSide: '#A9A9A1' })
 box(1093, 952, 1146, 1050, 30, Object.assign({ f: 'house', ridge: 'y' }, HOUSE))
-box(1233, 905, 1322, 948, 22, Object.assign({ f: 'pool', ridge: 'x' }, HOUSE))
-box(1262, 862, 1318, 898, 14, { f: 'pool', flat: true, wall: C.wall, wallSide: C.wallSide, roof: '#D9D4C6' })
-box(1188, 1075, 1245, 1195, 24, { f: 'cottage', ridge: 'y', wall: C.wall, wallSide: C.wallSide, roof: C.brown, roofSide: C.brownSide, windows: true })
-box(1336, 756, 1362, 806, 14, { f: 'garden', ridge: 'y', wall: C.wall, wallSide: C.wallSide, roof: C.slate, roofSide: C.slateSide })
+box(1235, 932, 1321, 970, 22, Object.assign({ f: 'pool', ridge: 'x' }, HOUSE))
+box(1290, 876, 1324, 914, 18, { f: 'gym', flat: true, wall: C.wall, wallSide: C.wallSide, roof: '#D9D4C6' })
+box(1197, 1068, 1270, 1196, 24, { f: 'cottage', ridge: 'y', wall: C.wall, wallSide: C.wallSide, roof: C.brown, roofSide: C.brownSide, windows: true })
+box(1346, 758, 1372, 824, 3, { f: 'poolheat', flat: true, wall: '#2A3540', wallSide: '#1F2830', roof: '#26323D' })
+box(1268, 1043, 1330, 1080, 12, { f: 'kitchen', flat: true, wall: '#E8E0CE', wallSide: '#CFC5AF', roof: '#BDB5A3' })
 box(1058, 972, 1090, 1004, 4, { f: 'house', flat: true, wall: '#CDBB98', wallSide: '#B7A580', roof: '#D8C7A2' })
 
 // Solar
@@ -136,8 +138,10 @@ for (let a = 200; a < 360; a += 14) {
   tree(POND.cx + ex * Math.cos(rr) - ey * Math.sin(rr), POND.cy + ex * Math.sin(rr) + ey * Math.cos(rr), 7 + rnd() * 3, 'pond', 'shrub')
 }
 // Garden shrubs and lawn hedge
-for (let x = 1100; x < 1340; x += 40) tree(x, 862, 9, 'garden', 'shrub')
-for (let x = 1100; x < 1210; x += 30) tree(x, 720, 9, 'garden', 'shrub')
+// Orchard trees and rose bushes
+for (const y of [744, 796, 824]) for (const x of [1118, 1144, 1166, 1196]) tree(x, y, 9, 'orchard', 'fruit')
+for (let y = 736; y < 842; y += 14) tree(1225, y, 5, 'roses', 'rose')
+for (let x = 1297; x < 1338; x += 13) for (const y of [740, 760, 800, 822]) tree(x, y, 5, 'roses', 'rose')
 for (let x = 822; x < 1010; x += 18) tree(x, 1332, 7, null, 'shrub')
 
 ;(D.trees || []).forEach((t, i) => tree(t.x, t.y, 12, 'tree-' + i, 'oak'))
@@ -205,15 +209,19 @@ function drawGround() {
   c.beginPath(); c.arc(1255, 498, 26, 0, 7); c.strokeStyle = C.path; c.lineWidth = 7; c.stroke()
   rect(LAWN, C.lawn)
   fill(YARD, C.road)
-  rect(GARDEN, C.garden)
-  const [gx0, gy0, gx1, gy1] = GARDEN
+  // Orchard
+  rect(ORCHARD, C.orchard)
+  stroke([[1180, 722], [1180, 846]], C.path, 6)
+  stroke([[1100, 771], [1212, 771]], C.path, 6)
+  // Rose garden
+  rect(ROSES, C.garden)
   c.fillStyle = C.bed
-  for (let x = gx0 + 14; x < gx1 - 20; x += 34) for (let y = gy0 + 14; y < gy1 - 20; y += 30) {
-    if (x > 1215 && x < 1285 && y < 820) continue
-    c.fillRect(x, y, 22, 18)
-  }
-  c.strokeStyle = '#B8AB8A'; c.lineWidth = 4; c.strokeRect(1222, 738, 54, 78)
-  c.fillRect(1236, 752, 26, 50)
+  for (const [x, y, w, h] of [[1218, 730, 14, 112], [1290, 730, 46, 40], [1290, 790, 46, 44]]) c.fillRect(x, y, w, h)
+  c.fillStyle = '#F4EEDF'; c.fillRect(1236, 752, 46, 78)
+  c.strokeStyle = '#B8AB8A'; c.lineWidth = 3; c.strokeRect(1236, 752, 46, 78)
+  c.fillStyle = C.bed
+  for (const [x, y] of [[1241, 757], [1261, 757], [1241, 795], [1261, 795]]) c.fillRect(x, y, 16, 30)
+  c.beginPath(); c.arc(1259, 791, 5, 0, 7); c.fillStyle = '#F4EEDF'; c.fill(); c.lineWidth = 2; c.stroke()
   rect(PATIO, C.patio)
   fill([[1150, 1250], [1374, 1260], [1374, 1395], [1170, 1392]], '#E2D3AE')
   // River corridor
@@ -228,7 +236,7 @@ function drawGround() {
   c.beginPath(); c.ellipse(0, 0, rx + 6, ry + 6, 0, 0, 7); c.fillStyle = C.liner; c.fill()
   c.restore()
   // Pool surround
-  c.fillStyle = '#F7F2E6'; c.fillRect(1240, 962, 85, 68)
+  c.fillStyle = '#F7F2E6'; c.fillRect(1238, 975, 89, 41)
   // Roads
   const roads = [ROAD, SPUR, DRIVE, [[1056, 1010], [1092, 1002]]]
   roads.forEach(r => stroke(r, C.roadEdge, 26))
@@ -326,14 +334,14 @@ const tint = new THREE.Color()
 seed = 99
 for (const k in groups) {
   const list = groups[k], f = list[0].f, kind = list[0].kind
-  const base = kind === 'shrub' ? ['#5C8A3E', '#7AA956'] : kind === 'cypress' ? ['#3E6A31', '#4F7D3C'] : ['#4A7A39', '#5F9046']
+  const base = kind === 'rose' ? ['#B8496A', '#6E9447'] : kind === 'fruit' ? ['#5E9044', '#7BAA54'] : kind === 'shrub' ? ['#5C8A3E', '#7AA956'] : kind === 'cypress' ? ['#3E6A31', '#4F7D3C'] : ['#4A7A39', '#5F9046']
   const can = new THREE.InstancedMesh(canopyGeo, toon(0xffffff), list.length)
   const hull = new THREE.InstancedMesh(canopyGeo, inkHull, list.length)
-  const trunks = kind === 'shrub' ? null : new THREE.InstancedMesh(trunkGeo, toon('#5A4330'), list.length)
+  const trunks = kind === 'shrub' || kind === 'rose' ? null : new THREE.InstancedMesh(trunkGeo, toon('#5A4330'), list.length)
   list.forEach((t, i) => {
     const r = t.r
     let cy, s
-    if (kind === 'shrub') { cy = r * 0.62; s = [r * 1.05, r * 0.8, r * 1.05] }
+    if (kind === 'shrub' || kind === 'rose') { cy = r * 0.62; s = [r * 1.05, r * 0.8, r * 1.05] }
     else if (kind === 'cypress') { cy = r * 1.65; s = [r * 0.75, r * 1.45, r * 0.75] }
     else { cy = r * 1.25; s = [r * 1.05, r * 0.95, r * 1.05] }
     q.setFromAxisAngle(yAxis, rnd() * 6.28)
@@ -341,7 +349,7 @@ for (const k in groups) {
     m4.compose(p, q, sc.set(...s)); can.setMatrixAt(i, m4)
     const g = 1 + 2.4 / s[0]
     m4.compose(p, q, sc.set(s[0] * g, s[1] + 2.4, s[2] * g)); hull.setMatrixAt(i, m4)
-    can.setColorAt(i, tint.set(base[0]).lerp(new THREE.Color(base[1]), rnd()))
+    can.setColorAt(i, kind === 'rose' ? tint.set(rnd() < 0.5 ? '#C9567A' : '#E07E9A') : tint.set(base[0]).lerp(new THREE.Color(base[1]), rnd()))
     if (trunks) { m4.compose(V(t.x, t.y, 0), q, sc.set(2.6, cy - s[1] * 0.4, 2.6)); trunks.setMatrixAt(i, m4) }
   })
   can.castShadow = true; can.receiveShadow = true
@@ -443,8 +451,8 @@ for (const [fx, fy, dly] of [[1000, 162, 0], [940, 222, 1.2], [1010, 228, 2.1]])
 const dock = new THREE.Mesh(new THREE.BoxGeometry(34, 2, 8), toon('#CFC3A3'))
 dock.position.copy(V(853, 322, 1.5)); dock.rotation.y = 35 * deg
 scene.add(dock)
-const pool = new THREE.Mesh(new THREE.PlaneGeometry(73, 56).rotateX(-Math.PI / 2), new THREE.MeshPhongMaterial({ color: C.pool, shininess: 100, specular: 0xffffff }))
-pool.position.copy(V(1282.5, 996, 0.7))
+const pool = new THREE.Mesh(new THREE.PlaneGeometry(79, 31).rotateX(-Math.PI / 2), new THREE.MeshPhongMaterial({ color: C.pool, shininess: 100, specular: 0xffffff }))
+pool.position.copy(V(1282.5, 995.5, 0.7))
 scene.add(reg(pool, 'pool'))
 
 // ---------- Footprints for highlight + ground picking ----------
@@ -474,12 +482,13 @@ function blockPoly(i) {
 }
 const FOOT = {
   'block-1': blockPoly(0), 'block-2': blockPoly(1), 'block-3': blockPoly(2),
-  pond: ellPoly(POND, 34), meadow: MEADOW, garden: rectPoly(GARDEN), pool: rectPoly([1205, 862, 1345, 1050]),
+  pond: ellPoly(POND, 34), meadow: MEADOW, orchard: rectPoly(ORCHARD), roses: rectPoly(ROSES), pool: rectPoly([1205, 925, 1345, 1035]),
+  gym: rectPoly([1286, 872, 1328, 918]), kitchen: rectPoly([1262, 1038, 1336, 1086]), poolheat: rectPoly([1342, 754, 1374, 828]),
   barn: [[660, 325], [852, 356], [862, 458], [728, 462], [680, 382]], river: CORRIDOR,
-  house: rectPoly([1056, 948, 1150, 1054]), cottage: rectPoly([1182, 1070, 1250, 1200]),
+  house: rectPoly([1056, 948, 1150, 1054]), cottage: rectPoly([1191, 1062, 1276, 1202]),
   solar: [[1235, 105], [1305, 160], [1250, 340], [1180, 300]], hedgerow: rectPoly([95, 1398, 1140, 1428]),
 }
-const GROUND_ORDER = ['pond', 'pool', 'cottage', 'house', 'garden', 'barn', 'solar', 'meadow', 'hedgerow', 'block-1', 'block-2', 'block-3', 'river']
+const GROUND_ORDER = ['pond', 'gym', 'kitchen', 'poolheat', 'pool', 'cottage', 'house', 'orchard', 'roses', 'barn', 'solar', 'meadow', 'hedgerow', 'block-1', 'block-2', 'block-3', 'river']
 function groundFeature(x, y) {
   for (const id of GROUND_ORDER) if (inPoly([x, y], FOOT[id])) return id
   return null
@@ -590,7 +599,7 @@ function placeLabels() {
     tmp.copy(V(f.label[0], f.label[1], Math.max(f.label[2], 12))).project(camera)
     e.style.left = ((tmp.x + 1) / 2 * innerWidth) + 'px'
     e.style.top = ((1 - tmp.y) / 2 * innerHeight) + 'px'
-    const tooSmall = (ppu < 0.45 && (f.minor || ['hedgerow', 'cottage', 'meadow', 'pool'].includes(id))) || (ppu < 0.2 && id === 'solar')
+    const tooSmall = (ppu < 0.45 && (f.minor || ['hedgerow', 'meadow', 'pool', 'roses'].includes(id))) || (ppu < 0.7 && ['gym', 'kitchen', 'poolheat'].includes(id)) || (ppu < 0.2 && id === 'solar')
     e.classList.toggle('hide', !show || tooSmall)
   })
 }
