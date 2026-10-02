@@ -48,6 +48,11 @@
       "permanent": false
     },
     {
+      "source": "/plaicraft/proof-task",
+      "destination": "/plaicraft/proof-task/",
+      "permanent": false
+    },
+    {
       "source": "/oliven",
       "destination": "/oliven/",
       "permanent": false
