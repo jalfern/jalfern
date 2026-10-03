@@ -564,7 +564,7 @@ function showCard(id) {
   const note = f.group === 'vineyard' ? '<p class="note">Block lines on the map are a placeholder until we know where they really fall.</p>' : ''
   card.innerHTML = `<button class="x" aria-label="Close">×</button>
     <div class="k">${esc(f.kicker || '')}</div><h2>${esc(f.name)}</h2>
-    ${f.text ? `<p>${esc(f.text)}</p>` : ''}${chartHTML(f)}${note}
+    ${f.text ? `<p>${esc(f.text)}</p>` : ''}${chartHTML(f)}${f.link ? `<p><a class="more" href="../${esc(f.link[0])}">${esc(f.link[1])} →</a></p>` : ''}${note}
     ${f.needs ? `<div class="gap">Still to fill in: ${esc(f.needs)}</div>` : ''}`
   card.classList.add('show')
   card.querySelector('.x').onclick = () => select(null)
