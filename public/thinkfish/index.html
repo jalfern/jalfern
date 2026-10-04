@@ -86,6 +86,8 @@
       <button class="tb" data-action="canvas" style="--i:7" title="Canvas" data-prompt="Resize the canvas"></button>
     </div>
 
+    <div class="dockbar" id="dockbar"></div>
+
     <div class="desk" id="desk">
       <div class="page" id="page">
         <canvas id="stage" aria-label="The LiveArt canvas — drag to turn the model, right-drag or scroll to size it"></canvas>
@@ -95,7 +97,8 @@
       </div>
 
       <div class="toolwin" id="la-toolbar" role="toolbar" aria-label="LiveArt Toolbar">
-        <div class="toolwin-title"><span>LiveArt Toolbar: <span id="tb-model">Untitled</span></span><b class="toolwin-close" data-action="toggle-la-toolbar" aria-label="Close">×</b></div>
+        <span class="grip" title="Double-click to float the toolbar" aria-hidden="true"></span>
+        <div class="toolwin-title" title="Double-click to dock the toolbar"><span>LiveArt Toolbar: <span id="tb-model">Untitled</span></span><b class="toolwin-close" data-action="toggle-la-toolbar" aria-label="Close">×</b></div>
         <div class="la-row">
           <button class="la" data-tool="replace" data-prompt="Replace LiveArt"><img src="ui/replace.png" alt="Replace LiveArt"></button>
           <select id="style-select" aria-label="Select a new LiveStyle" data-prompt="Select a new LiveStyle"></select>

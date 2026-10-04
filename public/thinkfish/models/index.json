@@ -6,8 +6,8 @@
    "name": "Anime Girl",
    "file": "girl.pcs",
    "rot": [
-    0.15,
-    3.64
+    0.3,
+    3.8
    ],
    "scene": true,
    "group": "Scenes"
@@ -240,7 +240,7 @@
   },
   {
    "id": "dv21912",
-   "name": "Halloween\u0092s Coming In Text",
+   "name": "Halloweens Coming In Text",
    "file": "halloween/dv21912.vpe",
    "group": "Halloween"
   },
