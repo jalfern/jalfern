@@ -3,6 +3,18 @@
 // Anything in [[double brackets]] is still a guess or a gap for Jon to fill.
 
 window.OLIVEN = {
+  // Our wine, made from this vineyard by Davies (Schramsberg).
+  wine: {
+    name: 'J. Davies Oliven Vineyard Cabernet Sauvignon',
+    short: 'Davies Oliven Cabernet',
+    url: 'https://schramsberg.com/wp-content/uploads/Oliven-Vineyard_CabernetSauvingon_2021.pdf',
+  },
+
+  // A line of context for a harvest year, shown under the yield chart.
+  harvestNotes: {
+    2026: 'A light year across Napa. Rain during flowering brought blight, and many vineyards came in at under half their usual yield. Oliven picked about 60% of 2025, so we did well, all things considered.',
+  },
+
   // Net harvest per block, in pounds, from the Schramsberg weighmaster certificates.
   // Add a line per pick: { year, date, lbs, bins, cert }. A missing year means no tag yet.
   yields: {

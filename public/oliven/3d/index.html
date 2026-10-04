@@ -90,6 +90,8 @@ header p { margin: 6px 0 0; font-size: 12px; letter-spacing: .12em; text-transfo
 .bar.none { height: 18% !important; background: repeating-linear-gradient(45deg, var(--line) 0 4px, transparent 4px 8px); border: 1px dashed var(--line); }
 .bar.none em { color: var(--muted); }
 .empty { height: 64px; border: 2px dashed var(--line); border-radius: 8px; display: grid; place-items: center; color: var(--muted); font-size: 12px; text-align: center; padding: 0 12px; }
+header a.wine { display: inline-block; margin-top: 8px; font-size: 12px; font-weight: 600; color: var(--wine); text-decoration: none; border-bottom: 1.5px solid currentColor; pointer-events: auto; }
+.hnote { font-size: 12.5px; line-height: 1.45; margin: 12px 0 0; padding: 9px 11px; border-radius: 8px; background: rgba(122,31,61,.07); border-left: 3px solid var(--wine); }
 .note { font-size: 11.5px; color: var(--muted); margin-top: 8px; }
 
 #tools { position: fixed; right: 16px; bottom: 16px; display: flex; gap: 8px; }
@@ -124,6 +126,7 @@ button:focus-visible, .lbl:focus-visible { outline: 3px solid var(--wine); outli
 <header>
   <h1>Oliven</h1>
   <p>Calistoga · Napa Valley</p>
+  <a class="wine" href="https://schramsberg.com/wp-content/uploads/Oliven-Vineyard_CabernetSauvingon_2021.pdf" target="_blank" rel="noopener">Our wine →</a>
   <div id="north" aria-label="North arrow"><svg viewBox="-20 -20 40 40" width="40" height="40"><circle r="17" fill="#FFFCF5" stroke="#2B2620" stroke-width="2.5"/><g transform="rotate(63.4)"><path d="M0 -13 L5 2 L0 -1 L-5 2 Z" fill="#7A1F3D"/><path d="M0 13 L5 -2 L0 1 L-5 -2 Z" fill="#CFC3A3"/></g></svg><span>N</span></div>
 </header>
 <div id="hint">Drag to orbit · right-drag or two fingers to move · scroll or pinch to zoom · tap anything</div>

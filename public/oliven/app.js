@@ -469,12 +469,15 @@
       <div class="bars" style="margin:18px 0 22px">` + allYears.map(yr => {
         const y = ys.find(v => v.year === yr)
         if (!y) return `<div class="bar none" title="No weigh tag for ${yr}"><em>?</em><span>'${String(yr).slice(2)}</span></div>`
-        return `<div class="bar${y === best ? ' best' : ''}" style="height:${(y.lbs / max) * 100}%" title="${fmt(y.lbs)} lbs · ${y.bins} bins · ${y.date}"><em>${(y.lbs / 1000).toFixed(1)}k</em><span>'${String(yr).slice(2)}</span></div>`
+        return `<div class="bar${y === best ? ' best' : ''}" style="height:${(y.lbs / max) * 100}%" title="${fmt(y.lbs)} lbs · ${y.bins} bins · ${y.date}${(D.harvestNotes || {})[yr] ? ' · light year' : ''}"><em>${(y.lbs / 1000).toFixed(1)}k</em><span>'${String(yr).slice(2)}</span></div>`
       }).join('') + `</div>
       <div class="big">${fmt(last.lbs)} lbs<small>${last.year} · ${(last.lbs / 2000).toFixed(1)} tons · ${last.bins} bins · best year ${best.year} (${fmt(best.lbs)} lbs)</small></div>
       <div class="t" style="margin-top:14px">${last.year} across the vineyard</div>
       <div class="cmp">` + peers.map(([k, y]) => `<div class="row${k === f.chart ? ' me' : ''}"><span>${esc((FEAT[k] || {}).name || k)}</span><i style="width:${y ? (y.lbs / top) * 100 : 0}%"></i><b>${y ? fmt(y.lbs) : '—'}</b></div>`).join('') + `</div>
       <p class="note" style="margin-top:10px">Whole vineyard, ${last.year}: ${fmt(total)} lbs (${(total / 2000).toFixed(1)} tons). From Schramsberg weigh tags.</p>`
+    const hn = (D.harvestNotes || {})[last.year]
+    if (hn) html += `<p class="hnote"><b>${last.year}:</b> ${esc(hn)}</p>`
+    if (D.wine) html += `<p><a class="more" href="${esc(D.wine.url)}" target="_blank" rel="noopener">Our wine: ${esc(D.wine.short)} →</a></p>`
     return html + '</div>'
   }
   function showCard(id) {
