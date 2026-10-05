@@ -12,7 +12,7 @@ window.OLIVEN = {
 
   // A line of context for a harvest year, shown under the yield chart.
   harvestNotes: {
-    2026: 'A light year across Napa. Rain during flowering brought blight, and many vineyards came in at under half their usual yield. Oliven picked about 60% of 2025, so we did well, all things considered.',
+    2026: 'A light year across Napa. Rain during flowering caused shatter (poor fruit set), and many vineyards came in at under half their usual yield. Oliven picked about 60% of 2025, so we did well, all things considered.',
   },
 
   // Net harvest per block, in pounds, from the Schramsberg weighmaster certificates.
